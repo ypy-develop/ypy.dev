@@ -23,7 +23,7 @@ type Sub struct {
 
 // groupOrder is the order the folders of a section are shown in. A folder that
 // is not listed follows them, by name.
-var groupOrder = []string{"", "guides", "server", "examples", "extensions", "reference", "migration", "security", "performance", "essays", "contributing"}
+var groupOrder = []string{"", "examples", "extensions", "essays", "guides", "server", "reference", "migration", "security", "performance", "contributing"}
 
 // groupTitles are the names of folders that are not their folder name with a capital.
 var groupTitles = map[string]string{
@@ -163,6 +163,8 @@ func (m *Manual) Landing(route string) (Group, Section, string, bool) {
 				prefix := s.Prefix
 				if lang == Portuguese {
 					prefix += "/" + Portuguese
+				} else if s.ID == "docs" && Own[g.Key] {
+					prefix = ""
 				}
 				if prefix+"/"+g.Key == route {
 					return g, s, lang, true
@@ -176,3 +178,15 @@ func (m *Manual) Landing(route string) (Group, Section, string, bool) {
 // GroupTitle is the name the sidebar gives a folder, in a language: the page's
 // trail and the structured data of the page use the same word.
 func GroupTitle(key, lang string) string { return groupTitle(key, lang) }
+
+// GroupRoute is the address of a folder of a section in a language: /examples
+// for the examples, /docs/guides for a folder that keeps its place under /docs.
+func GroupRoute(s Section, lang, key string) string {
+	switch {
+	case lang == Portuguese:
+		return s.Prefix + "/" + Portuguese + "/" + key
+	case s.ID == "docs" && Own[key]:
+		return "/" + key
+	}
+	return s.Prefix + "/" + key
+}

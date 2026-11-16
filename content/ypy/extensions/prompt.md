@@ -53,21 +53,8 @@ For your own dialog, define `window.ypyPrompt`. It receives the question and mus
 
 ## Server
 
-The Go SDK decodes the header for you: `Request.Prompt` holds the answer as text.
-
-```go
-import ypy "github.com/ypy-develop/go"
-
-func (h *Projects) Rename(w http.ResponseWriter, r *http.Request) {
-	name := strings.TrimSpace(ypy.FromRequest(r).Prompt)
-	if name == "" {
-		ypy.ValidationError(w, `<p id="project-7" class="error">Name is required</p>`)
-		return
-	}
-	// save the name, then answer with the new fragment
-	ypy.Fragment(w, `<h2 id="project-7">`+html.EscapeString(name)+`</h2>`)
-}
-```
+The answer arrives in the `YPY-Prompt` request header. Trim it, validate it like any input and escape it before it goes
+into HTML. For a missing or invalid name, answer `422` with a fragment; otherwise save and answer the new fragment.
 
 ## Notes
 
@@ -78,4 +65,4 @@ func (h *Projects) Rename(w http.ResponseWriter, r *http.Request) {
 ## See also
 
 - [Confirm and prompt (example)](../examples/confirm-and-prompt.md)
-- [Headers](../reference/headers.md)
+- [Headers](../reference.md#request-headers)

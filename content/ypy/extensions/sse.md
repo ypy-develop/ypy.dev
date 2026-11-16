@@ -103,40 +103,12 @@ Set them in `ypy.config.sse`, or for one element with `ypy-config='{"sse":{...}}
 The format is plain `text/event-stream`. Write each line of HTML on its own `data:` line, end the message with a blank
 line and flush.
 
-```go
-func (h *Room) Messages(w http.ResponseWriter, r *http.Request) {
-	fl, ok := w.(http.Flusher)
-	if !ok {
-		http.Error(w, "streaming not supported", http.StatusInternalServerError)
-		return
-	}
-	w.Header().Set("Content-Type", "text/event-stream")
-	w.Header().Set("Cache-Control", "no-cache")
-
-	ch, cancel := h.room.Subscribe()
-	defer cancel()
-	for {
-		select {
-		case <-r.Context().Done():
-			return
-		case msg := <-ch:
-			fmt.Fprintf(w, "id: %d\n", msg.ID)
-			for _, line := range strings.Split(renderMessage(msg), "\n") {
-				fmt.Fprintf(w, "data: %s\n", line)
-			}
-			fmt.Fprint(w, "\n")
-			fl.Flush()
-		}
-	}
-}
-```
-
-Escape user text when you render the HTML (`html.EscapeString`). When the client reconnects it sends `Last-Event-ID`:
+Escape user text when you render the HTML. When the client reconnects it sends `Last-Event-ID`:
 read it and replay what the visitor missed.
 
-The Go SDK stream (`ypy.NewStream`, `ypy.Broadcaster`) writes the YPY stream protocol, whose events are named. An
-element with `ypy-sse:connect` would receive those as DOM events, not as swaps. Use [`ypy-stream`](stream.md) with
-the SDK, and this extension for servers that already speak plain SSE. See [Streaming on the server](../server/streaming.md).
+The YPY stream protocol uses named events, so an element with `ypy-sse:connect` would receive those as DOM events, not
+as swaps. Use [`ypy-stream`](stream.md) for a server that speaks it, and this extension for servers that already speak
+plain SSE.
 
 ## Notes
 
@@ -151,4 +123,3 @@ the SDK, and this extension for servers that already speak plain SSE. See [Strea
 - [Streaming: `ypy-stream`](stream.md)
 - [WebSocket: `ypy-ws`](ws.md)
 - [Live updates (example)](../examples/live-updates.md)
-- [Streaming on the server](../server/streaming.md)

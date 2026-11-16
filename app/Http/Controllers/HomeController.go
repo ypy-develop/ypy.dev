@@ -44,8 +44,8 @@ func (c *HomeController) Index(ctx *hhttp.Context) error {
 		Cards: []views.Card{
 			{Title: "Docs", Body: "Start here: getting started, core concepts, the guides and the server side.", Href: "/docs"},
 			{Title: "Reference", Body: "Every attribute, event, header and configuration key, generated from the library.", Href: "/reference"},
-			{Title: "Examples", Body: "Click to edit, active search, bulk update, delete a row: complete and short.", Href: "/docs/examples"},
-			{Title: "Extensions", Body: "Streaming, WebSocket, history cache, optimistic updates and more, one file each.", Href: "/docs/extensions"},
+			{Title: "Examples", Body: "Click to edit, active search, bulk update, delete a row: complete and short.", Href: "/examples"},
+			{Title: "Extensions", Body: "Streaming, WebSocket, history cache, optimistic updates and more, one file each.", Href: "/extensions"},
 			{Title: "Go SDK", Body: "The server side in Go: fragments, forms, streaming and tests.", Href: "/go"},
 			{Title: "Community", Body: "Questions, ideas and show-and-tell, in the GitHub discussions.", Href: site.Community, External: true},
 			{Title: "GitHub", Body: "The code, the issues and the releases.", Href: site.GitHub, External: true},

@@ -20,6 +20,7 @@ import (
 	"github.com/arandu-io/hesape/database"
 	"github.com/arandu-io/hesape/support"
 
+	clients "github.com/ypy-develop/ypy.dev/app/Clients"
 	providers "github.com/ypy-develop/ypy.dev/app/Providers"
 	"github.com/ypy-develop/ypy.dev/bootstrap"
 	appconfig "github.com/ypy-develop/ypy.dev/config"
@@ -91,7 +92,7 @@ func Boot(t *testing.T, env config.Env, indexing bool) Booted {
 	if err != nil {
 		t.Fatalf("drivers: %v", err)
 	}
-	provider, err := bootstrap.NewProvider(appCfg)
+	provider, err := bootstrap.NewProvider(appCfg, &clients.GitHubFake{})
 	if err != nil {
 		t.Fatalf("the site: %v", err)
 	}

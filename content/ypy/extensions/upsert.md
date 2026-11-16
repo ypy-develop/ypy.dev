@@ -71,15 +71,8 @@ The server can also send the parts with a tag, so one response can upsert into s
 
 ## Server
 
-```go
-import ypy "github.com/ypy-develop/go"
-
-func (h *Tasks) Changes(w http.ResponseWriter, r *http.Request) {
-	for _, t := range h.store.ChangedSince(r.URL.Query().Get("since")) {
-		ypy.Partial(w, ypy.PartialSpec{Target: "#tasks", Swap: "upsert"}, renderTask(t))
-	}
-}
-```
+The server writes one `<ypy-partial>` per changed item, each with `ypy-target="#tasks"` and `ypy-swap="upsert"`, and the
+items are replaced by `id` or inserted.
 
 ## Notes
 
@@ -92,5 +85,5 @@ func (h *Tasks) Changes(w http.ResponseWriter, r *http.Request) {
 ## See also
 
 - [Keyed and bounded lists](list.md)
-- [Swap styles and morph](../reference/swap-and-morph.md)
+- [Swap styles and morph](../index.md#swapping)
 - [Live updates (example)](../examples/live-updates.md)

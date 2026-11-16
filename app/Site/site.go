@@ -54,9 +54,10 @@ type Site struct {
 	Reference *reference.Catalog
 	Index     docs.Index
 
-	docLinks  map[string]string
-	extGuides map[string]string
-	entries   []Entry
+	longReference bool
+	docLinks      map[string]string
+	extGuides     map[string]string
+	entries       []Entry
 }
 
 // New loads the manual and the reference tables and checks that they agree.
@@ -83,6 +84,10 @@ func New(cfg Config, md *markdown.Module) (*Site, error) {
 		Manual: manual, Reference: catalog,
 	}
 	s.linkReference()
+	_, s.longReference = manual.Page("/reference")
+	if err := manual.Fill(s.Table); err != nil {
+		return nil, err
+	}
 	s.Index = s.searchIndex()
 	s.entries = s.buildEntries()
 	return s, nil
@@ -128,7 +133,7 @@ func (s *Site) searchIndex() docs.Index {
 			}
 			idx = append(idx, docs.Entry{
 				Title:       it.Name,
-				URL:         "/reference/" + string(k) + "#" + it.Anchor,
+				URL:         s.referenceURL(k, it.Anchor),
 				Where:       "Reference: " + where,
 				Description: stripTicks(it.Description),
 			})
@@ -138,3 +143,12 @@ func (s *Site) searchIndex() docs.Index {
 }
 
 func stripTicks(s string) string { return strings.ReplaceAll(s, "`", "") }
+
+// referenceURL is where a name of a table is: on the long page when there is
+// one, on the page of its table otherwise.
+func (s *Site) referenceURL(k reference.Kind, anchor string) string {
+	if s.longReference {
+		return "/reference#" + anchor
+	}
+	return "/reference/" + string(k) + "#" + anchor
+}

@@ -8,6 +8,7 @@ import (
 	hhttp "github.com/arandu-io/hesape/http"
 
 	docs "github.com/ypy-develop/ypy.dev/app/Docs"
+	stars "github.com/ypy-develop/ypy.dev/app/Stars"
 	"github.com/ypy-develop/ypy.dev/public"
 )
 
@@ -25,10 +26,9 @@ func (s *Site) Nav() []NavItem {
 	return []NavItem{
 		{Label: "Docs", Href: "/docs", Match: "docs"},
 		{Label: "Reference", Href: "/reference", Match: "reference"},
-		{Label: "Examples", Href: "/docs/examples", Match: "examples"},
-		{Label: "Extensions", Href: "/docs/extensions", Match: "extensions"},
-		{Label: "Go SDK", Href: "/go", Match: "go"},
-		{Label: "Community", Href: Community, External: true},
+		{Label: "Examples", Href: "/examples", Match: "examples"},
+		{Label: "Extensions", Href: "/extensions", Match: "extensions"},
+		{Label: "Essays", Href: "/essays", Match: "essays"},
 	}
 }
 
@@ -192,6 +192,28 @@ func (c Chrome) YPYVersion() string { return c.site.YPYVersion() }
 
 // GitHub is the organization's address.
 func (c Chrome) GitHub() string { return GitHub }
+
+// Repository is the address of the YPY repository, the one the header's GitHub
+// button opens and whose stars it counts.
+func (c Chrome) Repository() string { return Repository }
+
+// LinkedIn is the project's page on LinkedIn.
+func (c Chrome) LinkedIn() string { return LinkedIn }
+
+// MigrationHref is the migration guide: its own page when content/ has one, its
+// folder under /docs until then.
+func (c Chrome) MigrationHref() string {
+	if _, ok := c.site.Manual.Page("/migration"); ok {
+		return "/migration"
+	}
+	return "/docs/migration"
+}
+
+// Stars is the star count of the YPY repository, as the digits the header
+// draws, and the empty string until a scheduled task has fetched one. It is read
+// from memory: a page renders at the same speed whether the API is up, slow or
+// rate-limiting, and an empty answer draws the GitHub mark alone.
+func (c Chrome) Stars() string { return stars.Count() }
 
 // CommunityURL is where questions go.
 func (c Chrome) CommunityURL() string { return Community }

@@ -23,7 +23,7 @@ func (s *Site) PageCrumbs(p *docs.Page) []Crumb {
 	}
 	crumbs := []Crumb{{Name: p.Section.Title, Href: start}}
 	if p.Group != "" {
-		crumbs = append(crumbs, Crumb{Name: docs.GroupTitle(p.Group, p.Lang), Href: prefix + "/" + p.Group})
+		crumbs = append(crumbs, Crumb{Name: docs.GroupTitle(p.Group, p.Lang), Href: docs.GroupRoute(p.Section, p.Lang, p.Group)})
 	}
 	if last := crumbs[len(crumbs)-1]; last.Href == p.Route {
 		// The page is the folder's own page, or the section's: it is already the
@@ -53,11 +53,13 @@ func (s *Site) LlmsText() string {
 	fmt.Fprintf(&b, "# %s\n\n> %s Version %s, MIT licence.\n\n", s.Name, HomeDescription, s.YPYVersion())
 	fmt.Fprintf(&b, "Source code: %s\n", Repository)
 
-	fmt.Fprintf(&b, "\n## Reference\n\n")
-	for _, k := range reference.Kinds {
-		fmt.Fprintf(&b, "- [%s](%s): %d names\n", reference.Titles[k], s.AbsoluteURL("/reference/"+string(k)), len(s.Reference.Of(k)))
+	if !s.longReference {
+		fmt.Fprintf(&b, "\n## Reference\n\n")
+		for _, k := range reference.Kinds {
+			fmt.Fprintf(&b, "- [%s](%s): %d names\n", reference.Titles[k], s.AbsoluteURL("/reference/"+string(k)), len(s.Reference.Of(k)))
+		}
+		fmt.Fprintf(&b, "- [Extensions](%s): %d official extensions\n", s.AbsoluteURL("/reference/extensions"), len(s.Reference.Extensions))
 	}
-	fmt.Fprintf(&b, "- [Extensions](%s): %d official extensions\n", s.AbsoluteURL("/reference/extensions"), len(s.Reference.Extensions))
 
 	for _, sec := range docs.Sections {
 		for _, g := range s.Manual.Tree(sec.ID, docs.English) {

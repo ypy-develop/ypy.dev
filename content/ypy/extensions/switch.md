@@ -35,9 +35,7 @@ one does not block the submit.
 The registration block shows when the person picks "Company" or "NGO"; the e-mail block shows when the box is checked.
 While they are hidden their fields are disabled: a person who never opens them can submit the form.
 
-If you set `ypy.config.extensions`, list `ypy-switch` in it, or the extension is refused. It is listed with the other
-official extensions in [Extensions](index.md) and it is part of `ypy.max`. Without it `ypy-switch` does nothing and
-the part stays visible.
+The extension is part of `ypy.max`. Without it `ypy-switch` does nothing and the part stays visible.
 
 ## The attribute
 
@@ -109,25 +107,10 @@ document.addEventListener('ypy:switch', evt => {
 ## The server side
 
 The browser does not send what the extension disabled, so the server sees the form as if the hidden fields did not
-exist. Validate by the same rule on the server: when `kind` is `company`, `registration` is required.
+exist. Validate by the same rule on the server: when `kind` is `company`, `registration` is required, and a form
+that breaks the rule is answered with `422` and the form again, which the client swaps in place.
 
-```go
-func createAccount(w http.ResponseWriter, r *http.Request) {
-	if err := r.ParseForm(); err != nil {
-		http.Error(w, "bad form", http.StatusBadRequest)
-		return
-	}
-	kind := r.PostForm.Get("kind")
-	if (kind == "company" || kind == "ngo") && r.PostForm.Get("registration") == "" {
-		// 422 with the form again: the client swaps it in place
-		ypy.ValidationError(w, renderForm(r, "Registration number is required"))
-		return
-	}
-	// ... create the account ...
-}
-```
-
-(`ypy` is `github.com/ypy-develop/go`.) Never rely on the form hiding a field: someone can send the request by hand.
+Never rely on the form hiding a field: someone can send the request by hand.
 
 ## Pitfalls
 

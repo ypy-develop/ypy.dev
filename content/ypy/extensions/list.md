@@ -21,8 +21,7 @@ A feed, a log or a chat adds items at one end of a list. Two problems come with 
 Each poll appends the new events. An event that is already in the list replaces the old copy where it stands, and the
 list never holds more than 50 items: the oldest go.
 
-If you set `ypy.config.extensions`, list `ypy-list` in it, or the extension is refused. It is listed with the other
-official extensions in [Extensions](index.md). Without it the two modifiers are ignored and the swap works as
+Without it the two modifiers are ignored and the swap works as
 `append` or `prepend` always did.
 
 ## Modifiers
@@ -87,16 +86,7 @@ Content-Type: text/html
 ```
 
 If `41` is on the page, it is replaced where it stands; `43` is added at the end; and if the list now has more than 50
-items, the first ones go. The Go handler only writes the items:
-
-```go
-func events(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "text/html")
-	for _, e := range feed.Latest(r.Context(), 20) {
-		fmt.Fprintf(w, `<li data-id="%d" class="py-2">%s</li>`, e.ID, html.EscapeString(e.Text))
-	}
-}
-```
+items, the first ones go. The server only writes the items.
 
 For a feed that is polled, see also [Smart polling](poll.md).
 
@@ -115,26 +105,18 @@ data: limit 50
 data: elements <li data-id="44">Another comment</li>
 ```
 
-In Go, with the SDK (`github.com/ypy-develop/go`):
-
-```go
-err := stream.PatchElements(`<li data-id="44">Another comment</li>`,
-	ypy.WithMode(ypy.ModeAppend), ypy.WithSelector("#events"),
-	ypy.WithKey("data-id"), ypy.WithLimit(50))
-```
-
 Differences from the swap modifiers:
 
 - The stream client has the rules built in; `ypy-list` is not needed for it.
 - `key` without a name means `id`, as in the swap. A `limit` that is not a whole number of 1 or more, or a `key` that is
   not an attribute name, is an error in a stream: the client reports it and applies nothing. In the swap modifier
   they are ignored.
-- `key` and `limit` are ignored in any other mode, and the Go SDK refuses to build such a patch.
+- `key` and `limit` are ignored in any other mode.
 - A stream does not fire `ypy:list:pruned`.
 
 ## How it relates to `ypy-upsert`
 
-[`ypy-upsert`](index.md) is a swap style of its own that looks an item up by `id` anywhere in the document and
+[`ypy-upsert`](upsert.md) is a swap style of its own that looks an item up by `id` anywhere in the document and
 can keep the list sorted. `ypy-list` keeps `append` and `prepend` and works inside the list only, by any attribute.
 Use `upsert` for a sorted list, `append`/`prepend` with `key` and `limit` for a feed in arrival order.
 

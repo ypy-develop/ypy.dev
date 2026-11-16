@@ -19,8 +19,7 @@ content, never merged.
 <script src="ext/ypy-head.min.js"></script>
 ```
 
-The extension is not in `ypy.max`. If you set `ypy.config.extensions`, list `ypy-head` in it. It is listed with the
-other official extensions in [Extensions](index.md).
+The extension is not in `ypy.max`.
 
 ## Merge strategies
 
@@ -63,21 +62,8 @@ All four fire on the document, with `document.body` as the event target.
 
 ## Example
 
-A boosted link to `/settings` brings a full page. The server answers with the whole document:
-
-```go
-func settings(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	io.WriteString(w, `<!doctype html>
-<html><head>
-  <title>Settings</title>
-  <link rel="stylesheet" href="/assets/settings.css">
-</head>
-<body><h1>Settings</h1></body></html>`)
-}
-```
-
-After the swap the tab title is "Settings" and `settings.css` is loaded. The target is `body`, so the strategy is
+A boosted link to `/settings` brings a full page, `<!doctype html>` with a `<title>Settings</title>` and a
+`<link rel="stylesheet" href="/assets/settings.css">` in its `<head>`. After the swap the tab title is "Settings" and `settings.css` is loaded. The target is `body`, so the strategy is
 `merge`: a stylesheet of the old page that the new head lacks is removed.
 
 ## Notes
@@ -88,4 +74,4 @@ After the swap the tab title is "Settings" and `settings.css` is loaded. The tar
 
 ## See also
 
-[Navigation](nav.md), [History and caching](../guides/history-and-caching.md), [`ypy-preserve`](../reference/attributes/ypy-preserve.md).
+[Navigation](nav.md), [History and caching](../index.md#history), [`ypy-preserve`](../index.md#preserving-content).

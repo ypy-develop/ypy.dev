@@ -21,8 +21,7 @@ You need it only when Alpine and YPY run on the same page. It does nothing when 
 <script src="ext/ypy-alpine-compat.min.js"></script>
 ```
 
-The extension is in `ypy.max`. If you set `ypy.config.extensions`, list `ypy-alpine-compat` in it, or it is refused.
-It is listed with the other official extensions in [Extensions](index.md).
+The extension is in `ypy.max`.
 
 ## What it does
 
@@ -63,5 +62,5 @@ The server sends the same markup, with `count: 0` again. The morph keeps the exi
 
 ## See also
 
-[Third-party components](../guides/third-party-components.md), [Swap styles and morph](../reference/swap-and-morph.md),
+[Third-party components](../index.md#third-party-javascript-and-web-components), [Swap styles and morph](../index.md#swapping),
 [`ypy-live`](live.md), [History cache](history-cache.md).

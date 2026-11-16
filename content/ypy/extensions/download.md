@@ -16,8 +16,7 @@ stream, tells the page how far it got, and hands the finished file to the browse
 <script src="ext/ypy-download.min.js"></script>
 ```
 
-The extension is in `ypy.max`. If you set `ypy.config.extensions`, list `ypy-download` in it. It is listed with the other
-official extensions in [Extensions](index.md).
+The extension is in `ypy.max`.
 
 ## When it acts
 
@@ -66,16 +65,6 @@ All three fire on the element that made the request.
 </script>
 ```
 
-```go
-func report(w http.ResponseWriter, r *http.Request) {
-	data, _ := os.ReadFile("reports/2026.pdf")
-	w.Header().Set("Content-Type", "application/pdf")
-	w.Header().Set("Content-Length", strconv.Itoa(len(data)))
-	w.Header().Set("Content-Disposition", `attachment; filename="report-2026.pdf"`)
-	w.Write(data)
-}
-```
-
 With `Content-Disposition: attachment` set, `ypy-swap="download"` on the button is not required. Send `Content-Length`
 so `percent` has a value.
 
@@ -88,4 +77,4 @@ so `percent` has a value.
 
 ## See also
 
-[Upload progress](upload.md), [Events](../reference/events/list.md), [Security](../reference/security.md).
+[Upload progress](upload.md), [Events](../reference.md#events), [Security](../index.md#security).

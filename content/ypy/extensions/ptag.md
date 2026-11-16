@@ -50,18 +50,14 @@ The tag is opaque: a version number, a hash of the content, an update time. Only
 
 ## Server
 
-The Go SDK has no helper for this header; use the standard library.
+The server keeps a tag that changes when the content changes. When the request carries `YPY-PTag` with the current tag,
+answer `304` with no body. Otherwise send the fragment with `YPY-PTag` set to the current tag.
 
-```go
-func (h *News) List(w http.ResponseWriter, r *http.Request) {
-	tag := strconv.Itoa(h.store.Version()) // changes when the news change
-	if r.Header.Get("YPY-PTag") == tag {
-		w.WriteHeader(http.StatusNotModified)
-		return
-	}
-	w.Header().Set("YPY-PTag", tag)
-	ypy.Fragment(w, h.render())
-}
+```http
+GET /news
+YPY-PTag: 42
+
+HTTP/1.1 304 Not Modified
 ```
 
 ## Notes

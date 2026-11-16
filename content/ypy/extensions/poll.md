@@ -19,8 +19,7 @@ polling.
 The element above asks every 2 seconds in a visible tab and every 8 seconds in a hidden one. When the job is done the
 server answers `286` with the final markup, and the element stops asking.
 
-If you set `ypy.config.extensions`, list `ypy-poll` in it, or the extension is refused. It is listed with the other
-official extensions in [Extensions](index.md). Without it, `every` works as before: a fixed interval, and a
+Without the extension, `every` works as before: a fixed interval, and a
 `286` is an ordinary success.
 
 ## Background tabs
@@ -89,20 +88,9 @@ Content-Type: text/html
 <a href="/export/7.zip">Download</a>
 ```
 
-The server decides when the work is over, and the page needs no timer of its own. A Go handler for the export above:
-
-```go
-func Export(w http.ResponseWriter, r *http.Request) {
-	job := jobs.Get(r.PathValue("id"))
-	if !job.Done() {
-		w.Header().Set("YPY-Poll-Interval", "1s") // the server sets the pace; 5s when it is busy
-		ypy.Fragment(w, `<progress value="`+strconv.Itoa(job.Percent())+`" max="100"></progress>`)
-		return
-	}
-	// 286 ends the polling; the body is swapped like any 2xx
-	ypy.FragmentStatus(w, 286, `<a href="/export/`+job.ID+`.zip">Download</a>`)
-}
-```
+The server decides when the work is over, so the page needs no timer of its own. While the job runs it answers `200` with
+the progress and `YPY-Poll-Interval: 1s` to set the pace. When it is done it answers `286` with the link, and the body
+is swapped like any 2xx.
 
 Other elements keep polling. The polling restarts when the element is processed again (for example, a swap brings
 it back).
@@ -137,4 +125,4 @@ it back).
 ## What it does not do
 
 It drives the `every` trigger only. Other ways of polling (a `setInterval` of your own, `ypy-sse`) are not changed.
-For skipping a swap whose content did not change, see `ypy-ptag` in [Extensions](index.md).
+For skipping a swap whose content did not change, see [`ypy-ptag`](ptag.md).

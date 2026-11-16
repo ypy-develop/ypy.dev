@@ -10,7 +10,7 @@ A page that follows a strict Content Security Policy (CSP) blocks injected scrip
 `ypy-*` attributes: a `ypy-post` on a link, an `ypy-on:click` on an image. `ypy-csp` closes that gap. Every element that
 uses YPY must carry the page nonce, or its YPY attributes are removed before they run.
 
-The whole model, including `config.callbacks`, is described in [Security](../reference/security.md). This page is the
+The whole model, including `config.callbacks`, is described in [Security](../index.md#security). This page is the
 reference of the extension.
 
 ## Load it
@@ -65,15 +65,11 @@ An `ypy-ignore` marker only counts when it carries the nonce too.
 
 ## Example
 
-The server stamps the nonce on each element that uses YPY:
+The server makes a fresh nonce for every response (128 bits from a cryptographic random source), sends it in the
+`Content-Security-Policy` header, and stamps it on each element that uses YPY:
 
-```go
-func page(w http.ResponseWriter, r *http.Request) {
-	nonce := newNonce() // 128 bits from crypto/rand, new for every response
-	w.Header().Set("Content-Security-Policy",
-		"script-src 'nonce-"+nonce+"'; trusted-types ypy; require-trusted-types-for 'script'")
-	tmpl.Execute(w, map[string]string{"Nonce": nonce})
-}
+```http
+Content-Security-Policy: script-src 'nonce-R4nd0m'; trusted-types ypy; require-trusted-types-for 'script'
 ```
 
 ```html
@@ -94,5 +90,4 @@ A comment written by a visitor and rendered as `<a ypy-post="/delete">` has no n
 
 ## See also
 
-[Security](../reference/security.md), [Security checklist](../guides/security-checklist.md), [`ypy-lock`](lock.md),
-[Server assets](../server/assets.md) for scripts and styles with hashes and the nonce.
+[Security](../index.md#security) and [`ypy-lock`](lock.md).

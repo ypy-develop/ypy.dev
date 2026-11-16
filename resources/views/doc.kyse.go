@@ -47,6 +47,18 @@ func (d DocData) Holds(g docs.Group) bool {
 // IsHere says whether a sidebar entry is the page being shown.
 func (d DocData) IsHere(p *docs.Page) bool { return p == d.Page }
 
+// MenuTitle names the sidebar: the page's own headings on a long page, the
+// section's name on a section.
+func (d DocData) MenuTitle() string {
+	if d.Page.Outline {
+		return "On this page"
+	}
+	if len(d.Tree) > 0 {
+		return d.Tree[0].Title
+	}
+	return d.SectionTitle
+}
+
 // Entries are the headings the contents lists: the sections and their
 // subsections.
 func (d DocData) Entries() int { return len(d.Page.Headings) }
@@ -56,16 +68,39 @@ func (d DocData) Entries() int { return len(d.Page.Headings) }
 
 @section('content')
 	<div class="docs-layout col">
-		<aside class="docs-sidebar" aria-label="Documentation">
+		<aside class="docs-sidebar" aria-label="{{ .MenuTitle() }}">
 			{{-- Open in the markup, so it is a plain list with no script. The page script
-			     closes it below the width where the sidebar is a column of its own. --}}
+			     closes it below the width where the sidebar is a column of its own.
+			     On a long page (the manual, the reference) the menu is the headings of
+			     the page itself, with a "+" on the ones that have subsections; on a
+			     section (examples, extensions, essays) it is the list of its pages. --}}
 			<details class="docs-menu" open>
 				<summary class="docs-menu-summary">
-					<span>{{ .SectionTitle }} menu</span>
+					<span>{{ .MenuTitle() }}</span>
 				</summary>
-				<nav class="docs-nav" aria-label="{{ .SectionTitle }}">
-					@foreach(.Tree as g)
-						@if(g.Key == "")
+				<nav class="docs-nav" aria-label="{{ .MenuTitle() }}">
+					@if(.Page.Outline)
+						<ul class="docs-nav-list">
+							@foreach(.Page.Outline2() as s)
+								@if(len(s.Subs) > 0)
+									<li>
+										<details class="docs-group">
+											<summary class="docs-group-title docs-outline-title"><a href="#{{ s.ID }}">{{ s.Text }}</a></summary>
+											<ul class="docs-nav-list docs-outline-subs">
+												@foreach(s.Subs as h)
+													<li><a href="#{{ h.ID }}" class="docs-nav-link">{{ h.Text }}</a></li>
+												@endforeach
+											</ul>
+										</details>
+									</li>
+								@else
+									<li><a href="#{{ s.ID }}" class="docs-nav-link">{{ s.Text }}</a></li>
+								@endif
+							@endforeach
+						</ul>
+					@else
+						@foreach(.Tree as g)
+							<p class="docs-section-title">{{ g.Title }}</p>
 							<ul class="docs-nav-list">
 								@foreach(g.Pages as p)
 									<li>
@@ -76,44 +111,25 @@ func (d DocData) Entries() int { return len(d.Page.Headings) }
 										>{{ p.Title }}</a>
 									</li>
 								@endforeach
+								@foreach(g.Subs as s)
+									<li class="docs-sub">
+										<p class="docs-sub-title">{{ s.Title }}</p>
+										<ul class="docs-nav-list">
+											@foreach(s.Pages as p)
+												<li>
+													<a href="{{ p.Route }}" class="docs-nav-link"
+														@if(.IsHere(p))
+															aria-current="page"
+														@endif
+													>{{ p.Title }}</a>
+												</li>
+											@endforeach
+										</ul>
+									</li>
+								@endforeach
 							</ul>
-						@else
-							<details class="docs-group"
-								@if(.Holds(g))
-									open
-								@endif
-							>
-								<summary class="docs-group-title">{{ g.Title }}</summary>
-								<ul class="docs-nav-list">
-									@foreach(g.Pages as p)
-										<li>
-										<a href="{{ p.Route }}" class="docs-nav-link"
-											@if(.IsHere(p))
-												aria-current="page"
-											@endif
-										>{{ p.Title }}</a>
-									</li>
-									@endforeach
-									@foreach(g.Subs as s)
-										<li class="docs-sub">
-											<p class="docs-sub-title">{{ s.Title }}</p>
-											<ul class="docs-nav-list">
-												@foreach(s.Pages as p)
-													<li>
-										<a href="{{ p.Route }}" class="docs-nav-link"
-											@if(.IsHere(p))
-												aria-current="page"
-											@endif
-										>{{ p.Title }}</a>
-									</li>
-												@endforeach
-											</ul>
-										</li>
-									@endforeach
-								</ul>
-							</details>
-						@endif
-					@endforeach
+						@endforeach
+					@endif
 				</nav>
 			</details>
 		</aside>
@@ -164,7 +180,7 @@ func (d DocData) Entries() int { return len(d.Page.Headings) }
 		</article>
 
 		<aside class="docs-toc" aria-label="On this page">
-			@if(len(.Page.Headings) > 0)
+			@if(len(.Page.Headings) > 0 && !.Page.Outline)
 				<p class="docs-toc-title lbl site-muted">On this page</p>
 				<ul>
 					@foreach(.Page.Headings as h)

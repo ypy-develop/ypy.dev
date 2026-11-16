@@ -1,7 +1,7 @@
 ---
 order: 30
 title: Progressive enhancement
-description: Write links and forms that work with the script off, then add YPY attributes so the same elements update part of the page. Includes the Go handler.
+description: Write links and forms that work with the script off, then add YPY attributes so the same elements update part of the page instead of reloading it.
 ---
 
 # Progressive enhancement
@@ -36,46 +36,31 @@ button.
 
 ## The server tells the two apart
 
-A YPY request carries the header `YPY-Request: true`. The server uses it to choose between a fragment and a page, and
-sends `Vary: YPY-Request` so a cache does not hand one out in place of the other. In Go:
+A YPY request carries the header `YPY-Request: true`. The server uses it to choose between a fragment and a page:
 
-```go
-func (h *Items) Create(w http.ResponseWriter, r *http.Request) {
-	title := strings.TrimSpace(r.PostFormValue("title"))
-	if title == "" {
-		h.renderForm(w, r, http.StatusUnprocessableEntity, title, "Write a title.")
-		return
-	}
-	h.store.Add(title)
-	// A YPY client gets YPY-Redirect, a browser gets 303 See Other.
-	ypy.Redirect(w, r, "/items")
-}
+```http
+POST /items HTTP/1.1
+YPY-Request: true
+YPY-Target: div#app
 
-func (h *Items) renderForm(w http.ResponseWriter, r *http.Request, status int, title, msg string) {
-	var buf bytes.Buffer
-	if ypy.FromRequest(r).IsYPY {
-		h.tmpl.ExecuteTemplate(&buf, "form", formView{Title: title, Error: msg}) // only the form
-	} else {
-		h.tmpl.ExecuteTemplate(&buf, "page", pageView{Form: formView{Title: title, Error: msg}}) // the whole page
-	}
-	ypy.FragmentStatus(w, status, buf.String())
-}
+HTTP/1.1 200 OK
+Vary: YPY-Request
+Content-Type: text/html
+
+<div id="app">...</div>
 ```
 
-Mount `ypy.Middleware` around the handler so every answer gets `Vary: YPY-Request`. The
-[Go recipe](../server/recipes/go.md) shows the wiring.
+The same URL, asked by a browser without the script, gets the whole page. `Vary: YPY-Request` on both answers stops a
+cache from handing out one in place of the other.
 
 ## Post, redirect, get
 
-The classic shape of a form still applies:
-
-1. The form posts.
-2. If the data is not valid, the server answers `422` with the form and the messages.
-3. If it is valid, the server saves and answers with a redirect, so a reload does not post again.
+The classic shape of a form still applies. The form posts. If the data is not valid, the server answers `422` with the
+form and the messages. If it is valid, the server saves and redirects, so a reload does not post again.
 
 YPY follows that shape. A `422` is swapped into the form and keeps what the user typed, and a `303 See Other` after a
-`POST` is followed like any other success ([Forms](../guides/forms.md)). `ypy.Redirect` sends `303` to a browser and
-the `YPY-Redirect` header to a YPY request.
+`POST` is followed like any other success. A server can send `YPY-Redirect` to a YPY request and a plain `303` to a
+browser, so one handler serves both.
 
 ## Boost: every link and form at once
 
@@ -86,9 +71,8 @@ If the links and forms already work, you can ask YPY to take all of them:
 ```
 
 `ypy-boost` makes the links and forms inside the element navigate with a request that swaps the body and updates the
-address. The [`ypy-nav`](../extensions/nav.md) extension does it for the whole page with `config.nav.boost`. The
-browser keeps handling the links it must: downloads, other origins, clicks with a modifier key and links to a
-fragment of the same page.
+address. The browser keeps handling the links it must: downloads, other origins, clicks with a modifier key and links
+to a fragment of the same page. See [Boosting](../index.md#boosting).
 
 A boosted request is an ordinary request, and the server decides whether to answer a fragment or the whole page. It
 recognizes one by `YPY-Boosted: true`. A history restore (back or forward) arrives with
@@ -96,11 +80,9 @@ recognizes one by `YPY-Boosted: true`. A history restore (back or forward) arriv
 
 ## Test it
 
-Turn the script off and use the site with the keyboard. Every action that matters must still work.
-
-The browser tests of this project include a server-rendered site served under a policy that forbids scripts, which
-shows the markup works alone. You can do the same for your own pages. In server tests, send a request with and
-without `YPY-Request` and check both answers ([Testing your app](../server/testing.md)).
+Turn the script off and use the site with the keyboard. Every action that matters must still work. The browser tests of
+the YPY repository include a server-rendered site served under a policy that forbids scripts, which shows the markup
+works alone. You can do the same for your own pages, and check each route with and without `YPY-Request`.
 
 ## Where there is no fallback
 
@@ -110,5 +92,5 @@ enhancements, and give the user another way to the same result, such as an "Edit
 
 ## See also
 
-[Why hypermedia](why-hypermedia.md) · [Navigation](../extensions/nav.md) · [Forms](../guides/forms.md) ·
-[Accessibility](../guides/accessibility.md)
+[Why hypermedia](why-hypermedia.md) · [Boosting](../index.md#boosting) · [Validation](../index.md#validation) ·
+[`ypy-nav`](../extensions/nav.md)

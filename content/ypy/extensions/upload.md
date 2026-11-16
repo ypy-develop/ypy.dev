@@ -22,8 +22,7 @@ fires `ypy:upload:progress` on the element while the file goes out. The core see
 <div id="result"></div>
 ```
 
-If you set `ypy.config.extensions`, list `ypy-upload` in it, or the extension is refused. It is listed with the other
-official extensions in [Extensions](index.md); it is part of `ypy.max`. Without it, `ypy-upload-progress` does
+The extension is part of `ypy.max`. Without it, `ypy-upload-progress` does
 nothing and breaks nothing: the upload goes through `fetch`.
 
 ## When the transport changes
@@ -118,38 +117,9 @@ document.addEventListener('ypy:upload:progress', e => {
 ## The server
 
 The server receives an ordinary `multipart/form-data` request: the progress is entirely in the browser. Limit the size
-of what you accept, then answer a fragment. With the Go SDK (net/http):
-
-```go
-package files
-
-import (
-	"net/http"
-
-	ypy "github.com/ypy-develop/go"
-)
-
-const maxUpload = 10 << 20 // 10 MiB
-
-func Upload(w http.ResponseWriter, r *http.Request) {
-	r.Body = http.MaxBytesReader(w, r.Body, maxUpload)
-	if err := r.ParseMultipartForm(maxUpload); err != nil {
-		_ = ypy.ValidationError(w, `<p class="text-red-700">File too large (10 MB at most).</p>`)
-		return
-	}
-	file, _, err := r.FormFile("doc")
-	if err != nil {
-		_ = ypy.ValidationError(w, `<p class="text-red-700">Choose a file.</p>`)
-		return
-	}
-	defer file.Close()
-	// store the file under a name you generate, never under the name the client sent
-	_ = ypy.Fragment(w, `<p class="text-emerald-700">Uploaded.</p>`)
-}
-```
-
-The fragment is swapped into `ypy-target` as for any request. `ypy.ValidationError` answers `422`, the status a form
-uses for a rejected input (see [forms](../guides/forms.md)).
+of what you accept, then answer a fragment. Answer `422` for a rejected file (too large, missing), the status a form uses
+for a rejected input (see [Validation](../index.md#validation)). The fragment is swapped into `ypy-target` as for any
+request. Store the file under a name you generate, never under the name the client sent.
 
 ## Pitfalls
 

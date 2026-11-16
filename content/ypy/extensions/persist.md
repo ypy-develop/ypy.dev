@@ -20,8 +20,7 @@ Both are described with the navigation features, in [Navigation](nav.md#ypy-pers
 <script src="ext/ypy-persist.min.js"></script>
 ```
 
-The extension is in `ypy.max`. If you set `ypy.config.extensions`, list `ypy-persist` in it. It is listed with the other
-official extensions in [Extensions](index.md).
+The extension is in `ypy.max`.
 
 ## Attributes
 
@@ -43,7 +42,7 @@ Neither is inherited.
 A navigation is a boosted link or form, or back and forward. When its response has an element with the same `id`, the
 live element takes the place of the new one, with its state. The attribute goes on the live element only, so the server
 does not mark the next page. A response without that `id` removes the element as usual, and a swap that is not a
-navigation never keeps anything. It uses the same mechanism as [`ypy-preserve`](../reference/attributes/ypy-preserve.md).
+navigation never keeps anything. It uses the same mechanism as [`ypy-preserve`](../index.md#preserving-content).
 
 ```html
 <audio id="player" ypy-persist src="/radio.mp3" controls></audio>
@@ -70,16 +69,6 @@ document.addEventListener('ypy:track:reload', e => {
 })
 ```
 
-A server that stamps the same `app-version` on every page it renders is enough:
-
-```go
-func layout(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, `<!doctype html><html><head>
-<meta name="app-version" content="%s" ypy-track="reload">
-</head><body>...</body></html>`, buildID)
-}
-```
-
 ## Notes
 
 - A page that tracks nothing pays one attribute lookup per response.
@@ -88,4 +77,4 @@ func layout(w http.ResponseWriter, r *http.Request) {
 
 ## See also
 
-[Navigation](nav.md), [`ypy-preserve`](../reference/attributes/ypy-preserve.md), [History and caching](../guides/history-and-caching.md).
+[Navigation](nav.md), [`ypy-preserve`](../index.md#preserving-content), [History and caching](../index.md#history).

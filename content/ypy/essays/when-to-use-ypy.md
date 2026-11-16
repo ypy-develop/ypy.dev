@@ -7,7 +7,7 @@ description: Which projects suit YPY, which need care, which should use somethin
 # When to use YPY
 
 YPY suits a site where the server already knows how to draw the page and the browser only needs to update parts of it.
-It is a poor choice for some projects. This page lists both kinds so you can decide before writing code.
+For some projects it is the wrong tool, and it is cheaper to find out before the first screen.
 
 ## It fits
 
@@ -59,9 +59,9 @@ It is a poor choice for some projects. This page lists both kinds so you can dec
 ## Mixing
 
 You choose per page, not per project. A server-rendered site with YPY can have one screen that is a client application,
-mounted in an element YPY leaves alone (`ypy-ignore`), or a [third-party component](../guides/third-party-components.md)
+mounted in an element YPY leaves alone (`ypy-ignore`), or a [third-party component](../index.md#third-party-javascript-and-web-components)
 inside a page. The two meet through events and a few HTTP calls.
 
 ## See also
 
-[Why hypermedia](why-hypermedia.md) · [Core concepts](../guides/core-concepts.md) · [Migration](../migration/index.md)
+[Why hypermedia](why-hypermedia.md) · [Docs](../index.md) · [Migration](../migration.md)
