@@ -1,6 +1,8 @@
 package examples
 
 import (
+	"net/http"
+	"net/http/httptest"
 	"testing"
 	"time"
 )
@@ -49,4 +51,14 @@ func TestStateIsSignedAndBounded(t *testing.T) {
 	if s.write(recorder(), "x", map[string]string{"a": string(make([]byte, 4000))}) {
 		t.Errorf("a state over the limit was kept")
 	}
+}
+
+func recorder() *httptest.ResponseRecorder { return httptest.NewRecorder() }
+
+func requestWith(rec *httptest.ResponseRecorder) *http.Request {
+	req := httptest.NewRequest(http.MethodGet, "/", nil)
+	for _, c := range rec.Result().Cookies() {
+		req.AddCookie(c)
+	}
+	return req
 }

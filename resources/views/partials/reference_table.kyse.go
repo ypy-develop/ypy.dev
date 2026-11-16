@@ -43,7 +43,7 @@ func ReferenceTable(p ReferenceTableProps) template.HTML {
 
 <div class="table-scroll">
 	<table class="ref-table">
-		<thead><tr><th scope="col">Name</th><th scope="col">What it does</th><th scope="col">Guide</th></tr></thead>
+		<thead><tr><th scope="col">Name</th><th scope="col">What it does</th></tr></thead>
 		<tbody>
 			@foreach(.Rows as r)
 				<tr id="{{ r.Anchor }}">
@@ -108,12 +108,8 @@ func ReferenceTable(p ReferenceTableProps) template.HTML {
 						@if(r.Attrs != "")
 							<p class="ref-meta"><span class="lbl site-muted">Attributes</span> {{ r.Attrs }}</p>
 						@endif
-					</td>
-					<td class="ref-guide">
 						@if(r.Guide != "")
-							<a href="{{ r.Guide }}">Guide</a>
-						@else
-							<span class="site-muted">&mdash;</span>
+							<p class="ref-meta"><a href="{{ r.Guide }}">Read more</a></p>
 						@endif
 					</td>
 				</tr>

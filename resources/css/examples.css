@@ -158,3 +158,12 @@
 .ex-demo [role="tabpanel"] {
   padding: 1rem 0.25rem;
 }
+
+.ex-demo form > .ex-actions,
+.ex-demo table + .ex-actions {
+  margin-top: 0.85rem;
+}
+
+.ex-demo form > p {
+  margin: 0.6rem 0 0;
+}

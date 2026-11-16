@@ -52,7 +52,7 @@ itself.
 | [Infinite scroll](infinite-scroll.md) | The last row asks for the next page when it appears | yes | none |
 | [Active search](active-search.md) | Search while typing, with a delay | yes | none |
 | [Progress bar](progress-bar.md) | Follow a long job by asking for its progress | yes | [`ypy-poll`](../extensions/poll.md), optional |
-| [Value select](value-select.md) | A second select that fills from the first | yes | none |
+| [Dependent selects](value-select.md) | A second select that fills from the first | yes | none |
 | [Tabs](tabs.md) | Load one panel at a time and mark the current tab | yes | none |
 | [Animations](animations.md) | Fade and slide content in and out with CSS classes | no | none |
 | [File upload](file-upload.md) | Send a file with a progress bar | no | [`ypy-upload`](../extensions/upload.md), optional |

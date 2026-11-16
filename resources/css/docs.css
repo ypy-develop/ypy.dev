@@ -31,6 +31,16 @@
   grid-template-columns: minmax(0, 1fr);
 }
 
+/* A long page (the manual, the reference) has its own headings for a sidebar,
+ * so there is no contents column on the right: the article takes the room, and
+ * a table of names has the width it needs. */
+@media (min-width: 1024px) {
+  .docs-layout-outline,
+  .docs-layout.docs-layout-outline {
+    grid-template-columns: 15rem minmax(0, 1fr);
+  }
+}
+
 @media (min-width: 1024px) {
   .docs-layout-wide {
     grid-template-columns: minmax(0, 1fr);
@@ -135,6 +145,7 @@
 
 /* A heading of the outline reads as a link, in the sentence case of the page. */
 .docs-outline-title {
+  padding-left: calc(0.75rem + 2px);
   font-family: inherit;
   font-size: 0.84rem;
   letter-spacing: 0;

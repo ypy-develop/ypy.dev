@@ -134,7 +134,7 @@ func TestDiscoverySurfacesInProduction(t *testing.T) {
 			dated++
 		}
 	}
-	if len(set.URLs) < 100 || dated == 0 {
+	if len(set.URLs) < 60 || dated == 0 {
 		t.Errorf("sitemap lists %d addresses, %d with a lastmod", len(set.URLs), dated)
 	}
 
@@ -146,8 +146,8 @@ func TestDiscoverySurfacesInProduction(t *testing.T) {
 	if !strings.HasPrefix(body, "# YPY\n\n> YPY is a hypermedia framework") {
 		t.Errorf("llms.txt does not open with the name and the summary:\n%.300s", body)
 	}
-	for _, want := range []string{"## Reference", "## Docs", "## Guides", "## Server", "## Examples", "## Extensions", "## Migration", "## Go SDK", "## Optional",
-		"](" + origin + "/reference/attributes)", "](" + origin + "/docs/guides/getting-started)", "](" + origin + "/llms-full.txt)"} {
+	for _, want := range []string{"## Docs", "## Examples", "## Extensions", "## Essays", "## Optional",
+		"](" + origin + "/reference)", "](" + origin + "/migration)", "](" + origin + "/essays/why-hypermedia)", "](" + origin + "/llms-full.txt)"} {
 		if !strings.Contains(body, want) {
 			t.Errorf("llms.txt lacks %q", want)
 		}
@@ -157,7 +157,7 @@ func TestDiscoverySurfacesInProduction(t *testing.T) {
 	if full.Code != http.StatusOK || !strings.HasPrefix(full.Header().Get("Content-Type"), "text/plain") {
 		t.Fatalf("llms-full.txt: %d %s", full.Code, full.Header().Get("Content-Type"))
 	}
-	for _, want := range []string{"# YPY documentation, in full", "Canonical URL: " + origin + "/docs/guides/getting-started", "Canonical URL: " + origin + "/reference/attributes", "### Public page content"} {
+	for _, want := range []string{"# YPY documentation, in full", "Canonical URL: " + origin + "/essays/why-hypermedia", "Canonical URL: " + origin + "/reference", "### Public page content"} {
 		if !strings.Contains(full.Body.String(), want) {
 			t.Errorf("llms-full.txt lacks %q", want)
 		}
@@ -183,7 +183,7 @@ func TestDiscoveryIsClosedOutsideProduction(t *testing.T) {
 		}
 	}
 
-	for _, path := range []string{"/", "/docs/guides/getting-started", "/reference/attributes"} {
+	for _, path := range []string{"/", "/essays/why-hypermedia", "/reference"} {
 		rec := app.Get(path)
 		body := rec.Body.String()
 		m := metas(body)
@@ -205,7 +205,7 @@ func TestDiscoveryIsClosedOutsideProduction(t *testing.T) {
 func TestHeadOfThreePages(t *testing.T) {
 	app := tests.Boot(t, config.EnvDev, true)
 
-	for _, path := range []string{"/", "/docs/guides/getting-started", "/reference/attributes"} {
+	for _, path := range []string{"/", "/essays/why-hypermedia", "/reference"} {
 		rec := app.Get(path)
 		if rec.Code != http.StatusOK {
 			t.Fatalf("GET %s: %d", path, rec.Code)
@@ -281,7 +281,7 @@ func TestHeadOfThreePages(t *testing.T) {
 			if g["SoftwareSourceCode"] == nil {
 				t.Error("/: the software is not also source code")
 			}
-		case "/docs/guides/getting-started":
+		case "/essays/why-hypermedia":
 			if g["TechArticle"] == nil || g["TechArticle"]["headline"] == "" {
 				t.Errorf("%s: no TechArticle: %v", path, g)
 			}
@@ -312,7 +312,7 @@ func TestEveryCataloguePageIsInTheSitemap(t *testing.T) {
 	sitemap := app.Get("/sitemap.xml").Body.String()
 
 	entries := app.Provider.Site.Entries()
-	if len(entries) < 150 {
+	if len(entries) < 60 {
 		t.Fatalf("the catalogue has only %d pages", len(entries))
 	}
 	want := map[string]bool{}

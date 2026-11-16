@@ -42,11 +42,11 @@ func (c *HomeController) Index(ctx *hhttp.Context) error {
 		Events:     len(s.Reference.Of(reference.Events)),
 		Extensions: len(s.Reference.Extensions),
 		Cards: []views.Card{
-			{Title: "Docs", Body: "Start here: getting started, core concepts, the guides and the server side.", Href: "/docs"},
+			{Title: "Docs", Body: "Start here: one long page, from the first attribute to security and testing.", Href: "/docs"},
 			{Title: "Reference", Body: "Every attribute, event, header and configuration key, generated from the library.", Href: "/reference"},
 			{Title: "Examples", Body: "Click to edit, active search, bulk update, delete a row: complete and short.", Href: "/examples"},
 			{Title: "Extensions", Body: "Streaming, WebSocket, history cache, optimistic updates and more, one file each.", Href: "/extensions"},
-			{Title: "Go SDK", Body: "The server side in Go: fragments, forms, streaming and tests.", Href: "/go"},
+			{Title: "Essays", Body: "Why YPY is built the way it is: size, security, performance and the choices behind them.", Href: "/essays"},
 			{Title: "Community", Body: "Questions, ideas and show-and-tell, in the GitHub discussions.", Href: site.Community, External: true},
 			{Title: "GitHub", Body: "The code, the issues and the releases.", Href: site.GitHub, External: true},
 		},

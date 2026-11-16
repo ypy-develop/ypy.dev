@@ -47,6 +47,15 @@ func (d DocData) Holds(g docs.Group) bool {
 // IsHere says whether a sidebar entry is the page being shown.
 func (d DocData) IsHere(p *docs.Page) bool { return p == d.Page }
 
+// LayoutClass is the grid of the page: a long page has no contents column, its
+// own headings are the sidebar.
+func (d DocData) LayoutClass() string {
+	if d.Page.Outline {
+		return "docs-layout col docs-layout-outline"
+	}
+	return "docs-layout col"
+}
+
 // MenuTitle names the sidebar: the page's own headings on a long page, the
 // section's name on a section.
 func (d DocData) MenuTitle() string {
@@ -67,7 +76,7 @@ func (d DocData) Entries() int { return len(d.Page.Headings) }
 @extends('layouts.app')
 
 @section('content')
-	<div class="docs-layout col">
+	<div class="{{ .LayoutClass() }}">
 		<aside class="docs-sidebar" aria-label="{{ .MenuTitle() }}">
 			{{-- Open in the markup, so it is a plain list with no script. The page script
 			     closes it below the width where the sidebar is a column of its own.
@@ -154,9 +163,6 @@ func (d DocData) Entries() int { return len(d.Page.Headings) }
 				@if(.Page.Updated != "")
 					<span>Updated {{ .Page.Updated }}</span>
 				@endif
-				@if(.Twin != nil)
-					<a class="text-rust" href="{{ .Twin.Route }}" ypy-boost="false" hreflang="{{ .Twin.Lang }}">{{ .Twin.Lang }}</a>
-				@endif
 			</p>
 
 			<div class="prose">{!! partials.Prose(.Body) !!}</div>
@@ -179,15 +185,17 @@ func (d DocData) Entries() int { return len(d.Page.Headings) }
 			</nav>
 		</article>
 
-		<aside class="docs-toc" aria-label="On this page">
-			@if(len(.Page.Headings) > 0 && !.Page.Outline)
-				<p class="docs-toc-title lbl site-muted">On this page</p>
-				<ul>
-					@foreach(.Page.Headings as h)
-						<li class="docs-toc-item" data-level="{{ h.Level }}"><a href="#{{ h.ID }}">{{ h.Text }}</a></li>
-					@endforeach
-				</ul>
-			@endif
-		</aside>
+		@if(!.Page.Outline)
+			<aside class="docs-toc" aria-label="On this page">
+				@if(len(.Page.Headings) > 0)
+					<p class="docs-toc-title lbl site-muted">On this page</p>
+					<ul>
+						@foreach(.Page.Headings as h)
+							<li class="docs-toc-item" data-level="{{ h.Level }}"><a href="#{{ h.ID }}">{{ h.Text }}</a></li>
+						@endforeach
+					</ul>
+				@endif
+			</aside>
+		@endif
 	</div>
 @endsection
