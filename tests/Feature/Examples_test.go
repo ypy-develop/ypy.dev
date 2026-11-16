@@ -292,3 +292,76 @@ func TestEditRow(t *testing.T) {
 		t.Errorf("one visitor's edit leaked to another")
 	}
 }
+
+func TestLazyLoading(t *testing.T) {
+	app := tests.Boot(t, config.EnvDev, true)
+	v := newVisitor(t, app)
+	page := v.open("/examples/lazy-loading")
+	if !strings.Contains(page, `ypy-trigger="load"`) || !strings.Contains(page, "Loading the weekly report") {
+		t.Fatalf("the page does not carry the placeholder")
+	}
+	rep := wantFragment(t, v.do("GET", "/examples/demo/lazy-loading/report", nil), 200)
+	if !strings.Contains(rep, `id="report"`) || !strings.Contains(rep, "$14,320.50") {
+		t.Errorf("the report is wrong: %s", rep)
+	}
+	again := wantFragment(t, v.do("GET", "/examples/demo/lazy-loading/placeholder", nil), 200)
+	if !strings.Contains(again, `ypy-trigger="load"`) {
+		t.Errorf("the placeholder does not start the request again: %s", again)
+	}
+}
+
+func TestInlineValidation(t *testing.T) {
+	app := tests.Boot(t, config.EnvDev, true)
+	a := newVisitor(t, app)
+	page := a.open("/examples/inline-validation")
+	if !strings.Contains(page, `ypy-error-target="#email-msg"`) {
+		t.Fatalf("the page does not carry the demo")
+	}
+	cases := []struct {
+		email  string
+		status int
+		want   string
+	}{
+		{"", 422, "Enter your email"},
+		{"nope@x", 422, "name@company.com"},
+		{"Admin@Example.com", 422, "already has an account"},
+		{"marina@company.example", 200, "is available"},
+	}
+	for _, c := range cases {
+		body := wantFragment(t, a.do("POST", "/examples/demo/inline-validation/email", a.form("email", c.email)), c.status)
+		if !strings.Contains(body, c.want) || !strings.HasPrefix(body, `<p`) {
+			t.Errorf("%q: %s", c.email, body)
+		}
+	}
+	bad := wantFragment(t, a.do("POST", "/examples/demo/inline-validation", a.form("email", "nope@x")), 422)
+	if !strings.Contains(bad, `value="nope@x"`) || !strings.Contains(bad, `aria-invalid="true"`) {
+		t.Errorf("the form does not keep the value or mark the field: %s", bad)
+	}
+	ok := wantFragment(t, a.do("POST", "/examples/demo/inline-validation", a.form("email", "rafael@quintana.example")), 200)
+	if !strings.Contains(ok, "Account created for rafael@quintana.example") {
+		t.Errorf("no confirmation: %s", ok)
+	}
+}
+
+func TestActiveSearch(t *testing.T) {
+	app := tests.Boot(t, config.EnvDev, true)
+	v := newVisitor(t, app)
+	page := v.open("/examples/active-search")
+	if !strings.Contains(page, `id="search-results"`) || !strings.Contains(page, "Rafael Quintana") {
+		t.Fatalf("the page does not carry the demo")
+	}
+	porto := wantFragment(t, v.do("GET", "/examples/demo/active-search?q=PORTO", nil), 200)
+	if !strings.Contains(porto, "Tomás Ribeiro") || !strings.Contains(porto, "Joaquim Teles") || strings.Contains(porto, "Marina") {
+		t.Errorf("the filter is wrong: %s", porto)
+	}
+	none := wantFragment(t, v.do("GET", "/examples/demo/active-search?q=zzz", nil), 200)
+	if !strings.Contains(none, "No one matches") || !strings.Contains(none, "zzz") {
+		t.Errorf("the empty answer is wrong: %s", none)
+	}
+	if all := wantFragment(t, v.do("GET", "/examples/demo/active-search", nil), 200); strings.Count(all, "<tr>") != 12 {
+		t.Errorf("an empty query must answer everyone: %d rows", strings.Count(all, "<tr>"))
+	}
+	if xss := wantFragment(t, v.do("GET", "/examples/demo/active-search?q=%3Cscript%3E", nil), 200); strings.Contains(xss, "<script>") {
+		t.Errorf("the query is echoed unescaped: %s", xss)
+	}
+}

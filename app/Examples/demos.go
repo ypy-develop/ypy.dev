@@ -45,6 +45,9 @@ func (d *Demos) Register(r *hcontrollers.Router) {
 	d.clickToLoad(r)
 	d.deleteRow(r)
 	d.editRow(r)
+	d.lazyLoading(r)
+	d.inlineValidation(r)
+	d.activeSearch(r)
 }
 
 // ---- the marker a page uses to say where a demo goes ----------------------
@@ -96,6 +99,12 @@ func (d *Demos) initial(name string, r *http.Request, token string) (string, boo
 		return d.render("delete-table", d.deleteView(r, token)), true
 	case "edit-row":
 		return d.render("edit-table", d.editView(r, token)), true
+	case "lazy-loading":
+		return d.render("lazy-placeholder", nil), true
+	case "inline-validation":
+		return d.render("signup", signup{Token: token}), true
+	case "active-search":
+		return d.render("search", searchView{Results: searchPeople("")}), true
 	}
 	return "", false
 }
