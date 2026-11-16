@@ -42,11 +42,11 @@ of the request.
 - When nothing matches, YPY writes a warning to the console and swaps nothing for this attribute.
 - It replaces the main swap only. Out-of-band elements and `<ypy-partial>` parts keep their own targets.
 - A response that is different for each place is not this extension's job: use `<ypy-partial>` with one target each, as
-  in [Multiple targets in one response](../guides/multiple-targets.md).
+  in [Multiple targets in one response](../index.md#out-of-band-swaps).
 - The selector can use [`scope`](scope.md) words when that extension is loaded.
 
 ## See also
 
-- [Multiple targets in one response](../guides/multiple-targets.md)
-- [`<ypy-partial>`](../reference/tags/ypy-partial.md)
+- [Multiple targets in one response](../index.md#out-of-band-swaps)
+- [`<ypy-partial>`](../index.md#out-of-band-swaps)
 - [Updating other content (example)](../examples/updating-other-content.md)

@@ -1,7 +1,7 @@
 ---
 order: 10
 title: Why hypermedia
-description: Why YPY keeps the rules and the links on the server and sends HTML fragments, what HTML's own controls cannot do, and where the approach costs you.
+description: Why YPY keeps the rules and the links on the server and sends HTML fragments, what plain HTML controls cannot do, and where the approach costs you.
 ---
 
 # Why hypermedia
@@ -45,8 +45,7 @@ The server still answers with HTML. A search box looks like this:
 <ul id="results"></ul>
 ```
 
-The handler returns the `<li>` elements for the term, the same ones it would draw in a full page. [Core
-concepts](../guides/core-concepts.md) walks through the request, the target and the swap.
+The handler returns the `<li>` elements for the term, the same ones it would draw in a full page. The [Docs](../index.md#requests) walk through the request, the target and the swap.
 
 ## What stays on the server
 
@@ -73,4 +72,4 @@ YPY](when-to-use-ypy.md) lists those cases. For the ones where acting first and 
 ## See also
 
 [Progressive enhancement](progressive-enhancement.md) · [Template fragments](template-fragments.md) ·
-[Examples](../examples/index.md)
+[Examples](../examples/index.md) · [Docs](../index.md)

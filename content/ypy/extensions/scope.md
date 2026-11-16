@@ -58,5 +58,5 @@ They work wherever a selector is accepted: `ypy-target`, `ypy-indicator`, `ypy-i
 ## See also
 
 - [Layers](layers.md)
-- [Multiple targets in one response](../guides/multiple-targets.md)
-- [Attribute inheritance](../reference/inheritance.md)
+- [Multiple targets in one response](../index.md#out-of-band-swaps)
+- [Attribute inheritance](../index.md#attribute-inheritance)

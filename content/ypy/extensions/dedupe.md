@@ -20,8 +20,7 @@ same thing twice. `ypy-dedupe` makes them share one request.
 If the poll fires while the click's request is still in flight, only one `GET /cart` goes out. Both elements get the
 answer and swap it into their own target.
 
-The extension is not part of `ypy.max`: load it by itself. If you set `ypy.config.extensions`, list `ypy-dedupe` in
-it, or the extension is refused. It is listed with the other official extensions in [Extensions](index.md).
+The extension is not part of `ypy.max`: load it by itself.
 
 ## What counts as identical
 
@@ -109,14 +108,6 @@ its own; load it after to retry the shared request once for all of them.
 ## The server side
 
 Nothing changes in the server: it sees one request and answers it once.
-
-```go
-func cart(w http.ResponseWriter, r *http.Request) {
-	// Called once for the poll and the click that were in flight together.
-	w.Header().Set("Content-Type", "text/html")
-	fmt.Fprint(w, renderCart(r))
-}
-```
 
 ## Pitfalls
 

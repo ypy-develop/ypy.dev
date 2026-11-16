@@ -71,9 +71,9 @@ element and no `style` attribute). Change it with variables on `:root`:
 
 The bar has `role="progressbar"` and an accessible name from `progress.label`. It is in the page only while it shows.
 With `prefers-reduced-motion: reduce` its transitions are off. The element that makes a request still gets
-`aria-busy` from the core ([`ypy-busy`](../reference/attributes/ypy-busy.md)).
+`aria-busy` from the core ([`ypy-busy`](../reference.md#core-attributes)).
 
 ## See also
 
 - [Navigation: boost, prefetch and progress](nav.md)
-- [CSS classes](../reference/css-classes.md)
+- [CSS classes](../reference.md#css-classes)

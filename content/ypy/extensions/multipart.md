@@ -20,9 +20,8 @@ multipart when the server already produces `multipart/mixed` or when each update
 <script src="ext/ypy-multipart.min.js"></script>
 ```
 
-The extension is not in `ypy.max`. If you set `ypy.config.extensions`, list `ypy-multipart` in it. It adds
-`multipart/mixed` and `multipart/parallel` to the `Accept` header of requests. It is listed with the other official
-extensions in [Extensions](index.md).
+The extension is not in `ypy.max`. It adds
+`multipart/mixed` and `multipart/parallel` to the `Accept` header of requests.
 
 ## Two ways to use it
 
@@ -48,7 +47,7 @@ Each part has its own headers and body. It is swapped like a response, and these
 | `YPY-Target`, `YPY-Retarget` | The target of this part. `YPY-Retarget` wins. |
 | `YPY-Select` | A selector of the content to swap. `YPY-Reselect` wins. |
 | `YPY-Push` | Same as `YPY-Push-Url`. |
-| `YPY-Trigger`, `YPY-Redirect`, `YPY-Location`, `YPY-Refresh` | Run for the part, as for any response. See the [response headers](../reference/headers.md). |
+| `YPY-Trigger`, `YPY-Redirect`, `YPY-Location`, `YPY-Refresh` | Run for the part, as for any response. See the [response headers](../reference.md#request-headers). |
 
 On a reconnect the request carries `YPY-Last-Part-ID`, so the server can continue after the last part that arrived.
 
@@ -85,27 +84,6 @@ Set them under `multipart` in `ypy.config`, or for one request with `ypy-config=
 </section>
 ```
 
-```go
-func updates(w http.ResponseWriter, r *http.Request) {
-	mw := multipart.NewWriter(w)
-	w.Header().Set("Content-Type", "multipart/mixed; boundary="+mw.Boundary())
-	flusher := w.(http.Flusher)
-	last := r.Header.Get("YPY-Last-Part-ID") // resume after this part
-
-	for i, html := range pendingUpdates(last) {
-		h := textproto.MIMEHeader{}
-		h.Set("Content-Type", "text/html")
-		h.Set("YPY-Part-ID", strconv.Itoa(i))
-		h.Set("YPY-Swap", "innerHTML")
-		h.Set("YPY-Select", "#jobs")
-		part, _ := mw.CreatePart(h)
-		io.WriteString(part, html)
-		flusher.Flush()
-	}
-	mw.Close()
-}
-```
-
 ## Notes
 
 - Flush after each part. A part that sits in a server buffer does not reach the page.
@@ -114,5 +92,5 @@ func updates(w http.ResponseWriter, r *http.Request) {
 
 ## See also
 
-[`ypy-sse`](sse.md), [`ypy-stream`](stream.md), [`ypy-ws`](ws.md), [Headers](../reference/headers.md),
-[Streaming on the server](../server/streaming.md).
+[`ypy-sse`](sse.md), [`ypy-stream`](stream.md), [`ypy-ws`](ws.md), [Headers](../reference.md#request-headers),
+[Streaming on the server](../index.md#server-side).

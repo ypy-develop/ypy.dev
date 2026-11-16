@@ -17,7 +17,7 @@ reports all of them in one shape, so you can send them to an error tracker or a 
 </script>
 ```
 
-The extension is part of `ypy.max`. If you set `ypy.config.extensions`, list `ypy-telemetry` in it, or the extension is refused. The extension reads
+The extension is part of `ypy.max`. The extension reads
 nothing from the page and adds no attribute and no configuration key.
 
 ## The report
@@ -98,30 +98,11 @@ The server answers `500`. The handler receives:
 If the server was unreachable instead, the code is `network` and `status` is `null`. Reports of the same request (for
 instance a `status:422` followed by a `target-missing`) share the `ctxId`, so a tracker can group them.
 
-## The Go side
+## The server
 
 The server has no part in the report: it is made in the browser, from what the browser saw, and nothing is sent unless
-your handler sends it. The `ctxId` is local to the page. An endpoint that receives the reports (the `sendBeacon` above)
-can be a plain handler:
-
-```go
-func clientErrors(w http.ResponseWriter, r *http.Request) {
-	var report struct {
-		Code   string  `json:"code"`
-		URL    *string `json:"url"`
-		Method *string `json:"method"`
-		Status *int    `json:"status"`
-		Target *string `json:"target"`
-		CtxID  *int    `json:"ctxId"`
-	}
-	if err := json.NewDecoder(http.MaxBytesReader(w, r.Body, 4<<10)).Decode(&report); err != nil {
-		http.Error(w, "bad report", http.StatusBadRequest)
-		return
-	}
-	slog.Warn("client error", "code", report.Code, "url", report.URL, "status", report.Status)
-	w.WriteHeader(http.StatusNoContent)
-}
-```
+your handler sends it. The `ctxId` is local to the page. An endpoint that receives the reports (the `sendBeacon` above) is an ordinary POST handler. Cap the size of the body it accepts, read the fields you want
+(`code`, `url`, `method`, `status`, `target`, `ctxId`) and log them.
 
 ## Pitfalls
 
@@ -135,5 +116,5 @@ func clientErrors(w http.ResponseWriter, r *http.Request) {
 - Without the extension, `ypy.onError` does not exist: guard calls from code that may load before it
   (`ypy.onError?.(...)`).
 
-See also: [Events](../reference/events/index.md), [Testing](test.md), [`ypy-dev`](dev.md) for the same information while you
+See also: [Events](../index.md#events-and-logging), [Testing](test.md), [`ypy-dev`](dev.md) for the same information while you
 develop.

@@ -114,23 +114,9 @@ now and then.
 
 ## Server
 
-The Go SDK has no WebSocket helper, and the standard library has no WebSocket server. Use a WebSocket library, and keep
-the messages in the shapes above. The rules for the HTML are the same as for any answer: escape what users wrote.
-
-```go
-// the JSON the page sends with ypy-ws:send on the form above
-type chatIn struct {
-	Text    string            `json:"text"`
-	Headers map[string]string `json:"headers"`
-}
-
-// what you send back: HTML to swap, with an optional target for this message
-type chatOut struct {
-	Content string `json:"content"`
-	Target  string `json:"target,omitempty"`
-	Swap    string `json:"swap,omitempty"`
-}
-```
+Use any WebSocket server library, and keep the messages in the shapes above: the page sends the form values as JSON, plus
+a `headers` object, and the server answers with `{"content": "<html>", "target": "#sel", "swap": "beforeend"}`, where
+`target` and `swap` are optional. The rules for the HTML are the same as for any answer: escape what users wrote.
 
 Check the `Origin` of the handshake on the server, and authenticate the request that opens the socket. A WebSocket
 handshake is a `GET`, so [`ypy-csrf`](csrf.md) adds no token to it, and the browser's CORS rules for `fetch` do not
@@ -146,4 +132,4 @@ apply to it.
 
 - [Server-Sent Events: `ypy-sse`](sse.md)
 - [Streaming: `ypy-stream`](stream.md)
-- [Security](../reference/security.md)
+- [Security](../index.md#security)

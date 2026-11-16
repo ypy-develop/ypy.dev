@@ -23,7 +23,7 @@ script:
 
 The extension is in `ypy.max`. If you set `ypy.config.extensions`, list `ypy-lock` in it too (for example
 `extensions:"ypy-csp,ypy-lock"`). Without it in the list the extension is not registered and nothing is locked: YPY logs
-an error that says so. It is listed with the other official extensions in [Extensions](index.md).
+an error that says so.
 
 ## What is frozen
 
@@ -64,4 +64,4 @@ A page that allows only same-origin requests and no author code:
 
 ## See also
 
-[`ypy-csp`](csp.md), [Security](../reference/security.md), [Configuration](../reference/config/index.md).
+[`ypy-csp`](csp.md), [Security](../index.md#security), [Configuration](../reference.md#configuration).

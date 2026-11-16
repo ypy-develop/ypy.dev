@@ -8,8 +8,8 @@ description: "The page side of a streamed language-model answer: an untrusted co
 
 A language model writes text nobody on your team has read. When that text streams into the page as HTML, the page needs a
 second wall behind the server's renderer, a way to tell a screen reader what is happening, and a stop button. `ypy-model`
-is the client side of that. The server side, with the Go helper that batches tokens and renders Markdown, is in
-[Streaming a model answer](../server/model-streaming.md).
+is the client side of that. The server side batches the tokens and renders Markdown with an allowlist; see
+[Server side](../index.md#server-side).
 
 ## Load it
 
@@ -19,9 +19,7 @@ is the client side of that. The server side, with the Go helper that batches tok
 <script src="ext/ypy-model.min.js"></script>
 ```
 
-The extension is in `ypy.max`, and it works with the [`ypy-stream`](stream.md) client that receives the answer. If you
-set `ypy.config.extensions`, list `ypy-model` in it. It is listed with the other official extensions in
-[Extensions](index.md).
+The extension is in `ypy.max`, and it works with the [`ypy-stream`](stream.md) client that receives the answer.
 
 ## Attributes
 
@@ -67,21 +65,14 @@ at most once every 3 seconds.
 ```
 
 The server patches an `<article id="a42" ypy-untrusted ypy-follow aria-busy="true">` into `#chat` and fills it. The Stop
-button sends the stop to the server with its own request, and the extension closes the stream in the page. The Go side:
-
-```go
-ms, err := ypy.NewModelStream(s,
-	ypy.WithModelTarget("#chat", ypy.ModeAppend),
-	ypy.WithAnswerID("a42"),
-	ypy.WithFollow())
-```
+button sends the stop to the server with its own request, and the extension closes the stream in the page.
 
 ## Notes
 
-- The wall is a second defence. The server must still render Markdown with an allowlist (the `ypymd` package does).
+- The wall is a second defence. The server must still render Markdown with an allowlist.
 - A stream that ends with an error leaves the answer closed as `failed`, and one that is aborted leaves it `stopped`.
 
 ## See also
 
-[Streaming a model answer](../server/model-streaming.md), [`ypy-stream`](stream.md),
-[Accessibility](../guides/accessibility.md), [`ypy-announce`](../reference/attributes/ypy-announce.md).
+[Server side](../index.md#server-side), [`ypy-stream`](stream.md),
+[Accessibility](../reference.md#core-attributes), [`ypy-announce`](../reference.md#core-attributes).

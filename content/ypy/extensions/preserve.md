@@ -8,7 +8,7 @@ description: "Keeps typed text, caret, focus and scroll of fields and containers
 
 A swap replaces HTML. The visitor, in the meantime, may have typed in a field, put the caret in the middle of a word or
 scrolled a list. The core already keeps a node by `id` and knows `attrs` and `children`
-([`ypy-preserve`](../reference/attributes/ypy-preserve.md)). This extension adds the words that name a state of the
+([`ypy-preserve`](../index.md#preserving-content)). This extension adds the words that name a state of the
 visitor, and it makes a swap wait while someone is still composing text with an input method.
 
 ## Load it
@@ -67,6 +67,6 @@ Without the extension a swap happens at once.
 
 ## See also
 
-- [`ypy-preserve` and `ypy-preserve-attrs`](../reference/attributes/ypy-preserve.md)
-- [Swap styles and morph](../reference/swap-and-morph.md)
-- [Third-party components](../guides/third-party-components.md)
+- [`ypy-preserve` and `ypy-preserve-attrs`](../index.md#preserving-content)
+- [Swap styles and morph](../index.md#swapping)
+- [Third-party components](../index.md#third-party-javascript-and-web-components)

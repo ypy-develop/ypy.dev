@@ -10,14 +10,14 @@ machine and wastes time on a fast one. `ypy-test` gives the page a way to say "n
 `ypy.idle()`, and a `data-ypy-busy` attribute on `<html>` while work is going on.
 
 This page is about the hooks inside the page. For testing the server of a YPY app without a browser (`ypytest`), see
-[Testing your app](../server/testing.md).
+[Testing your app](../index.md#server-side).
 
 ```html
 <script src="ypy.min.js"></script>
 <script src="ext/ypy-test.js"></script>
 ```
 
-It is not part of `ypy.max`. If you set `ypy.config.extensions`, list `ypy-test` in it, or the extension is refused. Load it in the pages your
+It is not part of `ypy.max`. Load it in the pages your
 browser tests open (a test build, or a staging page); a production page does not need it.
 
 ## `ypy.idle([options])`
@@ -128,5 +128,5 @@ await page.evaluate(() => ypy.idle({ timeout: 2000 }))
 - A rejected `idle()` leaves the work running: it reports, it does not cancel.
 - The extension uses the public API only. It does not change a request or a swap.
 
-See also: [Testing your app](../server/testing.md) for `ypytest` (the Go side), [Events](../reference/events/index.md),
+See also: [Testing your app](../index.md#server-side) for `ypytest` (the Go side), [Events](../index.md#events-and-logging),
 [`ypy-telemetry`](telemetry.md) to collect failures during a test run.

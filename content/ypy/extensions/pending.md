@@ -17,8 +17,7 @@ asked for.
 <script src="ext/ypy-pending.min.js"></script>
 ```
 
-The extension is in `ypy.max`. If you set `ypy.config.extensions`, list `ypy-pending` in it. It is listed with the other
-official extensions in [Extensions](index.md).
+The extension is in `ypy.max`.
 
 ## Attributes and classes
 
@@ -66,28 +65,17 @@ The values are set with the `dataset` API, so they are never read as markup.
 <div id="results" aria-live="polite"></div>
 ```
 
-```go
-func search(w http.ResponseWriter, r *http.Request) {
-	items := find(r.URL.Query().Get("q"))
-	var b strings.Builder
-	for _, it := range items {
-		b.WriteString("<li>" + html.EscapeString(it) + "</li>")
-	}
-	ypy.Fragment(w, "<ul>"+b.String()+"</ul>")
-}
-```
-
 ## Notes
 
 - The placeholder has reset styling (`all: initial`), so it does not inherit the look of the target. Style it through
   its class and the content you copy into it.
 - Hidden elements use `style.display`. A target that is already `display:none` stays hidden afterwards.
 - For a screen reader, do not rely on the placeholder alone. Mark the region with
-  [`ypy-busy`](../reference/attributes/ypy-busy.md) and [`ypy-announce`](../reference/attributes/ypy-announce.md).
+  [`ypy-busy`](../reference.md#core-attributes) and [`ypy-announce`](../reference.md#core-attributes).
 - To fill the target with something that looks like the answer and take it back on error, see
   [`ypy-optimistic`](optimistic.md).
 
 ## See also
 
-[`ypy-disable`](disable.md), [Styling](../reference/styling.md), [`ypy-lazy`](lazy.md) for placeholders of regions that load
+[`ypy-disable`](disable.md), [Styling](../index.md#animations), [`ypy-lazy`](lazy.md) for placeholders of regions that load
 when seen.
