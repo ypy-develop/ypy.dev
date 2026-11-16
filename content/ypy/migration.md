@@ -200,7 +200,7 @@ ypy migrate --write .    # apply; run it twice and the second run changes nothin
 ### What it converts
 
 The tool contains none of the old prefixes. It learns them from your project (see
-[How the prefixes are recognized](#how-the-prefixes-are-recognized)), or you give them with `--prefix`,
+[How the prefixes are recognized](#names-prefixes-and-the-global)), or you give them with `--prefix`,
 `--header-prefix` and `--id`.
 
 | Before | After | Where |

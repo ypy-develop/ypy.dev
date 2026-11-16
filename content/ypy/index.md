@@ -20,7 +20,7 @@ design are in the [essays](essays/index.md).
 ## Introduction
 
 An HTML element says in its attributes which request to make, when to make it and where to put the HTML that comes
-back. The server answers with HTML fragments, not JSON. You add one `<script>` tag, and there is nothing to build.
+back. The server answers with HTML fragments instead of JSON. You add one `<script>` tag and build nothing.
 
 ```html
 <script src="https://cdn.jsdelivr.net/gh/ypy-develop/ypy@v0.1.1/dist/ypy.min.js"></script>
