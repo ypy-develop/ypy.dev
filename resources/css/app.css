@@ -62,14 +62,14 @@
    * conversation about the design and a grep of this repository find the same
    * word. */
   /* YPY is black, white, red and mint -- the colours of the logo, nothing else.
-   * ember is the same red lifted a step so it keeps its contrast on black. */
+   * The red is one value, #DC2C02, in both themes: there is no lighter red for
+   * the dark one. */
   --color-paper: #ffffff;
   --color-cream: #f2f2f2;
   --color-ink: #0a0a0a;
   --color-night: #000000;
   --color-rust: #dc2c02;
   --color-teal: #6ecfb5;
-  --color-ember: #f2461b;
 }
 
 /* The palette of the portal, mapped onto the tokens the component layer reads.
@@ -133,11 +133,8 @@
  * media query: the choice is the reader's, and the system preference is only
  * the default they start from.
  *
- * Rust does not survive on near-black -- it reads as brown at that contrast --
- * so the accent moves to ember, which is the same hue further up. It is the
- * identity's own lighter warm rather than a lightened rust, so the two themes
- * are two members of one palette instead of one palette and a compromise.
- * Everything else is the light palette read in the other direction. */
+ * The accent is the same red as in the light theme. Everything else is the
+ * light palette read in the other direction. */
 html.dark {
   --background: var(--color-night);
   --foreground: var(--color-paper);
@@ -155,7 +152,7 @@ html.dark {
   --accent-foreground: var(--color-paper);
   --border: color-mix(in srgb, var(--color-paper) 14%, transparent);
   --input: color-mix(in srgb, var(--color-paper) 20%, transparent);
-  --ring: var(--color-ember);
+  --ring: var(--color-rust);
   --text-muted: #a3a3a3;
 
   /* Two of the eight identity colours carry a role rather than a value, and the
@@ -166,10 +163,8 @@ html.dark {
    * colour of writing" rather than a particular brown. After dark, writing is
    * paper on ink and the value follows.
    *
-   * --color-rust is the accent, and it does not survive on near-black -- at
-   * that contrast it reads as brown. Ember is the same hue further up, and it
-   * is the identity's own colour rather than a lightened rust, so the two
-   * themes are two members of one palette.
+   * --color-rust is the accent and it is the same #DC2C02 on near-black as on
+   * paper: the red does not move between themes.
    *
    * --color-night and --color-cream do not move. They are the code panel and
    * the text on it, which are already dark and already light; inverting them
@@ -177,7 +172,6 @@ html.dark {
    * because text-paper sits on those same panels -- the surfaces that used to
    * be paper are bg-card, which the block above already turned over. */
   --color-ink: var(--color-paper);
-  --color-rust: var(--color-ember);
 }
 
 /* The two rules the framework's own pages assume. Keep them: the error page and
@@ -788,7 +782,7 @@ body {
 .chroma .kp,
 .chroma .kr,
 .chroma .kc {
-  color: var(--color-ember);
+  color: var(--color-rust);
 }
 .chroma .kt {
   color: var(--color-teal);
@@ -803,7 +797,7 @@ body {
   color: color-mix(in srgb, var(--color-cream) 62%, transparent);
 }
 .chroma .err {
-  color: var(--color-ember);
+  color: var(--color-rust);
 }
 
 /* The half of the client contract that is not JavaScript.
