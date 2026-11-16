@@ -93,9 +93,9 @@ func Create(w http.ResponseWriter, r *http.Request) {
   `focus` and `scroll`: `ypy-preserve="value"` on the form keeps typed text in fields that have an `id`. It skips
   file inputs, which need the plain `ypy-preserve` above.
 - Let the form convention do it. Without `ypy-target` on the form, a `422` is morphed into the form and the fields
-  stay as they are. See [forms](../guides/forms.md).
+  stay as they are. See [forms](../index.md#validation).
 
 ## See also
 
-- [`ypy-preserve`](../reference/attributes/ypy-preserve.md)
+- [`ypy-preserve`](../index.md#preserving-content)
 - [File upload](file-upload.md) and [inline validation](inline-validation.md)

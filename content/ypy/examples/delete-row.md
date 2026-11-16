@@ -55,7 +55,7 @@ Use `200`, not `204`: YPY does not swap a `204`, and a swap is what removes the 
 - `ypy-swap="delete"` removes the target whatever the answer holds, so an empty `200` is enough.
 - A `DELETE` has no body, so a hidden `_token` field cannot reach the server. `ypy-headers` sends the token as the
   `X-CSRF-Token` header instead; the [`ypy-csrf`](../extensions/csrf.md) extension does the same for every request
-  from one `<meta>` tag. See [CSRF](../server/csrf.md).
+  from one `<meta>` tag. See [CSRF](../index.md#csrf).
 - An answer of `419` or `404` is an error, not a success, so the row stays on the page.
 
 ## Variations

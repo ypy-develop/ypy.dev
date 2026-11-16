@@ -104,6 +104,6 @@ A request that did not come from a layer gets `303 See Other` with `Location: /c
 ## See also
 
 - [`ypy-layers`](../extensions/layers.md) for every option, event and ARIA detail
-- [Layers on the server](../server/layers.md)
-- [Portals: popover, dialog and layers](../guides/portals.md) to choose between a layer, a `popover` and a plain `<dialog>`
+- [Layers on the server](../extensions/layers.md)
+- [Portals: popover, dialog and layers](../extensions/layers.md) to choose between a layer, a `popover` and a plain `<dialog>`
 - [Confirm and prompt](confirm-and-prompt.md) for the browser's own dialogs

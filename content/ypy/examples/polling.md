@@ -82,4 +82,4 @@ Vary: YPY-Request
 
 - [`ypy-poll`](../extensions/poll.md)
 - [Progress bar](progress-bar.md)
-- [Request headers and response headers](../reference/headers.md)
+- [Request headers and response headers](../reference.md#request-headers)

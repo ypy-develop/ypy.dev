@@ -104,10 +104,10 @@ func Routes() http.Handler {
 - A dialog for `prompt`: define `window.ypyPrompt` as a function that returns a string, or `null` to cancel. It
   must be synchronous.
 - A confirmation written in code: `ypy-confirm="js:..."` runs an expression, which may return a promise.
-  It needs `config.callbacks` turned on (see [security](../reference/security.md)).
+  It needs `config.callbacks` turned on (see [security](../index.md#security)).
 - A bigger decision deserves a page of its own: open it in a [layer](dialogs-layers.md) instead.
 
 ## See also
 
-- [`ypy-prompt`](../extensions/prompt.md) and [`ypy-confirm`](../reference/attributes/index.md)
+- [`ypy-prompt`](../extensions/prompt.md) and [`ypy-confirm`](../reference.md#core-attributes)
 - [Delete row](delete-row.md) and [dialogs with layers](dialogs-layers.md)

@@ -67,7 +67,6 @@ func (h *Handler) NewNote(w http.ResponseWriter, r *http.Request) {
 
 ## See also
 
-- [`ypy-trigger` in the attribute reference](../reference/attributes/index.md)
-- [Events](../reference/events/index.md)
-- [Security checklist](../guides/security-checklist.md) for what `callbacks` allows
-- [Accessibility](../guides/accessibility.md)
+- [`ypy-trigger` in the attribute reference](../reference.md#core-attributes)
+- [Events](../reference.md#events)
+- [Security checklist](../index.md#security) for what `callbacks` allows

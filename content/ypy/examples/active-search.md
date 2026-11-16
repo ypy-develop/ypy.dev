@@ -88,9 +88,9 @@ the rows with a full page.
 - `ypy-target="#results"` puts the answer in the table body. The default swap is `innerMorph`, which keeps rows that
   did not change.
 - `ypy-indicator="#searching"` puts the `ypy-request` class on `#searching` while the request runs. The
-  `ypy-indicator` class on the element is hidden until then (see [styling](../reference/styling.md)).
+  `ypy-indicator` class on the element is hidden until then (see [styling](../index.md#css-transitions)).
 - `ypy-sync="replace"` aborts the request in flight when a new one starts. See
-  [`ypy-sync`](../reference/attributes/ypy-sync.md) for the other strategies; `latest` lets old requests finish and
+  [`ypy-sync`](../index.md#synchronization) for the other strategies; `latest` lets old requests finish and
   drops their answers.
 
 ## Variations
@@ -103,5 +103,5 @@ the rows with a full page.
 
 ## See also
 
-- [Triggers](../index.md#requests) and [`ypy-sync`](../reference/attributes/ypy-sync.md)
+- [Triggers](../index.md#requests) and [`ypy-sync`](../index.md#synchronization)
 - [Inline validation](inline-validation.md), which uses the same delay on a field

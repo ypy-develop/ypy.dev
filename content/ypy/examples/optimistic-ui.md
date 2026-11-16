@@ -109,4 +109,4 @@ document.addEventListener('ypy:optimistic:rolledback', evt => {
 
 - [`ypy-optimistic`](../extensions/optimistic.md)
 - [Delete row](delete-row.md)
-- [Forms](../guides/forms.md)
+- [Forms](../index.md#validation)

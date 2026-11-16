@@ -85,7 +85,7 @@ Register it with `mux.Handle("GET /contacts", ypy.Middleware(contacts(store)))`.
 
 - Start loading before the user reaches the end: use `ypy-trigger="intersect once"` on a row some lines before the
   last one, or `intersect root:#scroller threshold:0` when the rows scroll inside a box with that `id`.
-  See [`ypy-trigger`](../reference/attributes/index.md).
+  See [`ypy-trigger`](../reference.md#core-attributes).
 - Keep a list in place and add to its end: target the list with `ypy-swap="beforeend"` and let the sentinel live outside
   of it. The sentinel then needs a `<ypy-partial>` in the answer to replace itself.
 - Visitors without JavaScript see only the first page. Add a normal link to the next page inside the sentinel row,

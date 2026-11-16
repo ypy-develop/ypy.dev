@@ -70,4 +70,4 @@ The last page ends with a row that has the same `id` and no button: `All 14 orde
 
 - [Infinite scroll](infinite-scroll.md)
 - [Active search](active-search.md)
-- [Swap and morph](../reference/swap-and-morph.md)
+- [Swap and morph](../index.md#swapping)

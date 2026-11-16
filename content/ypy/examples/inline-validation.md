@@ -89,7 +89,7 @@ Register it with `mux.Handle("POST /signup", ypy.Middleware(signup(store)))`.
   `204`, or an empty `200`, empties the message and removes `aria-invalid`.
 - The field keeps the focus and the other fields keep what the user typed. A `422` for a field never goes into the form.
 - The submit button runs the normal request. `required` and `type="email"` are checked by the browser first, and a
-  `422` from the real submit goes into the form as in [Forms](../guides/forms.md).
+  `422` from the real submit goes into the form as in [Forms](../index.md#validation).
 - Without the script, the form still posts to `/signup` and the server answers with a page.
 
 ## Variations
@@ -103,5 +103,4 @@ Register it with `mux.Handle("POST /signup", ypy.Middleware(signup(store)))`.
 ## See also
 
 - [`ypy-validate`](../extensions/validate.md)
-- [Forms guide](../guides/forms.md)
-- [Accessibility](../guides/accessibility.md)
+- [Forms guide](../index.md#validation)

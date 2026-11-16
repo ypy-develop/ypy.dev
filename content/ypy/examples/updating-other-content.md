@@ -80,7 +80,7 @@ value. This costs one more request, but the server code for the action does not 
   content, then `ypy-select-oob` pieces, then `ypy-swap-oob` pieces, then partials.
 - `ypy-swap-oob="true"` on an element of the response swaps it into the element with the same `id`. It exists for
   responses written before partials. In new code, a partial says the same thing with an explicit target.
-- If several pieces must change together or not at all, see [atomic swaps](../reference/atomic.md).
+- If several pieces must change together or not at all, see [out-of-band swaps](../index.md#out-of-band-swaps).
 
 ## Variations
 
@@ -90,7 +90,7 @@ value. This costs one more request, but the server code for the action does not 
 
 ## See also
 
-- [Multiple targets in one response](../guides/multiple-targets.md)
-- [`<ypy-partial>`](../reference/tags/ypy-partial.md)
-- [Response headers](../reference/headers.md)
-- [Atomic swaps](../reference/atomic.md)
+- [Multiple targets in one response](../index.md#out-of-band-swaps)
+- [`<ypy-partial>`](../index.md#out-of-band-swaps)
+- [Response headers](../reference.md#request-headers)
+- [Out-of-band swaps](../index.md#out-of-band-swaps)

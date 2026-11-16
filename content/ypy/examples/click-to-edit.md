@@ -62,18 +62,18 @@ asked for the whole page.
 - The form has the same `id` as the block, so the next click on **Edit** finds it again.
 - **Cancel** is `type="button"`, so it does not submit. It asks for the read-only block with `ypy-get`.
 - A `422` is swapped like any other answer, so the form comes back with its errors. See
-  [Forms](../guides/forms.md) for the convention.
-- `_token` is the CSRF field of a form that changes data; see [CSRF](../server/csrf.md).
+  [Forms](../index.md#validation) for the convention.
+- `_token` is the CSRF field of a form that changes data; see [CSRF](../index.md#csrf).
 
 ## Variations
 
 - Use `ypy-patch` instead of `ypy-put` when the edit is a partial update.
 - To put an error next to a field instead of redrawing the form, use
-  [`ypy-error-target`](../reference/attributes/ypy-error.md).
+  [`ypy-error-target`](../index.md#status-codes-and-errors).
 - Add `ypy-confirm="Discard changes?"` to **Cancel** when the form is long.
 
 ## See also
 
 - [Edit row](edit-row.md), the same idea inside a table row
 - [Inline validation](inline-validation.md)
-- [Attributes](../reference/attributes/index.md)
+- [Attributes](../reference.md#core-attributes)

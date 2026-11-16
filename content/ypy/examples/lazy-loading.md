@@ -70,7 +70,7 @@ you can answer a request that is not a YPY request (`ypy.FromRequest(r).IsYPY` i
 - `revealed` fires once, when the element scrolls into the viewport. The observer is disconnected afterwards. The
   element is replaced by the answer, so the request cannot repeat.
 - While a request is in flight YPY sets the `ypy-request` class on the element, so you can style the placeholder, and
-  `aria-busy="true"` so assistive technology knows the region is loading. See [`ypy-busy`](../reference/attributes/ypy-busy.md).
+  `aria-busy="true"` so assistive technology knows the region is loading. See [`ypy-busy`](../reference.md#additional-attributes).
 - `ypy-lazy` is a short form of "get this URL when the element is about to be seen". The request is a `GET` and the
   answer replaces the element. It also supports a `<template>` skeleton, an error template with a retry button, and
   one request for several regions. See [`ypy-lazy`](../extensions/lazy.md).
@@ -86,4 +86,4 @@ you can answer a request that is not a YPY request (`ypy.FromRequest(r).IsYPY` i
 
 - [Click to load](click-to-load.md) and [Infinite scroll](infinite-scroll.md)
 - [`ypy-lazy`](../extensions/lazy.md)
-- [`ypy-trigger`](../reference/attributes/index.md)
+- [`ypy-trigger`](../reference.md#core-attributes)

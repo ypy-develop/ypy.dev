@@ -91,7 +91,7 @@ and the swap `outerHTML`, so a new, empty form replaces the old one.
   ```
 
   `ypy-on::after:request` listens to `ypy:after:request` on the form. `ctx` is a name the handler receives, and `this`
-  is the form. Read [security](../reference/security.md) before you turn `callbacks` on.
+  is the form. Read [security](../index.md#security) before you turn `callbacks` on.
 - A listener in your script file does the same without `callbacks`: add a `ypy:after:request` listener on `document`
   and call `event.target.reset()` when `event.detail.ctx.response.status` is below 400.
 - Only the field: give the answer a `<ypy-partial id="body" ypy-swap="outerHTML">` with an empty `<textarea>` to
@@ -99,5 +99,5 @@ and the swap `outerHTML`, so a new, empty form replaces the old one.
 
 ## See also
 
-- [Updating other content](updating-other-content.md) and [`<ypy-partial>`](../reference/tags/ypy-partial.md)
-- [Forms](../guides/forms.md)
+- [Updating other content](updating-other-content.md) and [`<ypy-partial>`](../index.md#out-of-band-swaps)
+- [Forms](../index.md#validation)

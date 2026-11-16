@@ -7,8 +7,8 @@ description: 25 interface patterns built with YPY attributes, from click to edit
 # Examples
 
 Each page is one pattern: the HTML with its `ypy-*` attributes, the Go handler that answers it, and a note on why it
-works. The Go code uses the official SDK, [`github.com/ypy-develop/go`](../server/index.md). If your server is not
-Go, the HTML half carries over unchanged, and the [server recipes](../server/index.md) show how to answer YPY requests in
+works. The Go code uses the official SDK, [`github.com/ypy-develop/go`](../index.md#server-side). If your server is not
+Go, the HTML half carries over unchanged, and the [server recipes](../index.md#server-side) show how to answer YPY requests in
 other stacks.
 
 ## What every example assumes
@@ -24,11 +24,11 @@ other stacks.
 - The default swap. Without `ypy-swap`, the response is morphed into the target: its children are updated in place
   (`innerMorph`). The examples that replace the element itself say `ypy-swap="outerHTML"`.
 - Attributes are not inherited. Write `ypy-target` and `ypy-swap` on the element that makes the request. See
-  [Attribute inheritance](../reference/inheritance.md).
+  [Attribute inheritance](../index.md#attribute-inheritance).
 - The server. Handlers answer with an HTML fragment through `ypy.Fragment`, and the router is wrapped in
   `ypy.Middleware` so every answer carries `Vary: YPY-Request`. User data goes through `html/template`, which escapes it.
 - CSRF. A `POST`, `PUT` or `DELETE` needs a CSRF check in a real application. The snippets leave it out to stay short;
-  [CSRF](../server/csrf.md) shows how to add it.
+  [CSRF](../index.md#csrf) shows how to add it.
 - No script. Where it changes the result, the example says what a visitor without JavaScript gets. The approach is to
   start from links and forms that work and let YPY make them faster.
 
@@ -67,6 +67,6 @@ An extension marked optional improves a pattern that already works with the core
 ## Where next
 
 - [Docs](../index.md): the long page that goes through every part in order.
-- [Reference](../reference/index.md): attributes, headers, events and settings in tables.
+- [Reference](../reference.md): attributes, headers, events and settings in tables.
 - [Extensions](../extensions/index.md): the optional scripts named in the table above.
-- [Server](../server/index.md): the Go SDK, and recipes for Arandu, Django, Rails and Laravel.
+- [Server](../index.md#server-side): the Go SDK, and recipes for Arandu, Django, Rails and Laravel.

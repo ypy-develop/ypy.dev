@@ -129,7 +129,7 @@ func wantFragment(t *testing.T, rec *httptest.ResponseRecorder, status int) stri
 	return body
 }
 
-const clickToEditPage = "/docs/examples/click-to-edit"
+const clickToEditPage = "/examples/click-to-edit"
 
 func TestClickToEdit(t *testing.T) {
 	app := tests.Boot(t, config.EnvDev, true)
@@ -180,7 +180,7 @@ func TestDemoWriteNeedsCSRFToken(t *testing.T) {
 func TestBulkUpdate(t *testing.T) {
 	app := tests.Boot(t, config.EnvDev, true)
 	a := newVisitor(t, app)
-	page := a.open("/docs/examples/bulk-update")
+	page := a.open("/examples/bulk-update")
 	if !strings.Contains(page, `id="team"`) || !strings.Contains(page, "Helena Prado") {
 		t.Fatalf("the page does not carry the demo")
 	}
@@ -194,12 +194,12 @@ func TestBulkUpdate(t *testing.T) {
 	if !strings.Contains(ok, "2 people activated.") || strings.Contains(ok, `>Inactive</span>`) {
 		t.Errorf("rows 3 and 5 were not activated: %s", ok)
 	}
-	if got := a.open("/docs/examples/bulk-update"); strings.Contains(got, `>Inactive</span>`) {
+	if got := a.open("/examples/bulk-update"); strings.Contains(got, `>Inactive</span>`) {
 		t.Errorf("the visitor's page does not keep the change")
 	}
 
 	b := newVisitor(t, app)
-	if got := b.open("/docs/examples/bulk-update"); !strings.Contains(got, `>Inactive</span>`) {
+	if got := b.open("/examples/bulk-update"); !strings.Contains(got, `>Inactive</span>`) {
 		t.Errorf("one visitor's bulk update leaked to another")
 	}
 }
@@ -207,7 +207,7 @@ func TestBulkUpdate(t *testing.T) {
 func TestClickToLoad(t *testing.T) {
 	app := tests.Boot(t, config.EnvDev, true)
 	v := newVisitor(t, app)
-	page := v.open("/docs/examples/click-to-load")
+	page := v.open("/examples/click-to-load")
 	if !strings.Contains(page, `id="more-orders"`) || !strings.Contains(page, "Harbor Coffee Roasters") {
 		t.Fatalf("the page does not carry the demo")
 	}
@@ -228,7 +228,7 @@ func TestClickToLoad(t *testing.T) {
 func TestDeleteRow(t *testing.T) {
 	app := tests.Boot(t, config.EnvDev, true)
 	a := newVisitor(t, app)
-	page := a.open("/docs/examples/delete-row")
+	page := a.open("/examples/delete-row")
 	if !strings.Contains(page, `ypy-delete="/examples/demo/delete-row/2"`) || !strings.Contains(page, `name="_token"`) {
 		t.Fatalf("the page does not carry the demo")
 	}
@@ -247,11 +247,11 @@ func TestDeleteRow(t *testing.T) {
 	if rec := a.do("DELETE", "/examples/demo/delete-row/99", nil); rec.Code != 404 {
 		t.Errorf("an unknown row answered %d, want 404", rec.Code)
 	}
-	if got := a.open("/docs/examples/delete-row"); strings.Contains(got, `delete-row/2"`) || !strings.Contains(got, `delete-row/1"`) {
+	if got := a.open("/examples/delete-row"); strings.Contains(got, `delete-row/2"`) || !strings.Contains(got, `delete-row/1"`) {
 		t.Errorf("the visitor's page does not keep the deletion")
 	}
 	b := newVisitor(t, app)
-	if got := b.open("/docs/examples/delete-row"); !strings.Contains(got, `delete-row/2"`) {
+	if got := b.open("/examples/delete-row"); !strings.Contains(got, `delete-row/2"`) {
 		t.Errorf("one visitor's deletion leaked to another")
 	}
 	a.header = ""
@@ -265,7 +265,7 @@ func TestDeleteRow(t *testing.T) {
 func TestEditRow(t *testing.T) {
 	app := tests.Boot(t, config.EnvDev, true)
 	a := newVisitor(t, app)
-	page := a.open("/docs/examples/edit-row")
+	page := a.open("/examples/edit-row")
 	if !strings.Contains(page, `id="member-3"`) {
 		t.Fatalf("the page does not carry the demo")
 	}
@@ -284,11 +284,11 @@ func TestEditRow(t *testing.T) {
 	if rec := a.do("GET", "/examples/demo/edit-row/9", nil); rec.Code != 404 {
 		t.Errorf("an unknown row answered %d, want 404", rec.Code)
 	}
-	if got := a.open("/docs/examples/edit-row"); !strings.Contains(got, "Head of product") {
+	if got := a.open("/examples/edit-row"); !strings.Contains(got, "Head of product") {
 		t.Errorf("the visitor's page does not keep the edit")
 	}
 	b := newVisitor(t, app)
-	if got := b.open("/docs/examples/edit-row"); strings.Contains(got, "Head of product") {
+	if got := b.open("/examples/edit-row"); strings.Contains(got, "Head of product") {
 		t.Errorf("one visitor's edit leaked to another")
 	}
 }

@@ -99,6 +99,6 @@ Headers of the POST answer: `Content-Type: text/html; charset=utf-8` and `Vary: 
 ## See also
 
 - [`ypy-stream`](../extensions/stream.md) and [`ypy-sse`](../extensions/sse.md)
-- [Streaming on the server](../server/streaming.md)
+- [Streaming on the server](../index.md#sse-and-websockets)
 - [Polling](polling.md)
-- [Streaming a model answer](../server/model-streaming.md)
+- [Streaming a model answer](../extensions/model.md)

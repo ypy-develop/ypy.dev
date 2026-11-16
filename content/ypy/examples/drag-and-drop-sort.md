@@ -104,4 +104,3 @@ document.addEventListener('ypy:sort:change', evt => {
 
 - [`ypy-sort`](../extensions/sort.md)
 - [Keyed and bounded lists](../extensions/list.md)
-- [Accessibility](../guides/accessibility.md)

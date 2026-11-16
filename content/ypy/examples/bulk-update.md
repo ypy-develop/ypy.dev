@@ -72,4 +72,4 @@ Both are fragments with `Vary: YPY-Request`.
 
 - [Delete row](delete-row.md)
 - [Updating other content](updating-other-content.md)
-- [Forms](../guides/forms.md)
+- [Forms](../index.md#validation)

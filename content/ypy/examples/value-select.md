@@ -99,5 +99,5 @@ The server also checks the pair when the form is saved: a client can send any `m
 
 ## See also
 
-- [`ypy-include`](../reference/attributes/index.md) and [`ypy-vals`](../reference/attributes/index.md)
+- [`ypy-include`](../reference.md#core-attributes) and [`ypy-vals`](../reference.md#core-attributes)
 - [Inline validation](inline-validation.md)

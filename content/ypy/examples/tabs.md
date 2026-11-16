@@ -81,18 +81,17 @@ func (h *Handler) Account(w http.ResponseWriter, r *http.Request) {
   and content that changed are touched.
 - `ypy-push-url="true"` pushes the URL of the request, `/account?tab=billing`. That URL is also a real page, so reload
   and sharing work. For a URL that differs from the request, send `ypy.PushURL(w, url)` from the handler.
-- The Back button restores the earlier tab from the history. See [History](../reference/history.md).
+- The Back button restores the earlier tab from the history. See [History](../index.md#history).
 
 ## Variations
 
 - Load a panel only when its tab is first used: keep the strip static and make each link target `#panel` with `innerHTML`.
-  Then the server cannot update `aria-selected`; use a [`ypy-partial`](../reference/tags/ypy-partial.md) for the strip, or the morph above.
+  Then the server cannot update `aria-selected`; use a [`ypy-partial`](../index.md#out-of-band-swaps) for the strip, or the morph above.
 - Keep tab state out of the address bar by leaving out `ypy-push-url`.
 - Add `ypy-indicator="#tabs"` to dim the block while a panel loads.
 
 ## See also
 
 - [Updating other content](updating-other-content.md)
-- [History](../reference/history.md)
-- [Attribute inheritance](../reference/inheritance.md)
-- [Accessibility](../guides/accessibility.md)
+- [History](../index.md#history)
+- [Attribute inheritance](../index.md#attribute-inheritance)

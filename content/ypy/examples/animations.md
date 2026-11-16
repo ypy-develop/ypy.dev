@@ -11,7 +11,7 @@ This page shows three ways to use them, from the simplest to the one that needs 
 
 The classes are `ypy-swapping` (on the swap target, until the content is inserted), `ypy-settling` (on the target,
 during the settle delay) and `ypy-added` (on new content, before it settles). Their rules are in
-[styling](../reference/styling.md).
+[styling](../index.md#css-transitions).
 
 ## 1. Fade out and fade in
 
@@ -65,7 +65,7 @@ then runs between the two. It works with `innerHTML` and `outerHTML`.
 
 The answer is the same two elements with the new class: `<div id="meter" class="meter level-3"></div>` and the
 button. The `settle:50ms` modifier is the wait before the new class is applied. Prefer a class to a `style`
-attribute; a strict CSP blocks inline styles (see [security](../reference/security.md)).
+attribute; a strict CSP blocks inline styles (see [security](../index.md#security)).
 
 ## 3. View transitions
 
@@ -95,5 +95,5 @@ visitor who prefers reduced motion, gets the same swap with no animation. `ypy:b
 
 ## See also
 
-- [Styling](../reference/styling.md) and [CSS classes](../reference/css-classes.md)
-- [`ypy-swap`](../reference/attributes/index.md) for every modifier
+- [Styling](../index.md#css-transitions) and [CSS classes](../reference.md#css-classes)
+- [`ypy-swap`](../reference.md#core-attributes) for every modifier

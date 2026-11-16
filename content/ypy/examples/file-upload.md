@@ -74,7 +74,7 @@ Vary: YPY-Request
   element gets the CSS variable `--ypy-upload` and the attribute `data-ypy-upload`. The `ypy:upload:progress` event
   carries `loaded`, `total` and `percent` for your own code.
 - The answer goes into `#result` like any other. Without `ypy-error-target`, a `422` goes into the form, as in
-  [forms](../guides/forms.md).
+  [forms](../index.md#validation).
 - The server should limit the size before it parses the body. The browser's progress is ahead of what the server has
   received.
 
@@ -89,4 +89,4 @@ Vary: YPY-Request
 ## See also
 
 - [`ypy-upload`](../extensions/upload.md)
-- [Forms](../guides/forms.md)
+- [Forms](../index.md#validation)

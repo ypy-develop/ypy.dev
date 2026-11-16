@@ -82,7 +82,7 @@ Vary: YPY-Request
 
 ## See also
 
-- [Response headers](../reference/headers.md)
-- [Security](../reference/security.md)
+- [Response headers](../reference.md#request-headers)
+- [Security](../index.md#security)
 - [Dialogs with layers](dialogs-layers.md)
-- [Error destinations: `ypy-error-*`](../reference/attributes/ypy-error.md)
+- [Error destinations: `ypy-error-*`](../index.md#status-codes-and-errors)
