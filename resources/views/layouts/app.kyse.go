@@ -47,8 +47,8 @@ var _ SiteLayout = site.Chrome{}
 	<link rel="icon" href="/favicon-16x16.png" type="image/png" sizes="16x16">
 	<link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180">
 	<link rel="manifest" href="/site.webmanifest">
-	<meta name="theme-color" content="#fbf8f1" media="(prefers-color-scheme: light)">
-	<meta name="theme-color" content="#191108" media="(prefers-color-scheme: dark)">
+	<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+	<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
 	<meta name="application-name" content="{{ .BrandName() }}">
 	@if(.PageDescription() != "")
 		<meta name="description" content="{{ .PageDescription() }}">

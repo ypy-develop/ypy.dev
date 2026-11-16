@@ -61,14 +61,15 @@
    * never carries a hex value. The names are the ones the identity uses, so a
    * conversation about the design and a grep of this repository find the same
    * word. */
-  --color-paper: #f6f2e8;
-  --color-cream: #f3deb4;
-  --color-ink: #2e2016;
-  --color-night: #191108;
-  --color-rust: #af3310;
+  /* YPY is black, white, red and mint -- the colours of the logo, nothing else.
+   * ember is the same red lifted a step so it keeps its contrast on black. */
+  --color-paper: #ffffff;
+  --color-cream: #f2f2f2;
+  --color-ink: #0a0a0a;
+  --color-night: #000000;
+  --color-rust: #dc2c02;
   --color-teal: #6ecfb5;
-  --color-gold: #f9d175;
-  --color-ember: #f5853f;
+  --color-ember: #f2461b;
 }
 
 /* The palette of the portal, mapped onto the tokens the component layer reads.
@@ -81,17 +82,17 @@
  * It sits after the three basecoat imports because the cascade decides, and
  * base.css sets the same custom properties on :root. */
 :root {
-  --background: #fbf8f1;
+  --background: #ffffff;
   --foreground: var(--color-ink);
-  --card: var(--color-paper);
+  --card: #fafafa;
   --card-foreground: var(--color-ink);
-  --popover: #fbf8f1;
+  --popover: #ffffff;
   --popover-foreground: var(--color-ink);
   --primary: var(--color-rust);
-  --primary-foreground: #fbf8f1;
-  --secondary: var(--color-paper);
+  --primary-foreground: #ffffff;
+  --secondary: #f5f5f5;
   --secondary-foreground: var(--color-ink);
-  --muted: var(--color-paper);
+  --muted: #f5f5f5;
   --muted-foreground: color-mix(in srgb, var(--color-ink) 62%, transparent);
   --accent: var(--color-cream);
   --accent-foreground: var(--color-ink);
@@ -105,7 +106,7 @@
   --surface-subtle: color-mix(in srgb, var(--card) 74%, var(--background));
   --surface-raised: var(--card);
   --border-strong: color-mix(in srgb, var(--foreground) 22%, transparent);
-  --text-muted: #74685c;
+  --text-muted: #5c5c5c;
   --accent-soft: color-mix(in srgb, var(--primary) 10%, transparent);
   --code-bg: var(--color-night);
   --code-border: color-mix(in srgb, var(--color-cream) 18%, transparent);
@@ -140,22 +141,22 @@
 html.dark {
   --background: var(--color-night);
   --foreground: var(--color-paper);
-  --card: #221709;
+  --card: #0d0d0d;
   --card-foreground: var(--color-paper);
-  --popover: #221709;
+  --popover: #0d0d0d;
   --popover-foreground: var(--color-paper);
-  --primary: var(--color-ember);
-  --primary-foreground: var(--color-night);
-  --secondary: #2b1d0e;
+  --primary: var(--color-rust);
+  --primary-foreground: #ffffff;
+  --secondary: #141414;
   --secondary-foreground: var(--color-paper);
-  --muted: #241809;
+  --muted: #111111;
   --muted-foreground: color-mix(in srgb, var(--color-paper) 60%, transparent);
-  --accent: #33220f;
-  --accent-foreground: var(--color-cream);
+  --accent: #1a1a1a;
+  --accent-foreground: var(--color-paper);
   --border: color-mix(in srgb, var(--color-paper) 14%, transparent);
   --input: color-mix(in srgb, var(--color-paper) 20%, transparent);
   --ring: var(--color-ember);
-  --text-muted: #9f978e;
+  --text-muted: #a3a3a3;
 
   /* Two of the eight identity colours carry a role rather than a value, and the
    * role is what inverts.
@@ -661,7 +662,7 @@ body {
 }
 
 .code-window-dots i:nth-child(2) {
-  background: var(--color-gold);
+  background: var(--color-paper);
 }
 
 .code-window-dots i:nth-child(3) {
@@ -771,7 +772,7 @@ body {
 .chroma .sx,
 .chroma .sr,
 .chroma .se {
-  color: var(--color-gold);
+  color: var(--color-teal);
 }
 .chroma .m,
 .chroma .mi,
@@ -779,7 +780,7 @@ body {
 .chroma .mh,
 .chroma .mo,
 .chroma .mb {
-  color: var(--color-gold);
+  color: var(--color-teal);
 }
 .chroma .k,
 .chroma .kd,

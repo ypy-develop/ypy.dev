@@ -10,8 +10,8 @@ The page is the light one in every theme: paper ground, a dot grid, a frame
 with four registration marks, the full logo `assets/ypy.svg` exactly as drawn
 (never recoloured, never a dark version), the name, one line and `ypy.dev`.
 
-Colours and the display face come from the site: paper `#f6f2e8`, ink `#2e2016`,
-rust `#af3310`, Montserrat 600-800 (`assets/fonts/montserrat-600-800-latin.woff2`).
+Colours and the display face come from the site: paper `#ffffff`, ink `#0a0a0a`,
+rust `#dc2c02`, Montserrat 600-800 (`assets/fonts/montserrat-600-800-latin.woff2`).
 
 The text of each cover is the table `covers` in `tools/brand/main.go`; change it
 there and run the tool again. Chrome is started headless with a profile in a
