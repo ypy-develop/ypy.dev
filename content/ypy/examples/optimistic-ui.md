@@ -7,14 +7,17 @@ description: Show a like, a comment or a deleted row before the server answers, 
 # Optimistic UI
 
 Some actions almost always succeed: a like, a new comment, a deleted row. The `ypy-optimistic` extension shows the
-result at once and undoes it if the server answers with an error or does not answer. This page has three small cases.
+result at once and undoes it if the server answers with an error or does not answer.
 
 ## The page
+
+This page has three small cases. Give the optimistic nodes a look of their own in your stylesheet, for instance
+`.ypy-optimistic { opacity: .6; }`: the extension adds that class while a change is pending.
 
 ```html
 <script src="https://cdn.jsdelivr.net/gh/ypy-develop/ypy@v0.1.1/dist/ypy.min.js"></script>
 <script src="https://cdn.jsdelivr.net/gh/ypy-develop/ypy@v0.1.1/dist/ext/ypy-optimistic.min.js"></script>
-<style>.ypy-optimistic { opacity: .6; }</style>
+<script src="/js/comments.js"></script>
 
 <!-- 1. A like button turns into its liked state -->
 <template id="liked"><button disabled>Liked</button></template>
@@ -23,7 +26,7 @@ result at once and undoes it if the server answers with an error or does not ans
 
 <!-- 2. A delete makes the row disappear -->
 <ul id="items">
-  <li id="item-3">Buy milk
+  <li id="item-3">Buy oat milk
     <button ypy-delete="/items/3" ypy-target="#item-3" ypy-swap="delete"
             ypy-optimistic="remove" ypy-status:5xx="swap:none">Delete</button>
   </li>
@@ -35,53 +38,46 @@ result at once and undoes it if the server answers with an error or does not ans
   <textarea name="body" required></textarea>
   <button>Send</button>
 </form>
-<script>
-  ypy.optimistic.register('new-comment', ({values}) => {
-    let li = document.createElement('li');
-    li.textContent = values.body; // text, never markup
-    return li;
-  });
-</script>
 ```
 
-In case 1 the button on screen is replaced by the template on the click. In case 2 the row is hidden. In case 3 a new `<li>`
-with the typed text appears at the end of the list. The optimistic nodes carry the class `ypy-optimistic`, which
-the style above uses for a pending look.
+Case 3 names a function, so it needs a script file. `/js/comments.js` registers it, with no inline script:
 
-## The server (Go)
-
-```go
-func (h *Handler) Like(w http.ResponseWriter, r *http.Request) {
-	liked, err := h.store.ToggleLike(r.Context(), r.PathValue("id"))
-	if err != nil {
-		http.Error(w, "could not save", http.StatusInternalServerError) // the page rolls back
-		return
-	}
-	label := "Like"
-	if liked {
-		label = "Unlike"
-	}
-	ypy.Fragment(w, `<button ypy-post="/posts/`+html.EscapeString(r.PathValue("id"))+`/like" ypy-target="this" `+
-		`ypy-swap="outerMorph" ypy-optimistic="#liked" ypy-status:5xx="swap:none">`+label+`</button>`)
-}
-
-func (h *Handler) Comment(w http.ResponseWriter, r *http.Request) {
-	c, err := h.store.AddComment(r.Context(), r.PathValue("id"), r.PostFormValue("body"))
-	if err != nil {
-		http.Error(w, "could not save", http.StatusInternalServerError)
-		return
-	}
-	ypy.Fragment(w, `<li>`+html.EscapeString(c.Body)+`</li>`) // replaces the optimistic copy
-}
-
-func (h *Handler) DeleteItem(w http.ResponseWriter, r *http.Request) {
-	if err := h.store.Delete(r.Context(), r.PathValue("id")); err != nil {
-		http.Error(w, "could not delete", http.StatusInternalServerError)
-		return
-	}
-	ypy.Fragment(w, "") // 200 with an empty body: the delete swap removes the row (a 204 is never swapped)
-}
+```js
+ypy.optimistic.register('new-comment', ({values}) => {
+  let li = document.createElement('li');
+  li.textContent = values.body; // text, never markup
+  return li;
+});
 ```
+
+In case 1 the button on screen is replaced by the template on the click. In case 2 the row is hidden. In case 3 a new
+`<li>` with the typed text appears at the end of the list.
+
+## What the server answers
+
+| Request | Answer | Result on the page |
+|---|---|---|
+| `POST /posts/7/like` | `200`, the button in its new state | the optimistic button is replaced by the server's |
+| `POST /posts/7/like`, store down | `500`, any body | the original button comes back, `ypy:optimistic:rolledback` fires |
+| `POST /posts/7/comments` | `200`, the saved comment | the typed copy is replaced by the saved one |
+| `DELETE /items/3` | `200`, empty body | the row is deleted |
+| `DELETE /items/3`, store down | `500`, any body | the row comes back |
+
+A saved like:
+
+```html
+<button ypy-post="/posts/7/like" ypy-target="this" ypy-swap="outerMorph"
+        ypy-optimistic="#liked" ypy-status:5xx="swap:none">Unlike</button>
+```
+
+A saved comment:
+
+```html
+<li>Thanks, the second tip fixed our build.</li>
+```
+
+All of them carry `Content-Type: text/html; charset=utf-8` and `Vary: YPY-Request`. A delete answers `200` with an empty
+body, because a `204` is never swapped and the `delete` swap needs a response to run.
 
 ## How it works
 
@@ -90,7 +86,8 @@ func (h *Handler) DeleteItem(w http.ResponseWriter, r *http.Request) {
 - A `4xx` or `5xx` status, a network failure, a timeout or an abort puts the original nodes back (the same nodes, so an
   `<input>` keeps what was typed). Then `ypy:optimistic:rolledback` fires with the `reason`.
 - On success, a swap into the same place first restores the originals and then puts the server's content in, so a morph
-  keeps focus and typed text. When nothing is swapped there (`swap:none`, a `204`), the optimistic content stays as the final state.
+  keeps focus and typed text. When nothing is swapped there (`swap:none`, a `204`), the optimistic content stays as the
+  final state.
 - Write `ypy-status:5xx="swap:none"` on requests like these, or the error body is swapped in on top of the restored page.
   A `422` still re-renders a form in place.
 - Every `ypy:optimistic:applied` is followed by one `ypy:optimistic:confirmed` or `ypy:optimistic:rolledback`.
@@ -98,7 +95,7 @@ func (h *Handler) DeleteItem(w http.ResponseWriter, r *http.Request) {
 ## Variations
 
 - `ypy-optimistic-target` and `ypy-optimistic-swap` say where and how the change goes when the response goes elsewhere.
-- Show a message when it fails:
+- Show a message when it fails, from the same script file:
 
 ```js
 document.addEventListener('ypy:optimistic:rolledback', evt => {
