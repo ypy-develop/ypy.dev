@@ -9,12 +9,14 @@ package bootstrap
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/arandu-io/framework/foundation"
 	fwview "github.com/arandu-io/framework/view"
 	"github.com/arandu-io/hesape/routing/controllers"
 	markdown "github.com/hyz-is/arandu-markdown"
 
+	examples "github.com/ypy-develop/ypy.dev/app/Examples"
 	providers "github.com/ypy-develop/ypy.dev/app/Providers"
 	site "github.com/ypy-develop/ypy.dev/app/Site"
 	appconfig "github.com/ypy-develop/ypy.dev/config"
@@ -88,7 +90,10 @@ func NewProvider(cfg appconfig.Config) (*providers.AppServiceProvider, error) {
 	if err != nil {
 		return nil, err
 	}
-	return providers.NewAppServiceProvider(s, md)
+	// The demos of the Examples section sign their visitor-state cookies with a
+	// key derived from APP_KEY, and mark them Secure when the site is https.
+	demos := examples.New(cfg.Framework.App.Key, strings.HasPrefix(cfg.App.URL, "https://"))
+	return providers.NewAppServiceProvider(s, md, demos)
 }
 
 // Configure is the application: the providers in the order they boot, the

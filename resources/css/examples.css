@@ -1,0 +1,124 @@
+/* The live demos of the Examples section. Basecoat draws the controls (.btn,
+ * .input, .table, .badge); this file only frames a demo and lays out its parts.
+ * Colours come from the tokens of app.css, so a demo turns with the theme. */
+
+.ex-demo {
+  margin: 1.5rem 0 2rem;
+  border: 1px dashed var(--border-strong);
+  border-radius: 0.6rem;
+  background: color-mix(in srgb, var(--surface-raised) 60%, transparent);
+}
+
+.ex-demo-label {
+  margin: 0;
+  padding: 0.55rem 1rem;
+  border-bottom: 1px dashed var(--border-strong);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.ex-demo-stage {
+  padding: 1.25rem 1rem;
+  min-width: 0;
+  overflow-x: auto;
+}
+
+.ex-demo-note {
+  margin: 0;
+  padding: 0.55rem 1rem;
+  border-top: 1px dashed var(--border-strong);
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.ex-demo .ex-card {
+  display: grid;
+  gap: 0.9rem;
+  max-width: 26rem;
+  margin: 0;
+}
+
+.ex-dl {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 0.35rem 1rem;
+  margin: 0;
+}
+
+.ex-dl dt {
+  color: var(--text-muted);
+}
+
+.ex-dl dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.ex-field {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.ex-field .input {
+  width: 100%;
+}
+
+.ex-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.ex-error {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--primary);
+}
+
+.ex-ok {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--foreground);
+}
+
+.ex-ok::before {
+  content: "";
+  display: inline-block;
+  width: 0.55rem;
+  height: 0.55rem;
+  margin-right: 0.5rem;
+  border-radius: 50%;
+  background: var(--color-teal);
+}
+
+.ex-muted {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.ex-demo table {
+  width: 100%;
+  min-width: 28rem;
+}
+
+.ex-demo .ypy-request {
+  opacity: 0.6;
+}
+
+.ex-demo [aria-busy="true"] {
+  cursor: progress;
+}
+
+.ex-skeleton {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.ex-skeleton .skeleton {
+  height: 1rem;
+  border-radius: 0.3rem;
+}

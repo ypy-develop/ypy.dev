@@ -9,6 +9,7 @@ import (
 	hcontrollers "github.com/arandu-io/hesape/routing/controllers"
 	markdown "github.com/hyz-is/arandu-markdown"
 
+	examples "github.com/ypy-develop/ypy.dev/app/Examples"
 	controllers "github.com/ypy-develop/ypy.dev/app/Http/Controllers"
 	site "github.com/ypy-develop/ypy.dev/app/Site"
 	"github.com/ypy-develop/ypy.dev/routes"
@@ -33,14 +34,15 @@ type AppServiceProvider struct {
 var _ foundation.Module = (*AppServiceProvider)(nil)
 
 // NewAppServiceProvider builds the controllers over the site.
-func NewAppServiceProvider(s *site.Site, md *markdown.Module) (*AppServiceProvider, error) {
+func NewAppServiceProvider(s *site.Site, md *markdown.Module, demos *examples.Demos) (*AppServiceProvider, error) {
 	return &AppServiceProvider{
 		Site:     s,
 		Markdown: md,
 		Geo:      geo.NewModule(s.GeoConfig(), s.Catalog()),
 		web: routes.Deps{
 			Home:      controllers.NewHomeController(s),
-			Docs:      controllers.NewDocsController(s),
+			Demos:     demos,
+			Docs:      controllers.NewDocsController(s, demos),
 			Reference: controllers.NewReferenceController(s),
 			Search:    controllers.NewSearchController(s),
 			Machine:   controllers.NewMachineController(s),
