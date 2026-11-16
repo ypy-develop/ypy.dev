@@ -29,6 +29,7 @@ type SiteLayout interface {
 	Repository() string
 	LinkedIn() string
 	Stars() string
+	MigrationHref() string
 	CommunityURL() string
 }
 
@@ -227,8 +228,8 @@ var _ SiteLayout = site.Chrome{}
 							<li><a class="text-ink/60 hover:text-ink" href="/docs/guides/getting-started">Getting started</a></li>
 							<li><a class="text-ink/60 hover:text-ink" href="/docs">Docs</a></li>
 							<li><a class="text-ink/60 hover:text-ink" href="/reference">Reference</a></li>
-							<li><a class="text-ink/60 hover:text-ink" href="/docs/examples">Examples</a></li>
-							<li><a class="text-ink/60 hover:text-ink" href="/docs/extensions">Extensions</a></li>
+							<li><a class="text-ink/60 hover:text-ink" href="/examples">Examples</a></li>
+							<li><a class="text-ink/60 hover:text-ink" href="/extensions">Extensions</a></li>
 						</ul>
 					</div>
 					<div>
@@ -237,7 +238,7 @@ var _ SiteLayout = site.Chrome{}
 							<li><a class="text-ink/60 hover:text-ink" href="/go">Go SDK</a></li>
 							<li><a class="text-ink/60 hover:text-ink" href="/docs/server">Server guides</a></li>
 							<li><a class="text-ink/60 hover:text-ink" href="/docs/server/recipes/arandu">Arandu</a></li>
-							<li><a class="text-ink/60 hover:text-ink" href="/docs/migration">Migration</a></li>
+							<li><a class="text-ink/60 hover:text-ink" href="{{ .MigrationHref() }}">Migration</a></li>
 						</ul>
 					</div>
 					<div>

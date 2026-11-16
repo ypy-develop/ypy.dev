@@ -16,6 +16,30 @@ from YPY's own name tables. It stores nothing: no database, no Redis, no uploads
   path gives (`content/ypy/guides/x.md` is `/docs/guides/x`, `content/go/...` is
   `/go/...`); the sidebar is the folder tree, ordered by front matter `order`,
   then by file name.
+- Addresses of `content/ypy/`: `index.md` is `/docs` (one long page), `reference.md`
+  is `/reference` (one long page), `migration.md` is `/migration`, and the folders
+  `examples/`, `extensions/` and `essays/` are `/examples`, `/extensions` and `/essays`
+  (`/examples/<name>` and so on). Any other file keeps `/docs/<path>`. An old address
+  `/docs/examples/x`, `/docs/extensions/x`, `/docs/essays/x`, `/docs/migration/...`, a
+  `/docs/...` or `/reference/<table>` whose last word is a heading of the long page,
+  is a 301 to the new one; anything else with no equivalent is a 404. The
+  Portuguese pages stay under `/pt-BR/...` and out of the menu.
+- Sidebar: on `/docs`, `/reference` and `/migration` it is the headings of the page
+  (h2, with the h3 under a red "+"); on a section it is the list of that section's
+  pages and nothing else.
+- Generated tables in `reference.md`: put one of these on a line of its own and the
+  site replaces it with the table drawn from `app/Reference` (the heading above it
+  is the author's): `<!-- reference:attributes -->`, `:events`, `:classes`,
+  `:config`, `:elements`, `:request-headers`, `:response-headers`, `:extensions`
+  and `:js-api` (no name table behind `js-api` yet: it draws nothing). A marker
+  that names no table stops the start. While `reference.md` does not exist, the
+  generated pages under `/reference/<table>` are served instead.
+- Header: Docs, Reference, Examples, Extensions, Essays, then search, theme and the
+  GitHub button with the repository's stars (`app/Stars`, `app/Clients`, a task
+  hourly at minute 17 and once at start). The Go SDK and the discussions are in the
+  footer, whose last line is "Developed by HYZIS in Arandu".
+- Colour: one red, `#DC2C02`, in both themes; mint `#6ECFB5`; black and white. No
+  lighter red for the dark theme and no orange. `TestThereIsOneRed` guards it.
 - `app/Docs/`: loads `content/`, renders it with `hyz-is/arandu-markdown`, rewrites
   links between files, highlights code with classes, builds the sidebar and search.
 - `app/Reference/`: the name tables. `data/` is a **copy** of `../ypy/src`, taken by

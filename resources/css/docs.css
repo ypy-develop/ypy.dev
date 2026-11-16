@@ -122,13 +122,46 @@
   display: none;
 }
 
+/* The "+" that opens a section of the outline is the red of the identity. */
 .docs-group-title::after {
   content: "+";
-  color: var(--text-muted);
+  color: var(--primary);
+  font-weight: 700;
 }
 
 .docs-group[open] > .docs-group-title::after {
-  content: "-";
+  content: "\2212";
+}
+
+/* A heading of the outline reads as a link, in the sentence case of the page. */
+.docs-outline-title {
+  font-family: inherit;
+  font-size: 0.84rem;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.docs-outline-title a {
+  flex: 1;
+  color: var(--text-muted);
+}
+
+.docs-outline-title a:hover {
+  color: var(--foreground);
+}
+
+.docs-outline-subs {
+  margin-left: 0.75rem;
+  border-left: 1px solid var(--grid);
+}
+
+.docs-section-title {
+  margin: 0.4rem 0 0.2rem 0.5rem;
+  color: var(--foreground);
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
 }
 
 .docs-nav-link {

@@ -32,7 +32,23 @@ func (c *DocsController) Show(ctx *hhttp.Context) error {
 	if g, section, lang, ok := c.site.Manual.Landing(route); ok {
 		return c.landing(ctx, route, g, section, lang)
 	}
+	// An address from before the pages were gathered into long ones: the page
+	// that holds it now, for good, when there is one.
+	if to, ok := c.site.Manual.Redirect(route); ok {
+		return Moved(ctx, to)
+	}
 	return c.NotFound(ctx)
+}
+
+// groupOf is the header link a page belongs to.
+func groupOf(page *docs.Page) string {
+	switch {
+	case page.Route == "/reference":
+		return "reference"
+	case docs.Own[page.Group] && page.Lang == docs.English:
+		return page.Group
+	}
+	return page.Section.ID
 }
 
 func (c *DocsController) page(ctx *hhttp.Context, page *docs.Page) error {
@@ -40,12 +56,8 @@ func (c *DocsController) page(ctx *hhttp.Context, page *docs.Page) error {
 	prev, next := m.Neighbours(page)
 	twin, _ := m.Twin(page)
 
-	group := page.Section.ID
-	if page.Group == "examples" || page.Group == "extensions" {
-		group = page.Group
-	}
 	info := site.PageInfo{
-		Path: page.Route, Group: group, Title: page.Title, Description: page.Description,
+		Path: page.Route, Group: groupOf(page), Title: page.Title, Description: page.Description,
 		Lang: page.Lang, Kind: site.KindArticle, Updated: page.Updated, Crumbs: c.site.PageCrumbs(page),
 	}
 	// hreflang is a cluster in which every page names every page, itself
@@ -61,7 +73,7 @@ func (c *DocsController) page(ctx *hhttp.Context, page *docs.Page) error {
 		Chrome:       chrome,
 		Page:         page,
 		Body:         page.HTML,
-		Tree:         m.Tree(page.Section.ID, page.Lang),
+		Tree:         m.SectionOf(page),
 		SectionTitle: page.Section.Title,
 		SectionHref:  page.Section.Prefix,
 		Prev:         prev,
@@ -72,7 +84,7 @@ func (c *DocsController) page(ctx *hhttp.Context, page *docs.Page) error {
 
 func (c *DocsController) landing(ctx *hhttp.Context, route string, g docs.Group, s docs.Section, lang string) error {
 	group := s.ID
-	if g.Key == "examples" || g.Key == "extensions" {
+	if docs.Own[g.Key] && lang == docs.English {
 		group = g.Key
 	}
 	chrome := c.site.ChromeFor(ctx, site.PageInfo{
@@ -86,6 +98,6 @@ func (c *DocsController) landing(ctx *hhttp.Context, route string, g docs.Group,
 		SectionHref:  s.Prefix,
 		Pages:        g.Pages,
 		Subs:         g.Subs,
-		Tree:         c.site.Manual.Tree(s.ID, lang),
+		Tree:         nil,
 	})
 }

@@ -26,10 +26,9 @@ func (s *Site) Nav() []NavItem {
 	return []NavItem{
 		{Label: "Docs", Href: "/docs", Match: "docs"},
 		{Label: "Reference", Href: "/reference", Match: "reference"},
-		{Label: "Examples", Href: "/docs/examples", Match: "examples"},
-		{Label: "Extensions", Href: "/docs/extensions", Match: "extensions"},
-		{Label: "Go SDK", Href: "/go", Match: "go"},
-		{Label: "Community", Href: Community, External: true},
+		{Label: "Examples", Href: "/examples", Match: "examples"},
+		{Label: "Extensions", Href: "/extensions", Match: "extensions"},
+		{Label: "Essays", Href: "/essays", Match: "essays"},
 	}
 }
 
@@ -200,6 +199,15 @@ func (c Chrome) Repository() string { return Repository }
 
 // LinkedIn is the project's page on LinkedIn.
 func (c Chrome) LinkedIn() string { return LinkedIn }
+
+// MigrationHref is the migration guide: its own page when content/ has one, its
+// folder under /docs until then.
+func (c Chrome) MigrationHref() string {
+	if _, ok := c.site.Manual.Page("/migration"); ok {
+		return "/migration"
+	}
+	return "/docs/migration"
+}
 
 // Stars is the star count of the YPY repository, as the digits the header
 // draws, and the empty string until a scheduled task has fetched one. It is read

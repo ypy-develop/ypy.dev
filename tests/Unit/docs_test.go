@@ -1,6 +1,7 @@
 package unit_test
 
 import (
+	"errors"
 	"testing"
 	"testing/fstest"
 
@@ -67,7 +68,7 @@ func TestRoutesTitlesAndOrder(t *testing.T) {
 	}
 
 	prev, next := m.Neighbours(gs)
-	if prev == nil || prev.Slug != "index" || next == nil || next.Slug != "a-early" {
+	if prev != nil || next == nil || next.Slug != "a-early" {
 		t.Errorf("neighbours = %v, %v", prev, next)
 	}
 }
@@ -150,5 +151,93 @@ func TestALinkToAFileThatMovedIsFollowed(t *testing.T) {
 	// Two files of that name leave no way to know which was meant, so the link goes.
 	if got := len(m.Broken()); got != 2 {
 		t.Errorf("broken = %+v, want the ambiguous and the missing", m.Broken())
+	}
+}
+
+// The long pages and the sections of the header have addresses of their own, and
+// a file of the old layout is still found by the old address.
+func TestLongPagesAndSectionsHaveTheirOwnAddresses(t *testing.T) {
+	m := manual(t, map[string]string{
+		"ypy/index.md":             "# Manual\n\n## Install\n\nText.\n\n### With npm\n\nText.\n",
+		"ypy/reference.md":         "# Reference\n\n## Attributes\n\nText.\n",
+		"ypy/migration.md":         "# Migration\n\nText.\n",
+		"ypy/examples/index.md":    "# Examples\n\nText.\n",
+		"ypy/examples/click.md":    "# Click\n\nText.\n",
+		"ypy/extensions/ypy-ws.md": "# WebSocket\n\nText.\n",
+		"ypy/essays/why.md":        "# Why\n\nText.\n",
+		"ypy/guides/forms.md":      "# Forms\n\nText.\n",
+	})
+	want := map[string]string{
+		"ypy/index.md": "/docs", "ypy/reference.md": "/reference", "ypy/migration.md": "/migration",
+		"ypy/examples/index.md": "/examples", "ypy/examples/click.md": "/examples/click",
+		"ypy/extensions/ypy-ws.md": "/extensions/ypy-ws", "ypy/essays/why.md": "/essays/why",
+	}
+	for file, route := range want {
+		p, ok := m.ByFile(file)
+		if !ok || p.Route != route {
+			t.Errorf("%s is at %v, want %s", file, p, route)
+		}
+	}
+
+	// The sidebar of a long page is its headings; of a section, its pages.
+	for _, route := range []string{"/docs", "/reference", "/migration"} {
+		if p, _ := m.Page(route); !p.Outline || len(m.SectionOf(p)) != 0 {
+			t.Errorf("%s should have its own headings for a sidebar", route)
+		}
+	}
+	click, _ := m.Page("/examples/click")
+	if click.Outline || len(m.SectionOf(click)) != 1 || m.SectionOf(click)[0].Key != "examples" {
+		t.Errorf("an example's sidebar should be the examples, got %+v", m.SectionOf(click))
+	}
+	if prev, next := m.Neighbours(click); prev == nil || prev.Route != "/examples" || next != nil {
+		t.Errorf("neighbours of an example = %v, %v", prev, next)
+	}
+
+	redirects := map[string]string{
+		"/docs/examples/click":    "/examples/click",
+		"/docs/examples":          "/examples",
+		"/docs/extensions/ypy-ws": "/extensions/ypy-ws",
+		"/docs/essays/why":        "/essays/why",
+		"/docs/migration/migrate": "/migration",
+		"/docs/guides/install":    "/docs#install",
+		"/reference/attributes":   "/reference#attributes",
+	}
+	for from, to := range redirects {
+		if got, ok := m.Redirect(from); !ok || got != to {
+			t.Errorf("%s -> %q (%v), want %s", from, got, ok, to)
+		}
+	}
+	for _, from := range []string{"/docs/guides/nope", "/docs/examples/nope-at-all", "/docs/reference/nope", "/reference/nope"} {
+		if got, ok := m.Redirect(from); ok {
+			t.Errorf("%s redirected to %s, want no equivalent", from, got)
+		}
+	}
+}
+
+// A marker line becomes the table generated from the name tables, and a marker
+// no table answers stops the start.
+func TestReferenceMarkersAreFilled(t *testing.T) {
+	m := manual(t, map[string]string{
+		"ypy/reference.md": "# Reference\n\n## Attributes\n\nBefore.\n\n<!-- reference:attributes -->\n\n## Events\n\n<!-- reference:events -->\n",
+	})
+	if err := m.Fill(func(name string) (string, error) { return "<table data-t=\"" + name + "\"></table>", nil }); err != nil {
+		t.Fatal(err)
+	}
+	p, _ := m.Page("/reference")
+	for _, want := range []string{`<table data-t="attributes">`, `<table data-t="events">`} {
+		if !contains(p.HTML, want) {
+			t.Errorf("the page lacks %s:\n%s", want, p.HTML)
+		}
+	}
+	if contains(p.HTML, "@@reference") || contains(p.Text, "@@reference") {
+		t.Error("a marker token was left on the page")
+	}
+	if len(p.Headings) != 2 {
+		t.Errorf("headings = %+v, want Attributes and Events", p.Headings)
+	}
+
+	m = manual(t, map[string]string{"ypy/reference.md": "# R\n\n<!-- reference:nothing -->\n"})
+	if err := m.Fill(func(name string) (string, error) { return "", errors.New("no table") }); err == nil {
+		t.Error("a marker with no table was accepted")
 	}
 }

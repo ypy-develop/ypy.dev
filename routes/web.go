@@ -33,6 +33,14 @@ func Web(r *hcontrollers.Router, d Deps) {
 
 	r.Action("GET", "/docs", d.Docs.Show).Name("docs")
 	r.Action("GET", "/docs/{path...}", d.Docs.Show).Name("docs.page")
+	// The sections of the header, and the long pages: every one is answered by
+	// looking its address up among the files of content/.
+	for _, section := range []string{"examples", "extensions", "essays"} {
+		r.Action("GET", "/"+section, d.Docs.Show).Name(section)
+		r.Action("GET", "/"+section+"/{path...}", d.Docs.Show).Name(section + ".page")
+	}
+	r.Action("GET", "/migration", d.Docs.Show).Name("migration")
+
 	r.Action("GET", "/go", d.Docs.Show).Name("go")
 	r.Action("GET", "/go/{path...}", d.Docs.Show).Name("go.page")
 

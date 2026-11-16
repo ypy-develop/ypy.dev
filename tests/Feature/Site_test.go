@@ -22,7 +22,7 @@ func TestFixedRoutesAnswer(t *testing.T) {
 	app := tests.Boot(t, config.EnvDev, true)
 
 	for _, path := range []string{
-		"/", "/docs", "/go", "/reference", "/reference/attributes", "/reference/events", "/reference/headers",
+		"/", "/docs", "/go", "/examples", "/extensions", "/essays", "/reference", "/reference/attributes", "/reference/events", "/reference/headers",
 		"/reference/config", "/reference/classes", "/reference/elements", "/reference/extensions",
 		"/search", "/search?q=swap", "/search-index.json", "/sitemap.xml", "/robots.txt", "/llms.txt",
 	} {
@@ -272,7 +272,7 @@ func TestHomeCarriesTheInstallation(t *testing.T) {
 		`npm install @ypy-dev/ypy@0.1.1`,
 		`ypy-get=&#34;/hello&#34; ypy-target=&#34;#out&#34;`,
 		`https://github.com/orgs/ypy-develop/discussions`,
-		`href="/docs"`, `href="/reference"`, `href="/docs/examples"`, `href="/docs/extensions"`,
+		`href="/docs"`, `href="/reference"`, `href="/examples"`, `href="/extensions"`,
 		`https://github.com/ypy-develop`,
 	} {
 		if !strings.Contains(body, want) {
@@ -398,5 +398,115 @@ func TestGeneratedAssetsAreYPYOnly(t *testing.T) {
 	}
 	if _, err := os.Stat(filepath.Join(root, "assets", "vendor", "ypy.min.js")); err == nil {
 		t.Error("assets/vendor/ypy.min.js is a second copy of the script the framework embeds")
+	}
+}
+
+// The header is five links and nothing else: the sections of the manual. The Go
+// SDK and the community are in the footer.
+func TestHeaderMenuIsTheFiveSections(t *testing.T) {
+	app := tests.Boot(t, config.EnvDev, true)
+	body := app.Get("/").Body.String()
+	start := strings.Index(body, `aria-label="Main"`)
+	nav := body[start : start+strings.Index(body[start:], "</nav>")]
+	last := -1
+	for _, want := range []string{`href="/docs"`, `href="/reference"`, `href="/examples"`, `href="/extensions"`, `href="/essays"`} {
+		i := strings.Index(nav, want)
+		if i < 0 || i < last {
+			t.Fatalf("the main menu lacks %s, or has it out of order:\n%s", want, nav)
+		}
+		last = i
+	}
+	for _, not := range []string{`href="/go"`, "discussions", ">Community<", ">Go SDK<"} {
+		if strings.Contains(nav, not) {
+			t.Errorf("the main menu still has %s", not)
+		}
+	}
+	header := body[strings.Index(body, "<header "):strings.Index(body, "</header>")]
+	if !strings.Contains(header, "https://github.com/ypy-develop/ypy") {
+		t.Error("the header's GitHub button does not open the repository")
+	}
+	footer := body[strings.Index(body, "<footer "):]
+	for _, want := range []string{"Discussions", "LinkedIn", `href="/go"`, "Developed by", `aria-label="HYZIS"`, `aria-label="Arandu"`} {
+		if !strings.Contains(footer, want) {
+			t.Errorf("the footer lacks %s", want)
+		}
+	}
+	for _, not := range []string{"MIT", "sitemap", "llms.txt"} {
+		if strings.Contains(strings.ToLower(footer), strings.ToLower(not)) {
+			t.Errorf("the footer still says %s", not)
+		}
+	}
+}
+
+// An address from before the sections had their own is moved for good to the
+// page that has it now; one with no equivalent is a 404.
+func TestOldAddressesAreMoved(t *testing.T) {
+	app := tests.Boot(t, config.EnvDev, true)
+	m := app.Provider.Site.Manual
+	for _, page := range m.Pages() {
+		if page.Lang != docs.English || !docs.Own[page.Group] || page.Index {
+			continue
+		}
+		old := "/docs/" + strings.TrimPrefix(page.Route, "/")
+		rec := app.Get(old)
+		if rec.Code != http.StatusMovedPermanently || rec.Header().Get("Location") != page.Route {
+			t.Errorf("GET %s answered %d to %q, want 301 to %s", old, rec.Code, rec.Header().Get("Location"), page.Route)
+		}
+		break
+	}
+	if rec := app.Get("/docs/examples/"); rec.Code != http.StatusMovedPermanently || rec.Header().Get("Location") != "/examples" {
+		t.Errorf("GET /docs/examples/ answered %d to %q, want 301 to /examples", rec.Code, rec.Header().Get("Location"))
+	}
+	if rec := app.Get("/docs/examples/no-such-example"); rec.Code != http.StatusNotFound {
+		t.Errorf("an address with no equivalent answered %d, want 404", rec.Code)
+	}
+}
+
+// The sidebar of a section is the list of its pages, with no other folder in it.
+func TestSectionSidebarListsOnlyTheSection(t *testing.T) {
+	app := tests.Boot(t, config.EnvDev, true)
+	body := app.Get("/examples").Body.String()
+	aside := body[strings.Index(body, `<aside class="docs-sidebar"`):]
+	aside = aside[:strings.Index(aside, "</aside>")]
+	if !strings.Contains(aside, "Examples") {
+		t.Errorf("the sidebar does not name the section:\n%s", aside)
+	}
+	for _, not := range []string{"Guides", "Server", "Security", "Performance", "Contributing", `href="/docs/guides`} {
+		if strings.Contains(aside, not) {
+			t.Errorf("the examples sidebar still lists %s", not)
+		}
+	}
+}
+
+// The sitemap lists the new addresses and none of the moved ones.
+func TestSitemapHasNoMovedAddress(t *testing.T) {
+	app := tests.Boot(t, config.EnvDev, true)
+	sitemap := app.Get("/sitemap.xml").Body.String()
+	for _, want := range []string{"https://ypy.dev/examples", "https://ypy.dev/extensions", "https://ypy.dev/essays"} {
+		if !strings.Contains(sitemap, want) {
+			t.Errorf("the sitemap lacks %s", want)
+		}
+	}
+	for _, not := range []string{"/docs/examples", "/docs/extensions", "/docs/essays"} {
+		if strings.Contains(sitemap, not) {
+			t.Errorf("the sitemap still lists %s", not)
+		}
+	}
+}
+
+// One red, in both themes: no lighter red and no orange in the stylesheets.
+func TestThereIsOneRed(t *testing.T) {
+	root := tests.Root(t)
+	for _, name := range []string{"app.css", "home.css", "docs.css"} {
+		raw, err := os.ReadFile(filepath.Join(root, "resources", "css", name))
+		if err != nil {
+			t.Fatal(err)
+		}
+		css := strings.ToLower(string(raw))
+		for _, not := range []string{"f2461b", "--color-ember", "orange"} {
+			if strings.Contains(css, not) {
+				t.Errorf("%s still carries %s", name, not)
+			}
+		}
 	}
 }

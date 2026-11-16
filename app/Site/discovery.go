@@ -90,33 +90,35 @@ func (s *Site) buildEntries() []Entry {
 		Document: geo.Document{Path: "/", Title: HomeTitle, Description: HomeDescription, UpdatedAt: latest, Content: s.homeText()},
 	}}
 
-	entries = append(entries, Entry{Document: geo.Document{
-		Path:        "/reference",
-		Title:       "Reference",
-		Description: "Every attribute, event, header and configuration key of YPY, with the official extensions.",
-		Content:     s.referenceIndexText(),
-	}})
-	for _, k := range reference.Kinds {
-		title := s.ReferenceTitle(k)
+	if !s.longReference {
 		entries = append(entries, Entry{Document: geo.Document{
-			Path:        "/reference/" + string(k),
-			Title:       title + " reference",
-			Description: "Every YPY " + title + ", generated from the library's own name tables.",
-			Content:     s.referenceText(k),
+			Path:        "/reference",
+			Title:       "Reference",
+			Description: "Every attribute, event, header and configuration key of YPY, with the official extensions.",
+			Content:     s.referenceIndexText(),
+		}})
+		for _, k := range reference.Kinds {
+			title := s.ReferenceTitle(k)
+			entries = append(entries, Entry{Document: geo.Document{
+				Path:        "/reference/" + string(k),
+				Title:       title + " reference",
+				Description: "Every YPY " + title + ", generated from the library's own name tables.",
+				Content:     s.referenceText(k),
+			}})
+		}
+		entries = append(entries, Entry{Document: geo.Document{
+			Path:        "/reference/extensions",
+			Title:       "Extensions reference",
+			Description: "The official YPY extensions, the script of each and the names it adds.",
+			Content:     s.extensionsText(),
 		}})
 	}
-	entries = append(entries, Entry{Document: geo.Document{
-		Path:        "/reference/extensions",
-		Title:       "Extensions reference",
-		Description: "The official YPY extensions, the script of each and the names it adds.",
-		Content:     s.extensionsText(),
-	}})
 
 	for _, p := range s.Manual.Pages() {
 		entries = append(entries, Entry{
 			Document: geo.Document{
 				Path: p.Route, Title: p.Title, Description: p.Description,
-				UpdatedAt: parseDate(p.Updated), Content: p.Text,
+				UpdatedAt: parseDate(p.Updated), Content: s.entryText(p),
 			},
 			Section: p.Section.ID, Group: p.Group, Lang: p.Lang,
 		})
@@ -146,11 +148,7 @@ func (s *Site) buildEntries() []Entry {
 
 // LandingRoute is the address of a folder that has no page of its own.
 func LandingRoute(sec docs.Section, lang string, g docs.Group) string {
-	route := sec.Prefix
-	if lang == docs.Portuguese {
-		route += "/" + docs.Portuguese
-	}
-	return route + "/" + g.Key
+	return docs.GroupRoute(sec, lang, g.Key)
 }
 
 // LandingDescription says what a folder's address lists, from the pages in it.
@@ -226,4 +224,19 @@ func parseDate(v string) time.Time {
 		return time.Time{}
 	}
 	return t
+}
+
+// entryText is a page's text for the search and the full text file. The long
+// reference page also carries the names of every table it draws.
+func (s *Site) entryText(p *docs.Page) string {
+	if p.Route != "/reference" || !s.longReference {
+		return p.Text
+	}
+	var b strings.Builder
+	b.WriteString(p.Text)
+	for _, k := range reference.Kinds {
+		b.WriteString("\n" + reference.Titles[k] + "\n" + s.referenceText(k))
+	}
+	b.WriteString("\nExtensions\n" + s.extensionsText())
+	return b.String()
 }

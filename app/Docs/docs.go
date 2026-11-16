@@ -152,7 +152,15 @@ func (m *Manual) Tree(section, lang string) []Group { return m.trees[section+"/"
 
 // Neighbours are the pages before and after one, in the order of the sidebar.
 func (m *Manual) Neighbours(p *Page) (prev, next *Page) {
-	order := m.flat[p.Section.ID+"/"+p.Lang]
+	if p.Outline {
+		return nil, nil
+	}
+	var order []*Page
+	for _, q := range m.flat[p.Section.ID+"/"+p.Lang] {
+		if q.Group == p.Group {
+			order = append(order, q)
+		}
+	}
 	for i, q := range order {
 		if q != p {
 			continue
@@ -214,6 +222,8 @@ type Page struct {
 	Slug string
 	// Index is true for index.md and README.md.
 	Index bool
+	// Outline is true for a long page whose sidebar is its own headings.
+	Outline bool
 
 	Title       string
 	Description string
@@ -229,6 +239,30 @@ type Page struct {
 	Minutes  int
 
 	body string
+}
+
+// Section2 is a heading of level 2 with the headings of level 3 under it: what
+// the sidebar of a long page lists.
+type Section2 struct {
+	ID    string
+	Text  string
+	Level int
+	Subs  []markdown.Heading
+}
+
+// Outline2 groups the headings of the page: each level 2 with its level 3s. A
+// level 3 that comes before any level 2 stands on its own.
+func (p *Page) Outline2() []Section2 {
+	var out []Section2
+	for _, h := range p.Headings {
+		switch {
+		case h.Level <= 2 || len(out) == 0:
+			out = append(out, Section2{ID: h.ID, Text: h.Text, Level: h.Level})
+		default:
+			out[len(out)-1].Subs = append(out[len(out)-1].Subs, h)
+		}
+	}
+	return out
 }
 
 // Contents are the headings a page lists on its side: sections and their
@@ -266,7 +300,15 @@ func newPage(s Section, file, raw string) *Page {
 	if !p.Index {
 		route += "/" + name
 	}
+	if s.ID == "docs" && p.Lang == English {
+		route = englishRoute(p, route)
+	}
 	p.Route = route
+	// A page of the documentation itself at the top of content/ypy (the manual,
+	// the reference, the migration guide) is one long page: its sidebar is the
+	// headings of the page. Every other page belongs to a section whose sidebar
+	// is the list of its pages.
+	p.Outline = s.ID == "docs" && p.Lang == English && p.Group == ""
 
 	meta, body := frontMatter(raw)
 	p.Meta = meta
@@ -424,3 +466,117 @@ func skippable(line string) bool {
 
 // Mentions counts the times a text appears in the Markdown source of the page.
 func (p *Page) Mentions(needle string) int { return strings.Count(p.body, needle) }
+
+// Own is the address a group of the documentation has of its own, outside /docs.
+// The pages of these folders are the sections of the header.
+var Own = map[string]bool{"examples": true, "extensions": true, "essays": true}
+
+// englishRoute maps a file of content/ypy to its address.
+//
+//	index.md      -> /docs         reference.md -> /reference
+//	migration.md  -> /migration    examples/x.md -> /examples/x
+//	extensions/x  -> /extensions/x essays/x     -> /essays/x
+//
+// Any other file keeps its place under /docs.
+func englishRoute(p *Page, route string) string {
+	if p.Group == "" && !p.Index {
+		switch p.Slug {
+		case "reference":
+			return "/reference"
+		case "migration":
+			return "/migration"
+		}
+	}
+	if Own[p.Group] {
+		return strings.TrimPrefix(route, "/docs")
+	}
+	return route
+}
+
+// SectionOf is the pages of the section a page belongs to, in sidebar order: the
+// folder the page sits in, with its subfolders. Empty for a page that has none.
+func (m *Manual) SectionOf(p *Page) []Group {
+	if p.Group == "" {
+		return nil
+	}
+	for _, g := range m.trees[p.Section.ID+"/"+p.Lang] {
+		if g.Key == p.Group {
+			return []Group{g}
+		}
+	}
+	return nil
+}
+
+// Redirect answers the new address of an old one, and false when there is no
+// equivalent: an address from before the pages were gathered into long ones.
+//
+//   - /docs/examples/x, /docs/extensions/x and /docs/essays/x are /examples/x and so on;
+//   - /docs/migration[/x] is /migration;
+//   - any other /docs/... address whose last word is a heading of /docs is
+//     that heading of the long page;
+//   - /docs/reference/x and /reference/<table> are the heading of /reference.
+func (m *Manual) Redirect(route string) (string, bool) {
+	route = strings.TrimSuffix(route, "/")
+	rest, ok := strings.CutPrefix(route, "/docs/")
+	if ok {
+		first, tail, _ := strings.Cut(rest, "/")
+		if Own[first] {
+			target := "/" + rest
+			if tail == "" {
+				target = "/" + first
+			}
+			if _, found := m.Page(target); found {
+				return target, true
+			}
+			// A folder with no page of its own is still a page that lists it.
+			if tail == "" && m.hasGroup(first) {
+				return target, true
+			}
+		}
+		if first == "migration" {
+			if _, found := m.Page("/migration"); found {
+				return "/migration", true
+			}
+		}
+		last := path.Base(rest)
+		if first == "reference" {
+			if target, ok := m.anchor("/reference", last); ok {
+				return target, true
+			}
+			return "", false
+		}
+		if target, ok := m.anchor("/docs", last); ok {
+			return target, true
+		}
+		return "", false
+	}
+	if kind, ok := strings.CutPrefix(route, "/reference/"); ok {
+		if target, found := m.anchor("/reference", kind); found {
+			return target, true
+		}
+	}
+	return "", false
+}
+
+func (m *Manual) hasGroup(key string) bool {
+	for _, g := range m.trees["docs/"+English] {
+		if g.Key == key {
+			return true
+		}
+	}
+	return false
+}
+
+// anchor is page#id when the page has a heading with that id.
+func (m *Manual) anchor(route, id string) (string, bool) {
+	p, ok := m.Page(route)
+	if !ok {
+		return "", false
+	}
+	for _, h := range p.Headings {
+		if h.ID == id {
+			return route + "#" + id, true
+		}
+	}
+	return "", false
+}

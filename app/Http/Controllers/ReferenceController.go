@@ -15,11 +15,13 @@ import (
 // ReferenceController answers the pages generated from YPY's name tables.
 type ReferenceController struct {
 	Controller
+	docs *DocsController
 }
 
-// NewReferenceController builds it.
-func NewReferenceController(s *site.Site) *ReferenceController {
-	return &ReferenceController{Controller{site: s}}
+// NewReferenceController builds it. The long reference page of content/ is a
+// page of the manual, so the documentation controller answers it when it exists.
+func NewReferenceController(s *site.Site, d *DocsController) *ReferenceController {
+	return &ReferenceController{Controller: Controller{site: s}, docs: d}
 }
 
 var tableBlurbs = map[reference.Kind]string{
@@ -33,6 +35,9 @@ var tableBlurbs = map[reference.Kind]string{
 
 // Index is /reference.
 func (c *ReferenceController) Index(ctx *hhttp.Context) error {
+	if c.site.LongReference() {
+		return c.docs.Show(ctx)
+	}
 	s := c.site
 	chrome := s.Chrome(ctx, "/reference", "reference", "Reference",
 		"Every attribute, event, header and configuration key of YPY, with the official extensions.")
@@ -56,6 +61,14 @@ func (c *ReferenceController) Index(ctx *hhttp.Context) error {
 func (c *ReferenceController) Table(ctx *hhttp.Context) error {
 	s := c.site
 	kind := ctx.Request.PathValue("kind")
+
+	// With the long page, a table of the old pages is a heading of it.
+	if c.site.LongReference() {
+		if to, ok := s.Manual.Redirect(ctx.Request.URL.Path); ok {
+			return Moved(ctx, to)
+		}
+		return c.NotFound(ctx)
+	}
 
 	if kind == "extensions" {
 		return c.extensions(ctx)

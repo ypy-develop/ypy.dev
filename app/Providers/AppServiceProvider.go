@@ -54,6 +54,7 @@ var (
 // client the star count is read through: bootstrap configures it, a test hands
 // over a fake.
 func NewAppServiceProvider(s *site.Site, md *markdown.Module, github clients.GitHub) (*AppServiceProvider, error) {
+	docs := controllers.NewDocsController(s)
 	return &AppServiceProvider{
 		Site:     s,
 		Markdown: md,
@@ -61,8 +62,8 @@ func NewAppServiceProvider(s *site.Site, md *markdown.Module, github clients.Git
 		Geo:      geo.NewModule(s.GeoConfig(), s.Catalog()),
 		web: routes.Deps{
 			Home:      controllers.NewHomeController(s),
-			Docs:      controllers.NewDocsController(s),
-			Reference: controllers.NewReferenceController(s),
+			Docs:      docs,
+			Reference: controllers.NewReferenceController(s, docs),
 			Search:    controllers.NewSearchController(s),
 			Machine:   controllers.NewMachineController(s),
 		},

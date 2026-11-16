@@ -2,6 +2,7 @@ package docs
 
 import (
 	"bytes"
+	"fmt"
 	"html"
 	"net/url"
 	"path"
@@ -17,7 +18,7 @@ import (
 
 // render turns the body into HTML. It runs once per page, at start.
 func (p *Page) render(m *Manual, md *markdown.Module) {
-	doc := md.Render(m.rewriteLinks(p, p.body))
+	doc := md.Render(markersToText(m.rewriteLinks(p, p.body)))
 	p.HTML = decorateCode(string(doc.HTML()))
 	p.Headings = doc.Headings
 	p.Text = doc.Text
@@ -194,4 +195,40 @@ func (m *Manual) moved(from *Page, resolved string) (*Page, bool) {
 		}
 	}
 	return nil, false
+}
+
+// A marker is a line of its own, `<!-- reference:attributes -->`, where a page
+// wants a table generated from YPY's name tables. The Markdown module drops
+// comments, so the line becomes a paragraph holding a token, and Fill swaps the
+// rendered paragraph for the table once the site has the tables.
+var (
+	markerLine  = regexp.MustCompile(`(?m)^[ \t]*<!--\s*reference:([a-z-]+)\s*-->[ \t]*$`)
+	markerToken = regexp.MustCompile(`<p>@@reference:([a-z-]+)@@</p>`)
+	markerText  = regexp.MustCompile(`@@reference:[a-z-]+@@`)
+)
+
+func markersToText(body string) string {
+	return markerLine.ReplaceAllString(body, "\n@@reference:$1@@\n")
+}
+
+// Fill replaces every marker of every page with what table answers for its
+// name. A name table does not know is an error: a page that asks for a table
+// that does not exist stops the start instead of drawing a hole.
+func (m *Manual) Fill(table func(name string) (string, error)) error {
+	for _, p := range m.pages {
+		var failed error
+		p.HTML = markerToken.ReplaceAllStringFunc(p.HTML, func(match string) string {
+			name := markerToken.FindStringSubmatch(match)[1]
+			html, err := table(name)
+			if err != nil && failed == nil {
+				failed = fmt.Errorf("docs: %s: %w", p.File, err)
+			}
+			return html
+		})
+		if failed != nil {
+			return failed
+		}
+		p.Text = markerText.ReplaceAllString(p.Text, "")
+	}
+	return nil
 }
