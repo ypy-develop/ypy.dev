@@ -135,6 +135,7 @@
 
 /* A heading of the outline reads as a link, in the sentence case of the page. */
 .docs-outline-title {
+  padding-left: calc(0.75rem + 2px);
   font-family: inherit;
   font-size: 0.84rem;
   letter-spacing: 0;

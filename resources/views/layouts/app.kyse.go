@@ -225,20 +225,17 @@ var _ SiteLayout = site.Chrome{}
 					<div>
 						<p class="mb-3 text-[13px] font-semibold">Documentation</p>
 						<ul class="reading-copy space-y-2 text-[13.5px]">
-							<li><a class="text-ink/60 hover:text-ink" href="/docs/guides/getting-started">Getting started</a></li>
 							<li><a class="text-ink/60 hover:text-ink" href="/docs">Docs</a></li>
 							<li><a class="text-ink/60 hover:text-ink" href="/reference">Reference</a></li>
-							<li><a class="text-ink/60 hover:text-ink" href="/examples">Examples</a></li>
-							<li><a class="text-ink/60 hover:text-ink" href="/extensions">Extensions</a></li>
+							<li><a class="text-ink/60 hover:text-ink" href="{{ .MigrationHref() }}">Migration</a></li>
 						</ul>
 					</div>
 					<div>
-						<p class="mb-3 text-[13px] font-semibold">Server side</p>
+						<p class="mb-3 text-[13px] font-semibold">Explore</p>
 						<ul class="reading-copy space-y-2 text-[13.5px]">
-							<li><a class="text-ink/60 hover:text-ink" href="/go">Go SDK</a></li>
-							<li><a class="text-ink/60 hover:text-ink" href="/docs/server">Server guides</a></li>
-							<li><a class="text-ink/60 hover:text-ink" href="/docs/server/recipes/arandu">Arandu</a></li>
-							<li><a class="text-ink/60 hover:text-ink" href="{{ .MigrationHref() }}">Migration</a></li>
+							<li><a class="text-ink/60 hover:text-ink" href="/examples">Examples</a></li>
+							<li><a class="text-ink/60 hover:text-ink" href="/extensions">Extensions</a></li>
+							<li><a class="text-ink/60 hover:text-ink" href="/essays">Essays</a></li>
 						</ul>
 					</div>
 					<div>

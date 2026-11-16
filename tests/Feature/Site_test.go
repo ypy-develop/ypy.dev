@@ -22,8 +22,7 @@ func TestFixedRoutesAnswer(t *testing.T) {
 	app := tests.Boot(t, config.EnvDev, true)
 
 	for _, path := range []string{
-		"/", "/docs", "/go", "/examples", "/extensions", "/essays", "/reference", "/reference/attributes", "/reference/events", "/reference/headers",
-		"/reference/config", "/reference/classes", "/reference/elements", "/reference/extensions",
+		"/", "/docs", "/examples", "/extensions", "/essays", "/migration", "/reference",
 		"/search", "/search?q=swap", "/search-index.json", "/sitemap.xml", "/robots.txt", "/llms.txt",
 	} {
 		rec := app.Get(path)
@@ -32,7 +31,7 @@ func TestFixedRoutesAnswer(t *testing.T) {
 		}
 	}
 
-	for _, path := range []string{"/nope", "/docs/nope", "/go/nope", "/reference/nope", "/docs/guides/nope/deeper"} {
+	for _, path := range []string{"/nope", "/docs/nope", "/go", "/reference/nope", "/docs/guides/nope/deeper", "/docs/server/recipes/laravel"} {
 		rec := app.Get(path)
 		if rec.Code != http.StatusNotFound {
 			t.Errorf("GET %s answered %d, want 404", path, rec.Code)
@@ -91,11 +90,11 @@ func TestRoutesFollowThePaths(t *testing.T) {
 	m := app.Provider.Site.Manual
 
 	cases := map[string]string{
-		"ypy/index.md":                  "/docs",
-		"ypy/guides/getting-started.md": "/docs/guides/getting-started",
-		"go/README.md":                  "/go",
-		"go/guide.md":                   "/go/guide",
-		"go/pt-BR/README.md":            "/go/pt-BR",
+		"ypy/index.md":                 "/docs",
+		"ypy/reference.md":             "/reference",
+		"ypy/migration.md":             "/migration",
+		"ypy/essays/why-hypermedia.md": "/essays/why-hypermedia",
+		"ypy/extensions/index.md":      "/extensions",
 	}
 	for file, want := range cases {
 		page, ok := m.ByFile(file)
@@ -156,12 +155,17 @@ func TestReferenceCoversEveryEntry(t *testing.T) {
 	if catalog.Total() == 0 {
 		t.Fatal("the reference tables are empty")
 	}
+	// /reference is one long page with a table where each marker stands. The
+	// custom elements have no marker in reference.md yet, so their rows are not
+	// asked for here.
+	body := app.Get("/reference").Body.String()
 	for _, k := range reference.Kinds {
-		rec := app.Get("/reference/" + string(k))
-		body := rec.Body.String()
+		if k == reference.Elements {
+			continue
+		}
 		for _, it := range catalog.Of(k) {
 			if !strings.Contains(body, `id="`+it.Anchor+`"`) {
-				t.Errorf("/reference/%s lacks the row of %q", k, it.Name)
+				t.Errorf("/reference lacks the row of %s %q", k, it.Name)
 			}
 		}
 	}
@@ -196,10 +200,9 @@ func TestReferenceCoversEveryEntry(t *testing.T) {
 		}
 	}
 
-	rec := app.Get("/reference/extensions")
 	for _, e := range catalog.Extensions {
-		if !strings.Contains(rec.Body.String(), `id="`+e.Name+`"`) {
-			t.Errorf("/reference/extensions lacks %s", e.Name)
+		if !strings.Contains(body, `id="`+e.Name+`"`) {
+			t.Errorf("/reference lacks the extension %s", e.Name)
 		}
 	}
 }
@@ -223,7 +226,7 @@ func TestPagesCarryNothingInline(t *testing.T) {
 	styleAttr := regexp.MustCompile(`(?i)\sstyle\s*=\s*"`)
 	handler := regexp.MustCompile(`(?i)\son(click|load|error|change|input|submit|mouseover|focus)\s*=`)
 
-	paths := []string{"/", "/docs", "/docs/guides/getting-started", "/reference", "/reference/attributes", "/reference/events", "/go", "/search?q=swap", "/nope"}
+	paths := []string{"/", "/docs", "/essays/why-hypermedia", "/reference", "/search?q=swap", "/nope"}
 	for _, p := range paths {
 		// A JSON-LD block is data: the browser never runs it and script-src does not
 		// apply to it. Any other script with a body is inline code.
@@ -426,7 +429,7 @@ func TestHeaderMenuIsTheFiveSections(t *testing.T) {
 		t.Error("the header's GitHub button does not open the repository")
 	}
 	footer := body[strings.Index(body, "<footer "):]
-	for _, want := range []string{"Discussions", "LinkedIn", `href="/go"`, "Developed by", `aria-label="HYZIS"`, `aria-label="Arandu"`} {
+	for _, want := range []string{"Discussions", "LinkedIn", `href="/essays"`, "Developed by", `aria-label="HYZIS"`, `aria-label="Arandu"`} {
 		if !strings.Contains(footer, want) {
 			t.Errorf("the footer lacks %s", want)
 		}
@@ -456,6 +459,18 @@ func TestOldAddressesAreMoved(t *testing.T) {
 	}
 	if rec := app.Get("/docs/examples/"); rec.Code != http.StatusMovedPermanently || rec.Header().Get("Location") != "/examples" {
 		t.Errorf("GET /docs/examples/ answered %d to %q, want 301 to /examples", rec.Code, rec.Header().Get("Location"))
+	}
+	for from, to := range map[string]string{
+		"/docs/guides/getting-started": "/docs#installing",
+		"/docs/migration/migrate":      "/migration",
+		"/reference/attributes":        "/reference#core-attributes",
+		"/reference/headers":           "/reference#request-headers",
+		"/reference/events":            "/reference#events",
+		"/reference/extensions":        "/reference#extensions",
+	} {
+		if rec := app.Get(from); rec.Code != http.StatusMovedPermanently || rec.Header().Get("Location") != to {
+			t.Errorf("GET %s answered %d to %q, want 301 to %s", from, rec.Code, rec.Header().Get("Location"), to)
+		}
 	}
 	if rec := app.Get("/docs/examples/no-such-example"); rec.Code != http.StatusNotFound {
 		t.Errorf("an address with no equivalent answered %d, want 404", rec.Code)

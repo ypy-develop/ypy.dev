@@ -61,7 +61,7 @@ type Card struct {
 				</p>
 
 				<div class="mt-6 flex flex-wrap items-center gap-3">
-					<a class="site-button site-button-primary" href="/docs/guides/getting-started">Get started</a>
+					<a class="site-button site-button-primary" href="/docs#installing">Get started</a>
 					<a class="site-button site-button-secondary" href="/reference">Reference</a>
 				</div>
 			</div>
@@ -101,7 +101,7 @@ type Card struct {
 				</p>
 				<p class="reading-copy site-muted mt-4 max-w-[47ch] text-[13.5px] leading-relaxed">
 					The Go SDK answers fragments and forms, and tells a YPY request from a browser one.
-					Other stacks use the same headers: see the <a class="text-rust underline" href="/docs/server/recipes/laravel">recipes</a>.
+					Other stacks use the same headers: see <a class="text-rust underline" href="/docs#server-side">server side</a>.
 				</p>
 			</div>
 
@@ -171,7 +171,7 @@ type Card struct {
 					On click, GET <code>/demo/hello</code>, put the answer into <code>#demo-out</code>. That is the
 					whole contract, and the button on the right runs it against this site.
 				</p>
-				<a class="text-rust mt-6 inline-flex min-h-11 items-center font-semibold" href="/docs/guides/core-concepts">Core concepts <span class="ml-2" aria-hidden="true">&rarr;</span></a>
+				<a class="text-rust mt-6 inline-flex min-h-11 items-center font-semibold" href="/docs#introduction">Introduction <span class="ml-2" aria-hidden="true">&rarr;</span></a>
 			</div>
 
 			<div class="grid min-w-0 gap-4">

@@ -540,22 +540,53 @@ func (m *Manual) Redirect(route string) (string, bool) {
 		}
 		last := path.Base(rest)
 		if first == "reference" {
-			if target, ok := m.anchor("/reference", last); ok {
+			if target, ok := m.anchorAny("/reference", referenceHeading(last), last); ok {
 				return target, true
 			}
 			return "", false
 		}
-		if target, ok := m.anchor("/docs", last); ok {
+		if target, ok := m.anchorAny("/docs", guideHeading(last), last); ok {
 			return target, true
 		}
 		return "", false
 	}
 	if kind, ok := strings.CutPrefix(route, "/reference/"); ok {
-		if target, found := m.anchor("/reference", kind); found {
+		if target, found := m.anchorAny("/reference", referenceHeading(kind), kind); found {
 			return target, true
 		}
 	}
 	return "", false
+}
+
+// referenceHeading is the heading of the long reference page that holds what a
+// generated page of the old reference held; a name it does not know is its own id.
+func referenceHeading(table string) string {
+	switch table {
+	case "attributes":
+		return "core-attributes"
+	case "headers":
+		return "request-headers"
+	case "classes":
+		return "css-classes"
+	case "config":
+		return "configuration"
+	}
+	return table
+}
+
+// guideHeading is the heading of /docs that took the place of an old guide.
+func guideHeading(slug string) string {
+	switch slug {
+	case "getting-started":
+		return "installing"
+	case "core-concepts":
+		return "introduction"
+	case "security-checklist":
+		return "security"
+	case "history-and-caching":
+		return "history"
+	}
+	return slug
 }
 
 func (m *Manual) hasGroup(key string) bool {
@@ -576,6 +607,16 @@ func (m *Manual) anchor(route, id string) (string, bool) {
 	for _, h := range p.Headings {
 		if h.ID == id {
 			return route + "#" + id, true
+		}
+	}
+	return "", false
+}
+
+// anchorAny is the first of the ids the page has a heading for.
+func (m *Manual) anchorAny(route string, ids ...string) (string, bool) {
+	for _, id := range ids {
+		if target, ok := m.anchor(route, id); ok {
+			return target, true
 		}
 	}
 	return "", false
