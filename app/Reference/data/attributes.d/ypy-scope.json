@@ -1,0 +1,11 @@
+{
+  "extension": "ypy-scope",
+  "attributes": [
+    {
+      "name": "ypy-scope",
+      "description": "Marks an element as a scope. The selector `scope` (in `ypy-target`, `ypy-indicator`, `ypy-include`, `ypy.find()`...) is the closest element with this attribute, the element itself included; `scope <selector>` searches inside it. Two more selectors come with the extension: `layer` (the topmost open layer of `ypy-layers`) and `shadow:<selector>` (a search that enters nested open shadow roots and follows the slots). The value is not used.",
+      "valueType": "boolean",
+      "inherited": false
+    }
+  ]
+}

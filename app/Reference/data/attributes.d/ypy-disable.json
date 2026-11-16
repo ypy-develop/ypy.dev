@@ -1,0 +1,37 @@
+{
+  "extension": "ypy-disable",
+  "attributes": [
+    {
+      "name": "ypy-disable",
+      "description": "Names the elements that are disabled while the request runs, with the `ypy-disable` extension (included in `ypy.max`). Takes a selector or an extended selector.",
+      "valueType": "selector",
+      "inherited": true
+    },
+    {
+      "name": "ypy-inert",
+      "description": "With the `ypy-disable` extension, makes the target of the request `inert` while the request runs. `true` turns it on, `false` turns it off when `config.inert` is on. Off by default.",
+      "valueType": "string",
+      "values": [
+        {
+          "name": "true",
+          "description": "The target takes no click, focus or typing until the response arrives."
+        },
+        {
+          "name": "false",
+          "description": "The target stays active."
+        }
+      ],
+      "inherited": true
+    }
+  ],
+  "config": [
+    {
+      "name": "inert",
+      "description": "Makes the target of every request `inert` while it runs. `ypy-inert` overrides it per element.",
+      "schema": {
+        "type": "boolean"
+      },
+      "default": false
+    }
+  ]
+}

@@ -1,0 +1,345 @@
+/* The page presentation of the front page: the hero, the numbered sections and the
+ * list of doors. They are the Arandu family's own page objects, kept as they are. */
+.site-hero {
+  width: 100cqw;
+  max-width: 100cqw;
+  margin-left: calc(50% - 50cqw);
+  background: var(--surface-raised);
+  isolation: isolate;
+}
+
+.hero-grid {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: center;
+  gap: 2.5rem;
+  padding: 2.5rem 2rem;
+}
+
+.hero-grid > * {
+  min-width: 0;
+}
+
+.hero-caption {
+  width: 100%;
+  margin-top: 0.75rem;
+  color: var(--text-muted);
+  font-size: 0.78125rem;
+  line-height: 1.65;
+}
+
+@media (min-width: 1024px) {
+  .hero-grid {
+    min-height: 440px;
+    grid-template-columns: minmax(0, 1.08fr) minmax(340px, 0.92fr);
+    gap: 4rem;
+    padding-block: 3rem;
+  }
+}
+
+@media (max-width: 639px) {
+  .hero-grid {
+    padding-inline: 1.25rem;
+  }
+}
+
+.hero-copy {
+  position: relative;
+  z-index: 2;
+  align-self: center;
+}
+
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+  color: var(--text-muted);
+}
+
+.hero-title {
+  max-width: 100%;
+  font-size: clamp(1.75rem, 2vw, 2rem);
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -0.035em;
+  text-wrap: balance;
+}
+
+.hero-body {
+  max-width: 49ch;
+  margin-top: 1rem;
+  color: var(--text-muted);
+  font-size: clamp(0.9rem, 1.15vw, 0.975rem);
+  font-weight: var(--font-weight-reading);
+  line-height: 1.65;
+}
+
+.hero-stage {
+  position: relative;
+  display: flex;
+  min-height: 0;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+}
+
+.hero-emblem {
+  width: min(48%, 160px);
+}
+
+.hero-emblem img {
+  display: block;
+  width: 100%;
+}
+
+.story-section {
+  background: var(--surface);
+}
+
+.section-copy {
+  align-self: center;
+}
+
+.section-kicker {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+.section-number {
+  display: inline-grid;
+  width: 2rem;
+  height: 2rem;
+  place-items: center;
+  border: 1px solid var(--border-strong);
+  border-radius: 50%;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+}
+
+.section-title {
+  max-width: 24ch;
+  margin-top: 1.1rem;
+  font-family: var(--font-display);
+  font-size: clamp(1.7rem, 3vw, 2.45rem);
+  font-weight: 750;
+  line-height: 1.08;
+  letter-spacing: -0.04em;
+  text-wrap: balance;
+}
+
+.repository-grid {
+  counter-reset: repository;
+  border-top: 1px solid var(--grid);
+}
+
+.repository-card {
+  display: grid;
+  grid-template-columns: 2.75rem minmax(8rem, 0.28fr) minmax(0, 1fr);
+  align-items: center;
+  column-gap: 1.25rem;
+  border-bottom: 1px solid var(--grid);
+  padding: 0.85rem 0.75rem 0.85rem 0;
+  transition: background-color var(--motion-fast) var(--ease-interaction);
+}
+
+.repository-card::before {
+  counter-increment: repository;
+  content: counter(repository, decimal-leading-zero);
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+}
+
+.repository-card-head {
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.repository-card-head a {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  gap: 0.35rem;
+  color: var(--foreground);
+}
+
+.repository-card-head > span {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+}
+
+.repository-arrow {
+  color: var(--primary);
+  transition: translate var(--motion-fast) var(--ease-interaction);
+}
+
+.repository-card p {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  font-weight: var(--font-weight-reading);
+  line-height: 1.55;
+}
+
+.closing-panel {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  align-items: end;
+  gap: clamp(2.5rem, 7vw, 7rem);
+  padding-block: clamp(1rem, 2vw, 2rem);
+}
+
+.closing-title {
+  max-width: 16ch;
+  font-size: clamp(2.15rem, 4vw, 3.25rem);
+  font-weight: 750;
+  line-height: 1.04;
+  letter-spacing: -0.04em;
+  text-wrap: balance;
+}
+
+.closing-copy {
+  border-left: 1px solid var(--border-strong);
+  padding-left: clamp(1.5rem, 3vw, 3rem);
+}
+
+@media (max-width: 1023px) {
+}
+
+@media (max-width: 767px) {
+  .closing-panel {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.75rem;
+    padding-block: 0.5rem;
+  }
+
+  .closing-copy {
+    border-top: 1px solid var(--border-strong);
+    border-left: 0;
+    padding-top: 1.5rem;
+    padding-left: 0;
+  }
+}
+
+
+@media (max-width: 639px) {
+  body {
+    background-image: none;
+  }
+
+  .site-main {
+    padding-inline: 0.75rem;
+  }
+
+  .section-kicker {
+    flex-wrap: wrap;
+  }
+
+  .repository-card {
+    grid-template-columns: 2.25rem minmax(0, 1fr);
+    column-gap: 0.75rem;
+    padding-right: 0;
+  }
+
+  .repository-card::before {
+    grid-row: 1 / span 2;
+    align-self: start;
+    padding-top: 0.95rem;
+  }
+
+  .repository-card-head,
+  .repository-card p {
+    grid-column: 2;
+  }
+
+  .repository-card p {
+    padding-bottom: 0.5rem;
+  }
+}
+
+/* The full logo is used exactly as it was drawn, in both themes: its black
+ * strokes need a light ground, so the logo always sits on one. Never recoloured. */
+.logo-plaque {
+  width: min(100%, 360px);
+  padding: 1.5rem 1.75rem;
+  border: var(--frame-rule-width) solid var(--grid);
+  border-radius: 0.7rem;
+  background: var(--color-paper);
+}
+
+.footer-logo {
+  height: auto;
+  width: 150px;
+  padding: 0.6rem 0.8rem;
+  border-radius: 0.45rem;
+  background: var(--color-paper);
+}
+
+.site-version {
+  padding: 0.2rem 0.45rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 0.3rem;
+  color: var(--text-muted);
+  font-size: 0.6rem;
+  letter-spacing: 0.08em;
+}
+
+/* The example on the front page: the button and the place its answer lands. */
+.demo-panel {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.1rem;
+  border: 1px dashed var(--border-strong);
+  border-radius: 0.6rem;
+  background: color-mix(in srgb, var(--surface-raised) 60%, transparent);
+}
+
+.demo-out {
+  min-width: 0;
+  flex: 1 1 14rem;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+.demo-out.ypy-request {
+  opacity: 0.55;
+}
+
+/* The brand marks of the signature line: HYZIS made it, Arandu is what it is
+ * made with. CSS masks, because the files are monochrome and a mask takes the
+ * colour of the text around it, so each is right in both themes. */
+.brandmark {
+  display: block;
+  background-color: currentColor;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+}
+
+.brandmark-hyzis {
+  height: 1.4rem;
+  aspect-ratio: 1876 / 2168;
+  -webkit-mask-image: url("/marks/hyzis.svg");
+  mask-image: url("/marks/hyzis.svg");
+}
+
+.brandmark-arandu {
+  height: 1.15rem;
+  aspect-ratio: 292 / 260;
+  -webkit-mask-image: url("/marks/arandu.svg");
+  mask-image: url("/marks/arandu.svg");
+}

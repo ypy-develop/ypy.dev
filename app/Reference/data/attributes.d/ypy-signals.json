@@ -1,0 +1,180 @@
+{
+  "extension": "ypy-signals",
+  "attributes": [
+    {
+      "name": "ypy-signals",
+      "description": "Declares signals and makes the element a scope: its signals are visible to the element and its descendants. Values are literals. An existing signal keeps its value when the markup is processed again, so a morph does not reset the state. A name that starts with `_` is local and never sent to the server.",
+      "valueType": "expression",
+      "syntax": "`name: literal, other: literal` (braces optional, JSON works too)",
+      "doc": "https://ypy.dev/docs/reference/signals"
+    },
+    {
+      "name": "ypy-signals.server",
+      "description": "Declares server-owned signals. The client cannot write them; only a server patch or the markup of this declaration changes them. This is a convenience of the UI, not security: the server must sign and verify the values it owns.",
+      "valueType": "expression",
+      "syntax": "`name: literal, other: literal`",
+      "doc": "https://ypy.dev/docs/reference/signals"
+    },
+    {
+      "name": "ypy-signals.local",
+      "description": "Declares signals persisted in `localStorage` under the key `ypy-signals:<id>`. The element needs an `id`. Stored values replace the declared defaults, only for keys the markup declares.",
+      "valueType": "expression",
+      "syntax": "`name: literal, other: literal`",
+      "doc": "https://ypy.dev/docs/reference/signals"
+    },
+    {
+      "name": "ypy-signals.session",
+      "description": "Declares signals persisted in `sessionStorage` under the key `ypy-signals:<id>`. The element needs an `id`.",
+      "valueType": "expression",
+      "syntax": "`name: literal, other: literal`",
+      "doc": "https://ypy.dev/docs/reference/signals"
+    },
+    {
+      "name": "ypy-computed:*",
+      "description": "Declares a derived, read-only signal named after the attribute (`ypy-computed:total-price` defines `$totalPrice`). It follows its dependencies and is never sent to the server.",
+      "valueType": "expression",
+      "pattern": "^ypy-computed:.+$",
+      "doc": "https://ypy.dev/docs/reference/signals"
+    },
+    {
+      "name": "ypy-bind",
+      "description": "Keeps a form control and a signal equal. The signal fills the field and the field writes the signal. By default the field writes on `change`.",
+      "valueType": "string",
+      "syntax": "`<signal path>`",
+      "modifiers": [
+        { "name": ".live", "description": "Write the signal on every `input` event." },
+        { "name": ".blur", "description": "Write the signal on `blur` only." },
+        { "name": ".debounce.<time>", "description": "Write after the user pauses for the time (300ms when omitted). A `change` writes at once." },
+        { "name": ".throttle.<time>", "description": "Write at most once per interval with the latest value (300ms when omitted)." }
+      ],
+      "doc": "https://ypy.dev/docs/reference/signals"
+    },
+    {
+      "name": "ypy-bind:*",
+      "description": "Same as `ypy-bind`, with the signal named in the attribute name (`ypy-bind:user-name` binds `$userName`). The value is a path inside the signal.",
+      "valueType": "string",
+      "pattern": "^ypy-bind:.+$",
+      "modifiers": [
+        { "name": ".live", "description": "Write the signal on every `input` event." },
+        { "name": ".blur", "description": "Write the signal on `blur` only." },
+        { "name": ".debounce.<time>", "description": "Write after the user pauses for the time (300ms when omitted)." },
+        { "name": ".throttle.<time>", "description": "Write at most once per interval with the latest value (300ms when omitted)." }
+      ],
+      "doc": "https://ypy.dev/docs/reference/signals"
+    },
+    {
+      "name": "ypy-text",
+      "description": "Sets `textContent` from an expression, as text and never as markup. Objects show as JSON. It runs again when a signal it read changes.",
+      "valueType": "expression",
+      "doc": "https://ypy.dev/docs/reference/signals"
+    },
+    {
+      "name": "ypy-show",
+      "description": "Hides the element (`display: none`) while the expression is false.",
+      "valueType": "expression",
+      "doc": "https://ypy.dev/docs/reference/signals"
+    },
+    {
+      "name": "ypy-class",
+      "description": "Toggles several classes from an object expression, such as `{red: $bad, wide: $w > 3}`. A class name that has a dot goes in this object form.",
+      "valueType": "expression",
+      "doc": "https://ypy.dev/docs/reference/signals"
+    },
+    {
+      "name": "ypy-class:*",
+      "description": "Toggles the class named in the attribute name when the expression is truthy, such as `ypy-class:active=\"$on\"`.",
+      "valueType": "expression",
+      "pattern": "^ypy-class:.+$",
+      "doc": "https://ypy.dev/docs/reference/signals"
+    },
+    {
+      "name": "ypy-attr",
+      "description": "Sets several attributes from an object expression. `false`, `null` and `undefined` remove an attribute and `true` sets it empty. Refused: `on*` attributes, `srcdoc`, `ypy-*` attributes and script URLs.",
+      "valueType": "expression",
+      "doc": "https://ypy.dev/docs/reference/signals"
+    },
+    {
+      "name": "ypy-attr:*",
+      "description": "Sets the attribute named in the attribute name from the expression. `false`, `null` and `undefined` remove it and `true` sets it empty.",
+      "valueType": "expression",
+      "pattern": "^ypy-attr:.+$",
+      "variants": ["ypy-attr:disabled", "ypy-attr:hidden", "ypy-attr:href", "ypy-attr:title", "ypy-attr:aria-label"],
+      "doc": "https://ypy.dev/docs/reference/signals"
+    },
+    {
+      "name": "ypy-on:*",
+      "description": "Runs signal statements when the DOM event fires, such as `ypy-on:click=\"$count++; $open = !$open\"`. Inside a scope this extension takes the attribute from the core's `ypy-on`: the value is the signal language, not JavaScript. The listener runs in the capture phase on the element, before a request the same element starts.",
+      "valueType": "expression",
+      "pattern": "^ypy-on:.+$",
+      "modifiers": [
+        { "name": ".prevent", "description": "Call `preventDefault()`." },
+        { "name": ".stop", "description": "Call `stopPropagation()`." },
+        { "name": ".once", "description": "Run one time." },
+        { "name": ".window", "description": "Listen on `window` instead of the element." },
+        { "name": ".debounce.<time>", "description": "Run after a pause in the events (300ms when omitted)." },
+        { "name": ".throttle.<time>", "description": "Run at most once per interval, on the leading edge (300ms when omitted)." }
+      ],
+      "doc": "https://ypy.dev/docs/reference/signals"
+    },
+    {
+      "name": "ypy-signals-send",
+      "description": "Asks for the signals in scope to go with the requests of this element. Signals are sent only when asked: with this attribute on the element, with `ypy-signals-send:inherited` on a container (the nearest value wins), or for the whole page with the config `signals.send`. `false` turns it off again for the element or the container. Signals are never sent to another origin.",
+      "valueType": "boolean",
+      "syntax": "`[true|false]`",
+      "inherited": true,
+      "values": [
+        { "name": "true", "description": "The requests of this element (and of its descendants, when written `:inherited`) carry the signals. An empty value means the same." },
+        { "name": "false", "description": "The requests of this element and its descendants do not carry the signals, even when the config asks for them." }
+      ],
+      "doc": "https://ypy.dev/docs/reference/signals"
+    }
+  ],
+  "events": [
+    {
+      "name": "ypy:signals:patch",
+      "description": "Fires before a merge patch is applied to the signals, whether it came from a JSON response or from `ypy.signals.patch()`. Cancel it to discard the patch.",
+      "detail": { "patch": "Record<string, any>" },
+      "cancelable": true,
+      "target": "element"
+    },
+    {
+      "name": "ypy:signals:readonly",
+      "description": "Fires when a write to a read-only signal (server-owned or computed) was refused. `detail.warn` carries the message and is logged as a warning.",
+      "detail": { "name": "string", "warn": "string" },
+      "cancelable": false,
+      "target": "element"
+    },
+    {
+      "name": "ypy:signals:error",
+      "description": "Fires when an expression did not parse, a handler or effect threw, or a patch was not usable. The attribute that failed does nothing and the rest of the page keeps working.",
+      "detail": { "error": "unknown" },
+      "cancelable": false,
+      "target": "element"
+    }
+  ],
+  "config": [
+    {
+      "name": "signals",
+      "description": "Settings of the signals extension.",
+      "schema": { "type": "object" }
+    },
+    {
+      "name": "signals.send",
+      "description": "Send the signals in scope with every same-origin request, with no attribute. `ypy-signals-send=\"false\"` turns it off for an element or a container (`:inherited`).",
+      "schema": { "type": "boolean" },
+      "default": false
+    },
+    {
+      "name": "classes.dirty",
+      "description": "Class added to a signals scope element while it holds unsaved changes. Set it to a space separated list to replace the default.",
+      "schema": { "type": "string" },
+      "default": "ypy-dirty"
+    }
+  ],
+  "classes": [
+    {
+      "name": "ypy-dirty",
+      "description": "Applied to a signals scope while a client-owned signal differs from its last saved value. The scope also gets `dirty` in `data-ypy-state` and its `$_dirty` signal is `true`."
+    }
+  ]
+}

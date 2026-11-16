@@ -1,0 +1,157 @@
+{
+  "extension": "ypy-multipart",
+  "attributes": [
+    {
+      "name": "ypy-multipart:connect",
+      "description": "Opens a long-lived `multipart/mixed` or `multipart/parallel` response with a GET request to the URL, on the element's `ypy-trigger` (default `load`). Each part is swapped like a response and may carry `YPY-*` headers of its own. The connection reconnects with backoff, sends `YPY-Last-Part-ID` and pauses while the tab is in the background.",
+      "valueType": "url",
+      "inherited": false
+    },
+    {
+      "name": "ypy-multipart:close",
+      "description": "Closes the connection when this event fires on the element.",
+      "valueType": "string",
+      "syntax": "<event name or trigger specification>",
+      "inherited": false
+    }
+  ],
+  "events": [
+    {
+      "name": "ypy:multipart:before:connection",
+      "description": "Fires before a multipart connection is used, and again before each reconnect. Cancel it, or set `detail.connection.cancelled = true`, to stop.",
+      "detail": { "connection": "YpyMultipartConnection" },
+      "cancelable": true,
+      "target": "element"
+    },
+    {
+      "name": "ypy:multipart:after:connection",
+      "description": "Fires when a multipart response was accepted, on the first connection and after each successful reconnect.",
+      "detail": { "connection": "YpyMultipartConnection" },
+      "cancelable": false,
+      "target": "element"
+    },
+    {
+      "name": "ypy:multipart:before:part",
+      "description": "Fires for each part before it is handled. Cancel it, or set `detail.cancelled = true`, to skip the part. `detail.waitUntil(promise)` delays handling.",
+      "detail": {
+        "connection": "YpyMultipartConnection",
+        "ctx": "YpyRequestCtx",
+        "part": "YpyBodyPart",
+        "cancelled": "boolean",
+        "waitUntil": "(promise: Promise<unknown>) => void"
+      },
+      "cancelable": true,
+      "target": "element"
+    },
+    {
+      "name": "ypy:multipart:after:part",
+      "description": "Fires after a part was swapped or its header actions ran. The part id then counts as received for reconnects.",
+      "detail": {
+        "connection": "YpyMultipartConnection",
+        "ctx": "YpyRequestCtx",
+        "part": "YpyBodyPart"
+      },
+      "cancelable": false,
+      "target": "element"
+    },
+    {
+      "name": "ypy:multipart:error",
+      "description": "Fires when a connection attempt, a reconnect or the parsing of the stream fails. `detail.status` is set when a reconnect got an unusable response.",
+      "detail": {
+        "connection": "YpyMultipartConnection",
+        "error": "unknown",
+        "status": "number | undefined"
+      },
+      "cancelable": false,
+      "target": "element"
+    },
+    {
+      "name": "ypy:multipart:close",
+      "description": "Fires once when the connection is cleaned up. `detail.reason` is `cancelled`, `ended`, `removed`, `part` (a `ypy-multipart:close` event fired) or `cleanup`.",
+      "detail": {
+        "connection": "YpyMultipartConnection",
+        "reason": "'cancelled' | 'ended' | 'removed' | 'part' | 'cleanup'"
+      },
+      "cancelable": false,
+      "target": "element"
+    }
+  ],
+  "headers": [
+    {
+      "name": "YPY-Last-Part-ID",
+      "direction": "request",
+      "description": "Sent on a reconnect: the id (`YPY-Part-ID`) of the last part that was fully handled, so the server can resume after it.",
+      "value": "the last completed part id"
+    },
+    {
+      "name": "YPY-Part-ID",
+      "direction": "response",
+      "description": "Part header: identifies the part. Once the part and all the parts before it were handled, its value becomes the next `YPY-Last-Part-ID`.",
+      "value": "any string"
+    },
+    {
+      "name": "YPY-Swap",
+      "direction": "response",
+      "description": "Part or response header: the swap style for this part (the whole stream when set on the response). `YPY-Reswap` wins over it.",
+      "value": "a swap specification"
+    },
+    {
+      "name": "YPY-Select",
+      "direction": "response",
+      "description": "Part or response header: the selector of the content to swap for this part. `YPY-Reselect` wins over it.",
+      "value": "a CSS selector"
+    },
+    {
+      "name": "YPY-Push",
+      "direction": "response",
+      "description": "Alias of `YPY-Push-Url` accepted on a part or on the multipart response.",
+      "value": "a URL"
+    }
+  ],
+  "config": [
+    {
+      "name": "multipart",
+      "description": "Defaults of the ypy-multipart extension. A single request overrides them with `ypy-config='{\"multipart\":{...}}'`.",
+      "schema": { "type": "object" }
+    },
+    {
+      "name": "multipart.reconnect",
+      "description": "Reconnect after the stream ends or fails. The default is `true` for an element with `ypy-multipart:connect` and `false` for a stream opened by a request.",
+      "schema": { "type": "boolean" }
+    },
+    {
+      "name": "multipart.reconnectDelay",
+      "description": "Wait before the first reconnect, in ms or as an interval string. The wait doubles on each attempt up to `reconnectMaxDelay`.",
+      "schema": { "type": ["integer", "string"], "minimum": 0 },
+      "default": 500
+    },
+    {
+      "name": "multipart.reconnectMaxDelay",
+      "description": "Longest wait between two reconnect attempts, in ms or as an interval string.",
+      "schema": { "type": ["integer", "string"], "minimum": 0 },
+      "default": 60000
+    },
+    {
+      "name": "multipart.reconnectMaxAttempts",
+      "description": "How many consecutive reconnect attempts are made before giving up. Unlimited by default.",
+      "schema": { "type": "integer", "minimum": 0 }
+    },
+    {
+      "name": "multipart.reconnectJitter",
+      "description": "Random spread applied to each reconnect delay, as a fraction of the delay (0.3 is plus or minus 30%). `0` turns it off.",
+      "schema": { "type": "number", "minimum": 0, "maximum": 1 },
+      "default": 0.3
+    },
+    {
+      "name": "multipart.connectTimeout",
+      "description": "Timeout of a connection attempt, in ms or as an interval string. `0` waits without limit. Defaults to `ypy.config.defaultTimeout`.",
+      "schema": { "type": ["integer", "string"], "minimum": 0 }
+    },
+    {
+      "name": "multipart.pauseOnBackground",
+      "description": "Close the connection while the tab is hidden and reconnect when it is visible again. The default is `true` for an element with `ypy-multipart:connect` and `false` otherwise.",
+      "schema": { "type": "boolean" }
+    }
+  ],
+  "internalNames": ["ypy-last-part-id", "ypy-multipart"]
+}

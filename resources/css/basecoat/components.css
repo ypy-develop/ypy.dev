@@ -1,0 +1,107 @@
+/* The components this project uses.
+ *
+ * A component layer is author CSS, not a utility: Tailwind emits every rule
+ * here whether a view uses it or not, because there is no class name to scan
+ * for. So the list is the bill. Importing all thirty-eight upstream ships costs
+ * 222 kB minified for a project that draws eight of them.
+ *
+ * Adding a component is adding a line, in the same way that adding a directory
+ * of views is adding a blank import in bootstrap. Both are the same trade: the
+ * cost is visible and it is one line, rather than invisible and paid on every
+ * page load.
+ *
+ * The files are all still on disk under components/ -- uncomment what you need.
+ */
+
+/* The frame */
+@import "./components/card.css";
+@import "./components/table.css";
+@import "./components/empty.css";
+@import "./components/sidebar.css";
+
+/* Forms */
+@import "./components/button.css";
+@import "./components/field.css";
+@import "./components/label.css";
+@import "./components/input.css";
+@import "./components/textarea.css";
+@import "./components/checkbox.css";
+@import "./components/native-select.css";
+
+/* Telling somebody something */
+@import "./components/alert.css";
+@import "./components/badge.css";
+@import "./components/toast.css";
+@import "./components/skeleton.css";
+
+/* Things that open */
+@import "./components/dropdown-menu.css";
+@import "./components/popover.css";
+@import "./components/dialog.css";
+
+/* Navigation */
+@import "./components/breadcrumb.css";
+@import "./components/tabs.css";
+@import "./components/avatar.css";
+@import "./components/scrollbar.css";
+
+/* The rest of the library. These arrived with the components that need them:
+ * a component whose stylesheet is on disk but not imported renders as bare
+ * markup, which looks like a broken component rather than a missing line. */
+@import "./components/accordion.css";
+@import "./components/button-group.css";
+@import "./components/collapsible.css";
+@import "./components/combobox.css";
+@import "./components/command.css";
+@import "./components/drawer.css";
+@import "./components/input-group.css";
+@import "./components/item.css";
+@import "./components/kbd.css";
+@import "./components/progress.css";
+@import "./components/radio.css";
+@import "./components/range.css";
+@import "./components/switch.css";
+
+/* Still not imported, and on disk if you want them: chart, select, tooltip.
+ *
+ * They are the three with nothing to style. chart has no component; select is
+ * the button-and-listbox kind, and this library's Select is the browser's own
+ * element, which native-select.css above already dresses; tooltip is refused --
+ * its own sheet hides the bubble on keyboard focus, so a component drawing one
+ * would serve a mouse and nobody else. */
+
+/* The components kyse v0.23.0 added, and the frames that are classes
+ * rather than components. The catalogue draws every one of them, so the
+ * site needs every rule -- a page that documents a component and renders
+ * it unstyled documents something nobody receives. */
+@import "./components/container-card.css";
+@import "./components/carousel.css";
+@import "./components/feed.css";
+@import "./components/file-upload.css";
+@import "./components/edit-in-place.css";
+@import "./components/spinner.css";
+@import "./components/figure.css";
+@import "./components/media.css";
+@import "./components/layout.css";
+@import "./components/color-picker.css";
+@import "./components/number-input.css";
+@import "./components/rating.css";
+@import "./components/segmented-control.css";
+@import "./components/password.css";
+@import "./components/one-time-code.css";
+@import "./components/masked.css";
+@import "./components/meter.css";
+@import "./components/output.css";
+@import "./components/status.css";
+@import "./components/highlight.css";
+@import "./components/tooltip-hover-card.css";
+@import "./components/link.css";
+@import "./components/skip-link.css";
+@import "./components/split-button.css";
+@import "./components/relative-time.css";
+@import "./components/pagination.css";
+@import "./components/toolbar-menubar.css";
+@import "./components/tree.css";
+@import "./components/calendar.css";
+@import "./components/date-picker.css";
+@import "./components/data-table.css";

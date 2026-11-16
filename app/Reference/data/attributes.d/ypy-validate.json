@@ -1,0 +1,68 @@
+{
+  "extension": "ypy-validate",
+  "headers": [
+    {
+      "name": "YPY-Validate",
+      "direction": "request",
+      "description": "Sent by a field check with the name of the field. With batching on (`ypy-validate-batch`), the names of every field asked in the window, separated by commas (`email,username`). The server must answer without saving anything: 422 with the message markup when the field is invalid, 204 when it is valid. For a batch: 422 when any field is invalid, with the message of each invalid field as an out-of-band element (`<small id=\"email-error\" ypy-swap-oob=\"innerHTML\">...</small>`) whose id is the id of that field's place; 2xx when all are valid.",
+      "value": "the field name, or the names separated by commas"
+    }
+  ],
+  "classes": [
+    {
+      "name": "ypy-field-error",
+      "description": "Applied to the answer element the extension creates after a field when the page has none."
+    }
+  ],
+  "attributes": [
+    {
+      "name": "ypy-validate-fields",
+      "description": "Checks every field inside this element on the server when the user leaves it: a POST with the form values and the `YPY-Validate` header (the field name). The value is the URL; a bare attribute asks the form's action. A field with `ypy-validate=\"false\"` is left out.",
+      "valueType": "url",
+      "inherited": false,
+      "doc": "https://ypy.dev/docs/reference/validate"
+    },
+    {
+      "name": "ypy-validate-trigger",
+      "description": "When a field is checked: a trigger specification. Default `change delay:200ms` (the value changed, debounced). Read on the field or on the element with `ypy-validate-fields`.",
+      "valueType": "string",
+      "inherited": false,
+      "doc": "https://ypy.dev/docs/reference/validate"
+    },
+    {
+      "name": "ypy-validate-batch",
+      "description": "Sends the fields of one form that ask the same URL within a short window in a single request, with `YPY-Validate: field1,field2`. The value is the window as a time; a bare attribute means `50ms`; `false` turns it off. Read on the field, on the element with `ypy-validate-fields` or on the form (the nearest wins), and from `validate.batch` in the configuration. Off by default: the server must read the list. One field alone is checked as without batching.",
+      "valueType": "string",
+      "syntax": "`[<time>] | false`",
+      "values": [
+        {
+          "name": "false",
+          "description": "No batching for this field or region."
+        }
+      ],
+      "inherited": false,
+      "doc": "https://ypy.dev/docs/reference/validate"
+    }
+  ],
+  "config": [
+    {
+      "name": "validate",
+      "description": "Settings of the field validation on the server.",
+      "schema": {
+        "type": "object"
+      }
+    },
+    {
+      "name": "validate.batch",
+      "description": "The window, as a time, in which the fields of one form that ask the same URL go in a single request. Off by default; `ypy-validate-batch` overrides it per field, region or form.",
+      "schema": {
+        "type": [
+          "number",
+          "string",
+          "boolean"
+        ]
+      },
+      "default": false
+    }
+  ]
+}

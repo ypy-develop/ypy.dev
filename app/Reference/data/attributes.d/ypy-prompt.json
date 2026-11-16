@@ -1,0 +1,31 @@
+{
+  "extension": "ypy-prompt",
+  "attributes": [
+    {
+      "name": "ypy-prompt",
+      "description": "Asks the user a question before the request, sends the answer in the `YPY-Prompt` header and aborts the request when the user cancels. Define `window.ypyPrompt` for a custom synchronous dialog.",
+      "valueType": "text",
+      "inherited": true
+    }
+  ],
+  "events": [
+    {
+      "name": "ypy:prompt",
+      "description": "Fires on the element after the user answered. Cancel it to abort the request.",
+      "detail": {
+        "prompt": "string",
+        "target": "Element | string | undefined"
+      },
+      "cancelable": true,
+      "target": "element"
+    }
+  ],
+  "headers": [
+    {
+      "name": "YPY-Prompt",
+      "direction": "request",
+      "description": "The answer the user gave to `ypy-prompt`, URI-encoded.",
+      "value": "URI-encoded text"
+    }
+  ]
+}

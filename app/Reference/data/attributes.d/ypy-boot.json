@@ -1,0 +1,15 @@
+{
+  "extension": "ypy-boot",
+  "events": [
+    {
+      "name": "ypy:ready",
+      "description": "Fires once on `document.body`, after YPY processed the page for the first time. Needs the `ypy-boot` extension.",
+      "detail": {},
+      "cancelable": false,
+      "target": "element"
+    }
+  ],
+  "internalNames": [
+    "ypy-boot"
+  ]
+}

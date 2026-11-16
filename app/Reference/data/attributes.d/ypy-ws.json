@@ -1,0 +1,242 @@
+{
+  "extension": "ypy-ws",
+  "attributes": [
+    {
+      "name": "ypy-ws:connect",
+      "description": "Opens a WebSocket to the URL when the element's `ypy-trigger` fires (default `load`). `http(s)://` and relative URLs are converted to `ws(s)://`. A text message is swapped into the target as HTML; a JSON message swaps its `content` field and may carry `target`, `swap` and `select`. Other JSON is only available to listeners. The socket reconnects with backoff and closes with the element.",
+      "valueType": "url",
+      "inherited": false
+    },
+    {
+      "name": "ypy-ws:send",
+      "description": "Sends the element's values over the WebSocket of the nearest `ypy-ws:connect` ancestor, as JSON with a `headers` member. It collects form values and `ypy-vals` like a request. The default trigger is `submit` for a form, `change` for a field and `click` otherwise; `ypy-trigger` overrides it.",
+      "valueType": "none",
+      "inherited": false
+    },
+    {
+      "name": "ypy-ws-connect",
+      "description": "Legacy spelling of `ypy-ws:connect`. The extension copies it to the new name and warns in the console.",
+      "valueType": "url",
+      "deprecated": "Use ypy-ws:connect."
+    },
+    {
+      "name": "ypy-ws-send",
+      "description": "Legacy spelling of `ypy-ws:send`. The extension copies it to the new name and warns in the console.",
+      "valueType": "none",
+      "deprecated": "Use ypy-ws:send."
+    }
+  ],
+  "events": [
+    {
+      "name": "ypy:ws:before:connection",
+      "description": "Fires before a socket is created, and again before each reconnect. Call `evt.preventDefault()` or set `detail.connection.cancelled = true` to stop; a `ypy:ws:close` event with reason `cancelled` follows.",
+      "detail": {
+        "connection": "YpyWsConnection"
+      },
+      "cancelable": true,
+      "target": "element"
+    },
+    {
+      "name": "ypy:ws:after:connection",
+      "description": "Fires when the socket opens. Queued outgoing messages are sent right after it.",
+      "detail": {
+        "connection": "YpyWsConnection"
+      },
+      "cancelable": false,
+      "target": "element"
+    },
+    {
+      "name": "ypy:ws:close",
+      "description": "Fires when the socket closes. `detail.reason` is `closed` (with the close `code`), `cancelled` or `removed`; `code` is `null` for the last two, and also for a `closed` that YPY did itself because the socket was silent for `ws.heartbeat` or the page came back.",
+      "detail": {
+        "connection": "YpyWsConnection",
+        "reason": "'closed' | 'cancelled' | 'removed'",
+        "code": "number | null"
+      },
+      "cancelable": false,
+      "target": "element"
+    },
+    {
+      "name": "ypy:ws:error",
+      "description": "Fires on a socket error, a failed send, a full outgoing queue, or a send with no open connection. `detail.error` is an `Event`, an `Error` or a message string; `detail.connection` is absent when there is no connection.",
+      "detail": {
+        "connection": "YpyWsConnection | undefined",
+        "error": "unknown",
+        "url": "string | null | undefined"
+      },
+      "cancelable": false,
+      "target": "element"
+    },
+    {
+      "name": "ypy:ws:before:message:outgoing",
+      "description": "Fires before a message is sent. Edit `detail.message.headers`, `detail.message.values` or set `detail.message.data` to send raw data instead of JSON. Cancel it, or set `detail.cancelled = true`, to drop the message. `detail.waitUntil(promise)` delays the send.",
+      "detail": {
+        "connection": "YpyWsConnection",
+        "message": "YpyWsOutgoingMessage",
+        "cancelled": "boolean",
+        "waitUntil": "(promise: Promise<unknown>) => void"
+      },
+      "cancelable": true,
+      "target": "element"
+    },
+    {
+      "name": "ypy:ws:after:message:outgoing",
+      "description": "Fires after a message was written to the socket.",
+      "detail": {
+        "connection": "YpyWsConnection",
+        "message": "YpyWsOutgoingMessage"
+      },
+      "cancelable": false,
+      "target": "element"
+    },
+    {
+      "name": "ypy:ws:before:message:incoming",
+      "description": "Fires when a message arrives, before it is swapped. Cancel it, or set `detail.cancelled = true`, to ignore it (the data stays available to this listener). `detail.waitUntil(promise)` delays processing.",
+      "detail": {
+        "connection": "YpyWsConnection",
+        "message": "YpyWsIncomingMessage",
+        "cancelled": "boolean",
+        "waitUntil": "(promise: Promise<unknown>) => void"
+      },
+      "cancelable": true,
+      "target": "element"
+    },
+    {
+      "name": "ypy:ws:after:message:incoming",
+      "description": "Fires after an incoming message was processed and any content swapped.",
+      "detail": {
+        "connection": "YpyWsConnection",
+        "message": "YpyWsIncomingMessage"
+      },
+      "cancelable": false,
+      "target": "element"
+    }
+  ],
+  "config": [
+    {
+      "name": "ws",
+      "description": "Defaults of the ypy-ws extension. A single element overrides them with `ypy-config='{\"ws\":{...}}'`.",
+      "schema": {
+        "type": "object"
+      }
+    },
+    {
+      "name": "ws.reconnect",
+      "description": "Reconnect after the socket closes with one of `reconnectCodes`.",
+      "schema": {
+        "type": "boolean"
+      },
+      "default": true
+    },
+    {
+      "name": "ws.reconnectCodes",
+      "description": "Close codes that trigger a reconnect. Any other code ends the connection.",
+      "schema": {
+        "type": "array",
+        "items": {
+          "type": "integer"
+        }
+      },
+      "default": [
+        1001,
+        1005,
+        1006,
+        1011,
+        1012,
+        1013,
+        1014
+      ]
+    },
+    {
+      "name": "ws.reconnectDelay",
+      "description": "Wait before the first reconnect, in ms or as an interval string. The wait doubles on each attempt up to `reconnectMaxDelay`.",
+      "schema": {
+        "type": [
+          "integer",
+          "string"
+        ],
+        "minimum": 0
+      },
+      "default": 500
+    },
+    {
+      "name": "ws.reconnectMaxDelay",
+      "description": "Longest wait between two reconnect attempts, in ms or as an interval string.",
+      "schema": {
+        "type": [
+          "integer",
+          "string"
+        ],
+        "minimum": 0
+      },
+      "default": 60000
+    },
+    {
+      "name": "ws.reconnectMaxAttempts",
+      "description": "How many consecutive reconnect attempts are made before giving up. Unlimited by default.",
+      "schema": {
+        "type": "integer",
+        "minimum": 0
+      }
+    },
+    {
+      "name": "ws.reconnectJitter",
+      "description": "Random spread applied to each reconnect delay, as a fraction of the delay (0.3 is plus or minus 30%). `0` turns it off.",
+      "schema": {
+        "type": "number",
+        "minimum": 0,
+        "maximum": 1
+      },
+      "default": 0.3
+    },
+    {
+      "name": "ws.pauseOnBackground",
+      "description": "Close the socket while the tab is hidden and reconnect when it is visible again.",
+      "schema": {
+        "type": "boolean"
+      },
+      "default": true
+    },
+    {
+      "name": "ws.heartbeat",
+      "description": "Close the socket and open it again when no message arrives for this long, in ms or as an interval string such as `45s`. The browser does not show protocol ping frames to the page, so the server has to send a message (any text) now and then. It catches a socket that a sleeping phone left open: it neither fails nor closes, so the reconnect would never run. The watch also covers a connection that never opens. Off by default (`0`). It reconnects only when `ws.reconnect` is on; otherwise the socket is closed. When the page is shown again (`pageshow` from the back/forward cache, `online`, a tab that is visible again) a socket silent for longer than this is opened again at once, a wait for the next attempt is skipped, and a socket that `pagehide` closed is opened again.",
+      "schema": {
+        "type": [
+          "integer",
+          "string"
+        ],
+        "minimum": 0
+      },
+      "default": 0
+    },
+    {
+      "name": "ws.maxOutgoingMessagesQueueSize",
+      "description": "How many messages wait for the socket to open. A message sent when the queue is full fires `ypy:ws:error`.",
+      "schema": {
+        "type": "integer",
+        "minimum": 0
+      },
+      "default": 100
+    },
+    {
+      "name": "ws.protocols",
+      "description": "Sub-protocols passed to the `WebSocket` constructor.",
+      "schema": {
+        "oneOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "internalNames": [
+    "ypy-ws"
+  ]
+}

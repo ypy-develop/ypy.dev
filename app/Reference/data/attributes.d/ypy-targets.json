@@ -1,0 +1,11 @@
+{
+  "extension": "ypy-targets",
+  "attributes": [
+    {
+      "name": "ypy-targets",
+      "description": "Swaps the same response content into every element matching the selector, instead of the single target.",
+      "valueType": "selector",
+      "inherited": true
+    }
+  ]
+}

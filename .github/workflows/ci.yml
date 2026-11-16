@@ -1,0 +1,40 @@
+name: ci
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: stable
+
+      # The aru the Dockerfile builds the image with, read from its ARU_VERSION,
+      # so CI and the image cannot disagree about which release compiled the views.
+      - name: install aru
+        run: |
+          aru_version="$(sed -n 's/^ARG ARU_VERSION=//p' Dockerfile)"
+          go install "github.com/arandu-io/aru@${aru_version}"
+
+      # The views are compiled here, not committed.
+      - name: build the views
+        run: "$(go env GOPATH)/bin/aru" view:build
+
+      - name: gofmt
+        run: |
+          unformatted=$(find . -name '*.go' -not -path '*/testdata/*' -not -name '*.kyse.go' -exec gofmt -l {} +)
+          if [ -n "$unformatted" ]; then echo "not gofmt'd:"; echo "$unformatted"; exit 1; fi
+
+      - run: go vet ./...
+      - run: bash tests/test-layout-guard.sh
+      - run: go test -race ./...
+      - run: go build ./...

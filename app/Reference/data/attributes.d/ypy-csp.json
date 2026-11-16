@@ -1,0 +1,55 @@
+{
+  "extension": "ypy-csp",
+  "attributes": [
+    {
+      "name": "ypy-nonce",
+      "description": "Marks a YPY element as server-rendered trusted markup: its value must equal the page nonce, or `ypy-csp` strips every `ypy-*` and `data-ypy-*` attribute from the element. Only the element's own attribute counts, never an inherited one.",
+      "valueType": "string"
+    }
+  ],
+  "events": [
+    {
+      "name": "ypy:security:strip",
+      "description": "Fires on an element after `ypy-csp` removed its `ypy-*` and `data-ypy-*` attributes because it carried no valid nonce.",
+      "detail": {
+        "reason": "'missing-nonce' | 'nonce-mismatch'",
+        "stripped": "string[]"
+      },
+      "cancelable": false,
+      "target": "element"
+    },
+    {
+      "name": "ypy:security:violation",
+      "description": "Fires when `ypy-csp` stops an action: code evaluated without a valid nonce (`nonce-mismatch-at-eval`), a `javascript:` or `js:` action URL (`javascript-url`) or a boosted form whose submitter changed `formaction` without a nonce (`unnonced-submitter`).",
+      "detail": {
+        "reason": "'nonce-mismatch-at-eval' | 'javascript-url' | 'unnonced-submitter'",
+        "action": "string | undefined",
+        "submitter": "Element | undefined",
+        "ctx": "YpyRequestCtx | undefined"
+      },
+      "cancelable": false,
+      "target": "element"
+    }
+  ],
+  "config": [
+    {
+      "name": "nonce",
+      "description": "Requires the `ypy-csp` extension: until it has started, YPY processes no element and sends no request. The page also needs a script with a CSP nonce, and the `ypy` Trusted Types policy when the CSP enforces them.",
+      "schema": {
+        "type": "boolean"
+      },
+      "default": false
+    },
+    {
+      "name": "safeEval",
+      "description": "Replaces `Function` and `AsyncFunction` with nonce-based script injection, so `ypy-on`, `js:` values and `ypy-confirm` code run without `unsafe-eval` in the CSP. Needs `ypy-csp`.",
+      "schema": {
+        "type": "boolean"
+      },
+      "default": false
+    }
+  ],
+  "internalNames": [
+    "ypy-csp"
+  ]
+}

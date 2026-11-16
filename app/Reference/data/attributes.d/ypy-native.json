@@ -1,0 +1,118 @@
+{
+  "extension": "ypy-native",
+  "attributes": [
+    {
+      "name": "ypy-native-component",
+      "description": "Asks the native app shell to render the named native component for this element. The element stays valid HTML and is the fallback in a browser. The name must be one the installed app build lists in its capabilities.",
+      "valueType": "string",
+      "syntax": "<component name>",
+      "inherited": false,
+      "doc": "https://ypy.dev/docs/reference/native"
+    },
+    {
+      "name": "ypy-native-props",
+      "description": "The properties of the native component: one JSON object, at most 2 KiB, data only.",
+      "valueType": "string",
+      "syntax": "<JSON object>",
+      "inherited": false,
+      "doc": "https://ypy.dev/docs/reference/native"
+    },
+    {
+      "name": "ypy-native-hide",
+      "description": "Hides the element in the app (the web header that a native bar replaces). It also becomes `inert`, so it leaves the accessibility tree and the tab order.",
+      "valueType": "boolean",
+      "inherited": false,
+      "doc": "https://ypy.dev/docs/reference/native"
+    },
+    {
+      "name": "ypy-native-only",
+      "description": "Shows the element only in the app. In a browser it is hidden and `inert`.",
+      "valueType": "boolean",
+      "inherited": false,
+      "doc": "https://ypy.dev/docs/reference/native"
+    },
+    {
+      "name": "ypy-native-click",
+      "description": "On the element itself: an `action` message from its native component clicks the element.",
+      "valueType": "boolean",
+      "inherited": false,
+      "doc": "https://ypy.dev/docs/reference/native"
+    }
+  ],
+  "events": [
+    {
+      "name": "ypy:native:event",
+      "description": "Fires on the element of a native component when the shell sends an event for it. Cancel it to stop the default, which is a click for `ypy-native-click` and an `action` message.",
+      "detail": {
+        "id": "number",
+        "name": "string",
+        "detail": "any"
+      },
+      "cancelable": true,
+      "target": "element",
+      "doc": "https://ypy.dev/docs/reference/native"
+    },
+    {
+      "name": "ypy:native:before:visit",
+      "description": "Fires on the source element before a visit is handed to the shell. Cancel it to keep the navigation in the page.",
+      "detail": {
+        "url": "string",
+        "action": "'advance' | 'replace' | 'restore'",
+        "source": "'boost' | 'form' | 'location' | 'redirect' | 'event'"
+      },
+      "cancelable": true,
+      "target": "element",
+      "doc": "https://ypy.dev/docs/reference/native"
+    },
+    {
+      "name": "ypy:native:navigate",
+      "description": "Asks the page to navigate its main content. The shell takes it as a visit; a browser swaps the page. The server sends it with `YPY-Trigger`.",
+      "detail": {
+        "url": "string",
+        "action": "'advance' | 'replace' | 'restore'"
+      },
+      "cancelable": true,
+      "target": "element",
+      "doc": "https://ypy.dev/docs/reference/native"
+    }
+  ],
+  "config": [
+    {
+      "name": "native",
+      "description": "Defaults of the ypy-native extension.",
+      "schema": {
+        "type": "object"
+      }
+    },
+    {
+      "name": "native.path",
+      "description": "The URL of the path configuration document, or `false` to not load it. The shell reads the same document.",
+      "schema": {
+        "type": [
+          "string",
+          "boolean"
+        ]
+      },
+      "default": "/.well-known/ypy-native.json"
+    },
+    {
+      "name": "native.web",
+      "description": "Outside the app, open the routes whose path configuration says `context: modal` as a layer (needs `ypy-layers`).",
+      "schema": {
+        "type": "boolean"
+      },
+      "default": false
+    }
+  ],
+  "headers": [
+    {
+      "name": "YPY-Native",
+      "direction": "request",
+      "description": "Sent on every same-origin YPY request of a native app: the platform, the bridge version and the native components the installed build knows. Decide on `caps`, not on the version, and send `Vary: YPY-Native, User-Agent` when the HTML depends on it.",
+      "value": "<platform>; v=<n>; caps=<a,b>"
+    }
+  ],
+  "internalNames": [
+    "ypy-native"
+  ]
+}

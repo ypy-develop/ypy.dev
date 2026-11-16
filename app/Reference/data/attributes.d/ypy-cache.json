@@ -1,0 +1,192 @@
+{
+  "extension": "ypy-cache",
+  "headers": [
+    {
+      "name": "YPY-Cache-Expire",
+      "direction": "response",
+      "description": "Marks old the stored copies whose path or tag matches a pattern: a comma separated list of paths, globs and tags (`/reports*`, `/cart`, `*`, `tag:products`), or `false` to keep everything. An old copy is still shown at once and is always revalidated with the server, whatever its age or `max-age`. To delete a copy instead, use `YPY-Cache-Evict`.",
+      "value": "URL patterns and `tag:<name>`, or `false`"
+    },
+    {
+      "name": "YPY-Cache-Evict",
+      "direction": "response",
+      "description": "Deletes the stored copies whose path or tag matches a pattern: a comma separated list of paths, globs and tags (`/reports*`, `/cart`, `*`, `tag:products`), or `false` to keep everything. The next request for a deleted copy goes to the server and waits for the answer. Without either header, a successful request that is not a GET deletes every copy.",
+      "value": "URL patterns and `tag:<name>`, or `false`"
+    }
+  ],
+  "classes": [
+    {
+      "name": "ypy-revalidating",
+      "description": "Applied to the target of a request while the extension checks with the server a copy it already showed."
+    }
+  ],
+  "attributes": [
+    {
+      "name": "ypy-cache",
+      "description": "Keeps the response of this element's GET and shows it at once next time, then revalidates it with `If-None-Match` and `If-Modified-Since` and swaps again only when the content changed. Same origin only; `no-store` and `private` responses are never kept (`private` unless asked). `false` turns it off for the element.",
+      "valueType": "string",
+      "syntax": "`[ttl:<time>] [fresh:<time>] [private] [offline] [size:<n>] [bytes:<n>]`",
+      "values": [
+        {
+          "name": "false",
+          "description": "Do not cache requests of this element."
+        }
+      ],
+      "modifiers": [
+        {
+          "name": "ttl:<time>",
+          "description": "A copy older than this is not shown, only revalidated. Default `10m`."
+        },
+        {
+          "name": "fresh:<time>",
+          "description": "A copy younger than this is shown without asking the server. Default 0; the response's `max-age` wins."
+        },
+        {
+          "name": "private",
+          "description": "Also keep responses marked `Cache-Control: private`."
+        },
+        {
+          "name": "offline",
+          "description": "Keep the copy in `sessionStorage` and show it when the network fails."
+        },
+        {
+          "name": "size:<n>",
+          "description": "Most copies held, least recently used first out. Default 50."
+        },
+        {
+          "name": "bytes:<n>",
+          "description": "Most characters of response text held. Default 2097152."
+        }
+      ],
+      "inherited": true,
+      "doc": "https://ypy.dev/docs/reference/cache"
+    },
+    {
+      "name": "ypy-cache-tags",
+      "description": "Labels the copy of this element's request with one or more tags, so the server can expire or evict it by name (`YPY-Cache-Expire: tag:products`) without knowing the URLs. A comma or space separated list.",
+      "valueType": "string",
+      "syntax": "`<tag>[, <tag>...]`",
+      "inherited": true,
+      "doc": "https://ypy.dev/docs/reference/cache"
+    }
+  ],
+  "events": [
+    {
+      "name": "ypy:cache:hit",
+      "description": "A stored copy answers the request. `age` is in ms; `offline` is true when the network failed and the copy was shown for that reason.",
+      "detail": {
+        "ctx": "YpyRequestCtx",
+        "url": "string",
+        "age": "number",
+        "offline": "boolean"
+      },
+      "cancelable": false,
+      "target": "element"
+    },
+    {
+      "name": "ypy:cache:revalidated",
+      "description": "The check that follows a shown copy ended. `changed` is true when new content was swapped in; `status` is the status of the check.",
+      "detail": {
+        "ctx": "YpyRequestCtx",
+        "url": "string",
+        "changed": "boolean",
+        "status": "number"
+      },
+      "cancelable": false,
+      "target": "element"
+    },
+    {
+      "name": "ypy:cache:expire",
+      "description": "Copies were marked old by a `YPY-Cache-Expire` header or `ypy.cache.expire()`. They are still shown, then revalidated. `expired` is how many.",
+      "detail": {
+        "patterns": "string[]",
+        "expired": "number"
+      },
+      "cancelable": false,
+      "target": "document"
+    },
+    {
+      "name": "ypy:cache:evict",
+      "description": "Copies were deleted by a `YPY-Cache-Evict` header, the default after a successful non-GET request, `ypy.cache.evict()` or `ypy.cache.clear()`. `removed` is how many.",
+      "detail": {
+        "patterns": "string[]",
+        "removed": "number"
+      },
+      "cancelable": false,
+      "target": "document"
+    }
+  ],
+  "config": [
+    {
+      "name": "cache",
+      "description": "Defaults for `ypy-cache`; the attribute overrides them per element.",
+      "schema": {
+        "type": "object"
+      }
+    },
+    {
+      "name": "cache.all",
+      "description": "Cache every GET of the page, not only the elements with `ypy-cache`.",
+      "schema": {
+        "type": "boolean"
+      },
+      "default": false
+    },
+    {
+      "name": "cache.ttl",
+      "description": "A copy older than this is not shown, only revalidated.",
+      "schema": {
+        "type": [
+          "number",
+          "string"
+        ]
+      },
+      "default": "10m"
+    },
+    {
+      "name": "cache.fresh",
+      "description": "A copy younger than this is shown without asking the server.",
+      "schema": {
+        "type": [
+          "number",
+          "string"
+        ]
+      },
+      "default": 0
+    },
+    {
+      "name": "cache.private",
+      "description": "Also keep responses marked `Cache-Control: private`.",
+      "schema": {
+        "type": "boolean"
+      },
+      "default": false
+    },
+    {
+      "name": "cache.offline",
+      "description": "Keep copies in `sessionStorage` and show them when the network fails.",
+      "schema": {
+        "type": "boolean"
+      },
+      "default": false
+    },
+    {
+      "name": "cache.size",
+      "description": "Most copies held.",
+      "schema": {
+        "type": "integer",
+        "minimum": 1
+      },
+      "default": 50
+    },
+    {
+      "name": "cache.bytes",
+      "description": "Most characters of response text held.",
+      "schema": {
+        "type": "integer",
+        "minimum": 1
+      },
+      "default": 2097152
+    }
+  ]
+}

@@ -1,0 +1,1027 @@
+/* The stylesheet of this application: Tailwind v4, Basecoat, and nothing else.
+ *
+ * `aru view:build` compiles it with the standalone tailwindcss binary -- a
+ * single executable the CLI downloads and pins in arandu.toml. There is no
+ * package.json or node_modules. Aru minifies the result with esbuild's Go API;
+ * a build step is allowed, Node is not.
+ *
+ * Basecoat is vendored under basecoat/, with its MIT licence, and it is yours:
+ * it is a directory of this project rather than a dependency, so changing how a
+ * button looks is editing a file you can see.
+ *
+ * Tailwind v4 needs no config file. The import below brings the engine, and
+ * @source tells it where the class names are -- the .kyse.go sources, because
+ * that is what a person edits, and the generated .go next to them, because that
+ * is what ships.
+ *
+ * source(none) turns off automatic detection so that list is the whole list.
+ * Without it Tailwind also walks the project and reaches assets/app.css, which
+ * is this file's own compiled output: it reads the class names back out of it
+ * and feeds them in again. The build stops being a function of the sources --
+ * `aru view:build` twice in a row wrote two different stylesheets, and a class
+ * removed from the last view that used it stayed in the output one more build.
+ */
+
+@import "tailwindcss" source(none);
+
+@source "../views/**/*.kyse.go";
+@source "../../storage/framework/views/**/*.go";
+
+/* The design system: the tokens, the component layer, and one style pack.
+ *
+ * Upstream ships eight packs and this project uses one. Eight would be eight
+ * ways to style a button, which docs/09-uma-forma-so.md refuses -- and the
+ * choice a person actually wants is the colour, which is the block below and
+ * costs six lines rather than a second stylesheet. */
+@import "./basecoat/base/base.css";
+@import "./basecoat/components.css";
+@import "./basecoat/styles/vega.css";
+
+/* The vendored faces. `aru font:add` writes fonts.css and the .woff2 beside it,
+ * and this line is what puts them in the build -- the command generates the
+ * file, the project decides to use it. It comes after the packs so that
+ * --font-sans and --font-display are the ones with Montserrat in them. */
+@import "./fonts.css";
+
+/* The pieces of this site: the front page, and the documentation. */
+@import "./home.css";
+@import "./docs.css";
+
+/* Design tokens. Everything below is a Tailwind utility away from any template,
+ * so a page never carries a hex value inline. */
+@theme {
+  /* --font-sans and --font-display come from fonts.css, which `aru font:add`
+   * generates and rewrites. Setting them here too would be a second owner for
+   * the same token, and the two would drift the first time a face changes. */
+  --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, monospace;
+
+  /* The identity, as named colours a template can reach for.
+   *
+   * They are here and not inline for the reason the block above says: a page
+   * never carries a hex value. The names are the ones the identity uses, so a
+   * conversation about the design and a grep of this repository find the same
+   * word. */
+  --color-paper: #f6f2e8;
+  --color-cream: #f3deb4;
+  --color-ink: #2e2016;
+  --color-night: #191108;
+  --color-rust: #af3310;
+  --color-teal: #6ecfb5;
+  --color-gold: #f9d175;
+  --color-ember: #f5853f;
+}
+
+/* The palette of the portal, mapped onto the tokens the component layer reads.
+ *
+ * Basecoat ships greyscale -- --primary is oklch(0.205 0 0), chroma zero -- and
+ * every component in kyse draws from these names. Overriding them here is what
+ * makes a button, a card and a field carry the identity without a single one of
+ * them being edited.
+ *
+ * It sits after the three basecoat imports because the cascade decides, and
+ * base.css sets the same custom properties on :root. */
+:root {
+  --background: #fbf8f1;
+  --foreground: var(--color-ink);
+  --card: var(--color-paper);
+  --card-foreground: var(--color-ink);
+  --popover: #fbf8f1;
+  --popover-foreground: var(--color-ink);
+  --primary: var(--color-rust);
+  --primary-foreground: #fbf8f1;
+  --secondary: var(--color-paper);
+  --secondary-foreground: var(--color-ink);
+  --muted: var(--color-paper);
+  --muted-foreground: color-mix(in srgb, var(--color-ink) 62%, transparent);
+  --accent: var(--color-cream);
+  --accent-foreground: var(--color-ink);
+  --border: color-mix(in srgb, var(--color-ink) 12%, transparent);
+  --input: color-mix(in srgb, var(--color-ink) 16%, transparent);
+  --ring: var(--color-rust);
+
+  /* Semantic presentation tokens. The identity colours remain the source;
+   * these names describe how the landing page uses them. */
+  --surface: var(--background);
+  --surface-subtle: color-mix(in srgb, var(--card) 74%, var(--background));
+  --surface-raised: var(--card);
+  --border-strong: color-mix(in srgb, var(--foreground) 22%, transparent);
+  --text-muted: #74685c;
+  --accent-soft: color-mix(in srgb, var(--primary) 10%, transparent);
+  --code-bg: var(--color-night);
+  --code-border: color-mix(in srgb, var(--color-cream) 18%, transparent);
+  --code-divider: color-mix(in srgb, var(--color-cream) 13%, transparent);
+  --code-muted: color-mix(in srgb, var(--color-cream) 68%, transparent);
+  --grid: color-mix(in srgb, var(--foreground) 8%, transparent);
+  --pattern: color-mix(in srgb, var(--foreground) 13%, transparent);
+  --frame-rule-width: 2px;
+  --signature-strip-height: 72px;
+  --font-weight-reading: 450;
+  --motion-fast: 160ms;
+  --motion-base: 240ms;
+  --motion-slow: 480ms;
+  --motion-enter: 700ms;
+  --ease-interaction: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-reveal: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* The same palette after dark.
+ *
+ * theme.js puts the class on <html> before the body is parsed, so the page is
+ * painted once rather than painted light and repainted a frame later. The class
+ * is what basecoat's own rules key on, which is why this is html.dark and not a
+ * media query: the choice is the reader's, and the system preference is only
+ * the default they start from.
+ *
+ * Rust does not survive on near-black -- it reads as brown at that contrast --
+ * so the accent moves to ember, which is the same hue further up. It is the
+ * identity's own lighter warm rather than a lightened rust, so the two themes
+ * are two members of one palette instead of one palette and a compromise.
+ * Everything else is the light palette read in the other direction. */
+html.dark {
+  --background: var(--color-night);
+  --foreground: var(--color-paper);
+  --card: #221709;
+  --card-foreground: var(--color-paper);
+  --popover: #221709;
+  --popover-foreground: var(--color-paper);
+  --primary: var(--color-ember);
+  --primary-foreground: var(--color-night);
+  --secondary: #2b1d0e;
+  --secondary-foreground: var(--color-paper);
+  --muted: #241809;
+  --muted-foreground: color-mix(in srgb, var(--color-paper) 60%, transparent);
+  --accent: #33220f;
+  --accent-foreground: var(--color-cream);
+  --border: color-mix(in srgb, var(--color-paper) 14%, transparent);
+  --input: color-mix(in srgb, var(--color-paper) 20%, transparent);
+  --ring: var(--color-ember);
+  --text-muted: #9f978e;
+
+  /* Two of the eight identity colours carry a role rather than a value, and the
+   * role is what inverts.
+   *
+   * --color-ink is the text and every hairline: 226 utilities read it for a
+   * colour and 184 for a border, so it is the one name that has to mean "the
+   * colour of writing" rather than a particular brown. After dark, writing is
+   * paper on ink and the value follows.
+   *
+   * --color-rust is the accent, and it does not survive on near-black -- at
+   * that contrast it reads as brown. Ember is the same hue further up, and it
+   * is the identity's own colour rather than a lightened rust, so the two
+   * themes are two members of one palette.
+   *
+   * --color-night and --color-cream do not move. They are the code panel and
+   * the text on it, which are already dark and already light; inverting them
+   * would put dark text on a dark panel. --color-paper does not move either,
+   * because text-paper sits on those same panels -- the surfaces that used to
+   * be paper are bg-card, which the block above already turned over. */
+  --color-ink: var(--color-paper);
+  --color-rust: var(--color-ember);
+}
+
+/* The two rules the framework's own pages assume. Keep them: the error page and
+ * the sign-in screen render before any application stylesheet is involved. */
+@layer base {
+  :root {
+    color-scheme: light dark;
+  }
+
+  html {
+    font-family: var(--font-sans);
+  }
+
+  html.dark {
+    color-scheme: dark;
+  }
+}
+
+/* The devices of the identity.
+ *
+ * They are here rather than inline because they repeat on every section, and a
+ * page that carries them as a wall of arbitrary values is a page nobody edits
+ * twice. Each one is a rule the design uses by name.
+ */
+
+/* The last section of a page carries a bottom border, like the ones above it,
+ * and the footer carries a top border. Where they meet -- and they meet on every
+ * page -- the two frame rules stack into one heavier line, visible as a flaw
+ * once seen.
+ *
+ * This drops the bottom border of whichever section ends the page, in one rule
+ * rather than by hand in each view: the views keep saying "a section has a
+ * bottom border", which is the pattern, and the one that happens to be last
+ * stops repeating the footer's top edge. It is content-agnostic -- a page that
+ * grows or reorders sections stays correct without being touched. */
+main > section:last-child {
+  border-bottom-width: 0;
+}
+
+/* The vertical rules that bracket a block of content. The grid of the page is
+ * drawn rather than implied: a section reads as a column because it has edges. */
+.col {
+  border-left: var(--frame-rule-width) solid color-mix(in srgb, var(--foreground) 9%, transparent);
+  border-right: var(--frame-rule-width) solid color-mix(in srgb, var(--foreground) 9%, transparent);
+}
+
+/* Each top-level section positions the Phosphor registration marks rendered by
+ * partials.RegistrationMarks. Keeping the icon in markup makes Kyse the single
+ * icon source instead of redrawing a second icon set with CSS gradients. */
+main > section {
+  position: relative;
+  border-bottom-width: var(--frame-rule-width);
+}
+
+.site-footer {
+  border-top-width: var(--frame-rule-width);
+}
+
+/* Footer copy must remain readable on the card surface in both themes. */
+.site-footer :is(.text-ink\/60, .text-ink\/45) {
+  color: var(--text-muted);
+}
+
+.site-footer a:hover {
+  color: var(--foreground);
+}
+
+.site-footer-signature {
+  height: var(--signature-strip-height);
+  border-top-width: var(--frame-rule-width);
+}
+
+
+/* A grid item is min-width:auto, which means it refuses to be narrower than its
+ * widest unbreakable child. One code block, one long identifier or one URL then
+ * widens the column, the column widens the row, and the row widens the document
+ * -- and what a reader sees is not the code sticking out but the PARAGRAPH BESIDE
+ * IT cut off at the right edge, because the whole page now scrolls sideways.
+ *
+ * Measured on a 390px viewport before this rule: the home overflowed by 82px,
+ * /realtime by 214px and /ai by 159px. Nothing failed. Every page answered 200,
+ * every test was green, and the only symptom was a sentence with its last word
+ * missing on a phone.
+ *
+ * min-width:0 lets the column be as narrow as the viewport and hands the problem
+ * to the child that actually has it, which is the next rule. */
+.col > * {
+  min-width: 0;
+}
+
+/* And that child scrolls itself rather than the page. A code sample is the one
+ * thing on a page that legitimately cannot wrap: breaking a line of Go at the
+ * viewport edge changes what it says. So the block scrolls under the finger and
+ * the sentence beside it stays where it was put. */
+.col pre {
+  overflow-x: auto;
+}
+
+/* Inline code is different: it is a word inside a sentence, and a sentence that
+ * scrolls sideways is a sentence nobody reads. `security.Grant` and
+ * `database/connectors/pgx` break at the dot and the slash rather than pushing
+ * the paragraph out of the page. */
+.col :not(pre) > code {
+  overflow-wrap: anywhere;
+}
+
+/* The crosshair at a corner is Kyse's Phosphor Duotone Plus. Its transparent
+ * canvas is centred on the border intersection, just like an ordinary icon. */
+.mk {
+  position: absolute;
+  z-index: 20;
+  display: block;
+  width: 14px;
+  height: 14px;
+  color: var(--primary);
+  font-size: 14px;
+  line-height: 0;
+  pointer-events: none;
+}
+.mk > svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.tl { left: -8px; top: -8px; }
+.tr { right: -8px; top: -8px; }
+.bl { left: -8px; bottom: -7px; }
+.br { right: -8px; bottom: -7px; }
+
+/* Top-level sections position their marks outside an unbordered section box,
+ * while the visible 2px rails belong to the nested .col. Two pixels inward
+ * puts the icon centre on the rail centre. Marks already inside a bordered
+ * .col (the Footer) keep the base offset above. */
+main > section > .tl {
+  left: -6px;
+}
+
+main > section > .tr {
+  right: -6px;
+}
+
+main > section > .bl { left: -6px; }
+main > section > .br { right: -6px; }
+
+/* The dotted field behind the emblem. */
+.dots {
+  background-image: radial-gradient(
+    color-mix(in srgb, var(--foreground) 12%, transparent) 1px,
+    transparent 1px
+  );
+  background-size: 16px 16px;
+}
+
+/* The small caps label: mono, wide tracking, upper case. It is what marks a
+ * number or a category without giving it the weight of a heading. */
+.lbl {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+/* ---------------------------------------------------------------------------
+ * Site presentation system.
+ *
+ * These rules turn the existing identity into reusable page objects. The
+ * emblem, warm paper, registration marks and technical grid remain the Arandu family's;
+ * surfaces, controls and rhythm now have one semantic owner.
+ * ------------------------------------------------------------------------- */
+
+body {
+  background-color: var(--surface);
+  background-image: radial-gradient(var(--pattern) 0.75px, transparent 0.75px);
+  background-size: 18px 18px;
+}
+
+.site-shell {
+  isolation: isolate;
+  container-type: inline-size;
+}
+
+.site-main {
+  background: var(--surface);
+  font-weight: var(--font-weight-reading);
+  box-shadow:
+    calc(0px - var(--frame-rule-width)) 0 0 var(--grid),
+    var(--frame-rule-width) 0 0 var(--grid);
+}
+
+/* Display labels and source text keep their established technical weight while
+ * ordinary prose inherits the approved, slightly stronger reading weight. */
+.site-main :where(.lbl, code, pre) {
+  font-weight: 400;
+}
+
+.site-muted {
+  color: var(--text-muted);
+}
+
+.reading-copy {
+  font-weight: var(--font-weight-reading);
+}
+
+.skip-link {
+  position: fixed;
+  top: 0.75rem;
+  left: 0.75rem;
+  z-index: 100;
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  padding-inline: 1rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 0.45rem;
+  background: var(--primary);
+  color: var(--primary-foreground);
+  font-size: 0.875rem;
+  font-weight: 700;
+  translate: 0 -160%;
+  transition: translate var(--motion-fast) var(--ease-interaction);
+}
+
+.skip-link:focus {
+  translate: 0 0;
+}
+
+#main-content:focus {
+  outline: none;
+}
+
+/* The header and hero are the footer in reverse order. The opaque surface
+ * ends exactly on its rule: no transparent gutter and no second line can sit
+ * between the signature and the framed content. */
+.site-header::after {
+  content: "";
+  position: absolute;
+  z-index: 70;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: var(--frame-rule-width);
+  background: var(--grid);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--motion-fast) var(--ease-interaction);
+}
+
+.site-header-surface {
+  position: relative;
+  /* Share the header's stacking context so its menus can cover either rule. */
+  z-index: auto;
+}
+
+.site-header-strip {
+  position: relative;
+  height: var(--signature-strip-height);
+}
+
+/* Once the reader leaves the top of the page, the two temporary vertical rails
+ * frame the sticky signature until the travelling horizontal rule meets them. */
+.site-header-strip::before {
+  content: "";
+  position: absolute;
+  z-index: 70;
+  inset: 0;
+  border-right: var(--frame-rule-width) solid var(--grid);
+  border-left: var(--frame-rule-width) solid var(--grid);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--motion-fast) var(--ease-interaction);
+}
+
+.site-header[data-reader-shifted] .site-header-strip::before {
+  opacity: 1;
+}
+
+.site-header[data-boundary-contact] .site-header-strip::before {
+  opacity: 0;
+}
+
+/* This is the sole inset bottom rule. It sits flush with the opaque surface and
+ * disappears only when the full-width contact rule takes the same position. */
+.site-header-strip::after {
+  content: "";
+  position: absolute;
+  z-index: 70;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: var(--frame-rule-width);
+  background: var(--grid);
+  opacity: 1;
+  pointer-events: none;
+  transition: opacity var(--motion-fast) var(--ease-interaction);
+}
+
+.site-header[data-boundary-contact] .site-header-strip::after {
+  opacity: 0;
+}
+
+.site-header[data-boundary-contact]::after {
+  opacity: 1;
+}
+
+/* The opening pair belongs to the Header itself, so it is fully visible without
+ * a transparent gutter. It leaves with the first scroll; the next pair remains
+ * attached to the metrics boundary and arrives naturally with that rule. */
+.site-header-strip > .mk {
+  z-index: 71;
+  top: auto;
+  bottom: -6px;
+  transition: opacity var(--motion-fast) var(--ease-interaction);
+}
+
+.site-header-strip > .tl {
+  left: -6px;
+}
+
+.site-header-strip > .tr {
+  right: -6px;
+}
+
+.site-header[data-reader-shifted] .site-header-strip > .mk {
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .site-header,
+  .site-header::after,
+  .site-header-strip::before,
+  .site-header-strip::after,
+  .site-header-strip > .mk {
+    transition: none;
+  }
+}
+
+.site-header-control {
+  min-height: 44px;
+}
+
+/* Menus cover the frame (70/71) and mobile navigation (80). Align their end
+ * with the trigger so the theme menu also fits the narrow right-hand track. */
+.site-header [data-popover] {
+  z-index: 90;
+  inset-inline-start: auto;
+  inset-inline-end: 0;
+}
+
+/* The theme popover is wider than the remaining right track on a phone. Its
+ * closed box must not participate in overflow geometry; the behavior removes
+ * aria-hidden when it opens, restoring the component's normal display. */
+[data-popover][aria-hidden="true"] {
+  display: none;
+}
+
+.site-header .btn {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+.site-header-cta {
+  min-width: max-content;
+  padding-inline: 0.9rem;
+  font-size: 0.8125rem;
+}
+
+.site-button {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border: 1px solid transparent;
+  border-radius: 0.45rem;
+  padding: 0.65rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  line-height: 1;
+  transition:
+    translate var(--motion-fast) var(--ease-interaction),
+    border-color var(--motion-fast) var(--ease-interaction),
+    background-color var(--motion-fast) var(--ease-interaction),
+    box-shadow var(--motion-fast) var(--ease-interaction);
+}
+
+.site-button-primary {
+  background: var(--primary);
+  color: var(--primary-foreground);
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--primary) 18%, transparent);
+}
+
+.site-button-secondary {
+  border-color: var(--border-strong);
+  background: color-mix(in srgb, var(--surface-raised) 78%, transparent);
+  color: var(--foreground);
+}
+
+.command-bar {
+  display: flex;
+  min-height: 52px;
+  align-items: center;
+  gap: 0.75rem;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--color-cream) 14%, transparent);
+  border-radius: 0.55rem;
+  background: var(--code-bg);
+  padding-left: 1rem;
+  color: var(--color-cream);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  box-shadow: 0 18px 48px color-mix(in srgb, var(--color-night) 14%, transparent);
+}
+
+.command-copy {
+  min-height: 44px;
+  flex: 0 0 auto;
+  align-self: stretch;
+  border-left: 1px solid color-mix(in srgb, var(--color-cream) 14%, transparent);
+  padding-inline: 0.9rem;
+  color: color-mix(in srgb, var(--color-cream) 78%, transparent);
+  font-size: 0.75rem;
+  font-weight: 700;
+  transition:
+    color var(--motion-fast) var(--ease-interaction),
+    background-color var(--motion-fast) var(--ease-interaction);
+}
+
+.command-copy:hover {
+  background: color-mix(in srgb, var(--color-cream) 7%, transparent);
+  color: var(--color-cream);
+}
+
+.code-window {
+  align-self: center;
+  width: 100%;
+  overflow: hidden;
+  border: 1px solid var(--code-border);
+  border-radius: 0.7rem;
+  background: var(--code-bg);
+  background-image: none;
+  color: var(--color-cream);
+  box-shadow: 0 18px 48px color-mix(in srgb, var(--color-night) 14%, transparent);
+}
+
+/* UI specimens share the terminal frame and title bar, while their canvas
+ * inherits the page surface and readable theme colors. */
+.browser-window {
+  border-color: var(--border-strong);
+  background: transparent;
+  color: var(--foreground);
+  box-shadow: none;
+}
+
+.code-window-bar {
+  display: grid;
+  min-height: 44px;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  border-bottom: 1px solid var(--code-divider);
+  padding-inline: 0.9rem;
+  color: var(--code-muted);
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.04em;
+}
+
+.browser-window > .code-window-bar {
+  border-color: var(--grid);
+  color: var(--text-muted);
+}
+
+.code-window-dots {
+  display: flex;
+  gap: 0.35rem;
+}
+
+.code-window-dots i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--color-rust);
+}
+
+.code-window-dots i:nth-child(2) {
+  background: var(--color-gold);
+}
+
+.code-window-dots i:nth-child(3) {
+  background: var(--color-teal);
+}
+
+.code-window-title {
+  min-width: 0;
+  max-width: min(38vw, 26rem);
+  overflow: hidden;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.code-window-action {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-self: end;
+  gap: 0.35rem;
+}
+
+.code-window-status {
+  color: var(--color-teal);
+  font-size: 0.6rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.code-window-copy {
+  display: inline-grid;
+  min-width: 44px;
+  min-height: 44px;
+  place-items: center;
+  border-radius: 0.35rem;
+  color: var(--code-muted);
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  transition:
+    color var(--motion-fast) var(--ease-interaction),
+    background-color var(--motion-fast) var(--ease-interaction);
+}
+
+.code-window-copy:hover {
+  background: color-mix(in srgb, var(--color-cream) 8%, transparent);
+  color: var(--color-cream);
+}
+
+.code-window-copy:focus-visible {
+  outline: 2px solid var(--color-teal);
+  outline-offset: -4px;
+}
+
+.code-window pre {
+  margin: 0;
+  overflow-x: auto;
+  padding: clamp(1.25rem, 3.4vw, 2rem);
+  background: var(--code-bg);
+  background-image: none;
+  color: var(--color-cream);
+  font-family: var(--font-mono);
+  font-size: clamp(0.72rem, 1.35vw, 0.82rem);
+  line-height: 1.75;
+  scrollbar-color: var(--code-border) transparent;
+}
+
+.code-window code {
+  display: block;
+}
+
+.code-window-compact pre {
+  padding: 0.9rem 1rem;
+  font-size: 0.72rem;
+  line-height: 1.65;
+}
+
+:where(a, button, summary, [tabindex]):focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--ring) 72%, white);
+  outline-offset: 3px;
+}
+
+/* The colours of a code block.
+ *
+ * They are classes and not inline styles because the pages are served under
+ * style-src 'self' with no unsafe-inline: a style attribute is dropped by the
+ * browser, and the code would come out one colour with nothing saying why. The
+ * highlighter runs on the server and writes these names.
+ *
+ * The palette is the identity's, not a theme downloaded with the library. Code
+ * panels are the one surface that does not invert -- night stays night in both
+ * themes -- so these five colours are written once and are right in both. */
+.chroma .c,
+.chroma .cm,
+.chroma .c1,
+.chroma .cs,
+.chroma .cp {
+  color: var(--color-teal);
+  opacity: 0.85;
+}
+.chroma .s,
+.chroma .s1,
+.chroma .s2,
+.chroma .sb,
+.chroma .sc,
+.chroma .sx,
+.chroma .sr,
+.chroma .se {
+  color: var(--color-gold);
+}
+.chroma .m,
+.chroma .mi,
+.chroma .mf,
+.chroma .mh,
+.chroma .mo,
+.chroma .mb {
+  color: var(--color-gold);
+}
+.chroma .k,
+.chroma .kd,
+.chroma .kn,
+.chroma .kp,
+.chroma .kr,
+.chroma .kc {
+  color: var(--color-ember);
+}
+.chroma .kt {
+  color: var(--color-teal);
+}
+.chroma .nf,
+.chroma .nd {
+  color: var(--color-paper);
+}
+.chroma .p,
+.chroma .o,
+.chroma .ow {
+  color: color-mix(in srgb, var(--color-cream) 62%, transparent);
+}
+.chroma .err {
+  color: var(--color-ember);
+}
+
+/* The half of the client contract that is not JavaScript.
+ *
+ * The library's components carry data attributes and the script sets a marker;
+ * which of two words or two glyphs is on the screen is decided here, by the
+ * stylesheet, and never by a script rewriting text. That division is what makes
+ * the first paint already correct: the theme is on the html element before the
+ * body is parsed, so the right glyph is the one that was always shown, and
+ * there is no frame to hide.
+ *
+ * They live in this project's stylesheet rather than in the library, because
+ * the library ships components and no CSS -- Basecoat is vendored per project,
+ * and a component style that is not in Basecoat has nowhere else to be. That is
+ * a seam worth knowing about: a project that never copies these rules gets the
+ * components with both halves of every pair visible. */
+
+/* The theme control draws both states and shows one. */
+[data-theme-glyph="dark"] {
+  display: none;
+}
+html.dark [data-theme-glyph="light"] {
+  display: none;
+}
+html.dark [data-theme-glyph="dark"] {
+  display: inline;
+}
+
+/* The chosen mode is marked on its row. It is aria-checked that says so, and
+ * the rule reads that rather than a class, because the attribute is the one a
+ * screen reader is already using. */
+[data-theme-mode][aria-checked="true"] {
+  background: var(--accent);
+  color: var(--accent-foreground);
+}
+
+/* A copy button says one word until it has copied, and the other for as long as
+ * the marker is set. Nothing here knows how long that is: the script owns the
+ * timer and this owns the appearance. */
+[data-copy-label="done"] {
+  display: none;
+}
+[data-copy][data-copied] [data-copy-label="idle"] {
+  display: none;
+}
+[data-copy][data-copied] [data-copy-label="done"] {
+  display: inline;
+}
+[data-copy][data-copied] {
+  color: var(--color-teal);
+}
+
+/* Four Kyse/Phosphor registration marks frame a hovered, focused, or current
+ * link. They are the same decorative icons as the section marks, scaled for the
+ * navigation row. */
+.navlink {
+  position: relative;
+  transition: color var(--motion-fast) var(--ease-interaction);
+}
+
+.navlink[aria-current="page"] {
+  color: var(--color-ink);
+  background-color: transparent;
+  box-shadow: none;
+  font-weight: 600;
+}
+
+.mobile-navlink {
+  margin-inline: -0.75rem;
+  padding-inline: 0.75rem;
+  border-radius: 0.375rem;
+}
+
+.mobile-navlink[aria-current="page"] {
+  color: var(--color-ink);
+  background-color: transparent;
+  box-shadow: none;
+  font-weight: 600;
+}
+
+.mobile-nav-utilities {
+  min-height: 68px;
+}
+
+.mobile-language-option {
+  min-width: 36px;
+  text-align: center;
+  transition:
+    color var(--motion-fast) var(--ease-interaction),
+    background-color var(--motion-fast) var(--ease-interaction);
+}
+
+.mobile-language-option:hover,
+.mobile-language-option:focus-visible {
+  background-color: color-mix(in srgb, var(--color-ink) 6%, transparent);
+}
+
+.navlink > .mk {
+  z-index: 0;
+  width: 10px;
+  height: 10px;
+  color: var(--color-rust);
+  font-size: 10px;
+  opacity: 0;
+  transition: opacity var(--motion-fast) var(--ease-interaction);
+}
+
+.navlink > .tl {
+  top: 2px;
+  left: 0;
+}
+
+.navlink > .tr {
+  top: 2px;
+  right: 0;
+}
+
+.navlink > .bl {
+  bottom: 2px;
+  left: 0;
+}
+
+.navlink > .br {
+  right: 0;
+  bottom: 2px;
+}
+
+.navlink:hover > .mk,
+.navlink:focus-visible > .mk,
+.navlink[aria-current="page"] > .mk {
+  opacity: 1;
+}
+
+/* A block that arrives as it comes into view.
+ *
+ * animation-timeline is what makes this CSS at all: the scroll position drives
+ * the animation, so there is no observer, no listener and no frame loop. Where a
+ * browser does not support it the declaration is dropped and the element is
+ * simply there -- which is why the animation ends at the state the element
+ * already has rather than starting from it. */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    @keyframes rise {
+      from {
+        opacity: 0;
+        translate: 0 12px;
+      }
+      to {
+        opacity: 1;
+        translate: 0 0;
+      }
+    }
+
+    .rise {
+      animation: rise linear both;
+      animation-timeline: view();
+      animation-range: entry 5% cover 38%;
+    }
+  }
+}
+
+/* The page-to-page transition. ypy-boost swaps <body>, and the transitions setting
+ * wraps that swap in document.startViewTransition, so the browser holds a
+ * before-image and an after-image and can cross between them. Without this the
+ * swap is an instant replace: the new page is simply there, which reads as a
+ * flicker rather than as navigation, and is what "clico e é instantâneo" was.
+ *
+ * The old page fades out under the new; the new fades in and rises a few pixels
+ * -- the same vocabulary as the on-scroll .rise, so arriving on a page and
+ * scrolling it feel like one motion. The exit is shorter than the entrance so
+ * the move feels answered rather than waited on. Where the browser has no View
+ * Transition API the whole thing is skipped and the swap is instant, as before. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes vt-out {
+    to {
+      opacity: 0;
+    }
+  }
+  @keyframes vt-in {
+    from {
+      opacity: 0;
+      translate: 0 8px;
+    }
+    to {
+      opacity: 1;
+      translate: 0 0;
+    }
+  }
+  ::view-transition-old(root) {
+    animation: vt-out 130ms ease-in both;
+  }
+  ::view-transition-new(root) {
+    animation: vt-in 260ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  }
+}
+
+/* Reduced motion turns the transition off outright rather than leaving the
+ * browser's default cross-fade: a reader who asked for no motion gets the plain
+ * instant swap. */
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}
+
+/* A card that lifts under the pointer. The border darkens with it, because a
+ * shadow alone reads as blur on a light background rather than as height. */
+.lift {
+  transition:
+    translate 180ms ease-out,
+    border-color 180ms ease-out;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .lift:hover {
+    translate: 0 -2px;
+    border-color: color-mix(in srgb, var(--foreground) 22%, transparent);
+  }
+}
+

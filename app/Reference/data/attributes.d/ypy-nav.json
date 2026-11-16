@@ -1,0 +1,153 @@
+{
+  "extension": "ypy-nav",
+  "attributes": [
+    {
+      "name": "ypy-prefetch",
+      "description": "Asks for the page a link opens before the click, and uses the response for the click. A bare attribute means `hover`. Only a link YPY navigates is prefetched, with GET, on the page's own origin and never with form data. The nearest one above the link decides; `false` turns it off for a link or a region.",
+      "valueType": "string",
+      "syntax": "`hover | visible | hover visible | false`",
+      "values": [
+        {
+          "name": "hover",
+          "description": "After the pointer rests on the link or the link gets keyboard focus, or at once on touch."
+        },
+        {
+          "name": "visible",
+          "description": "When the link comes into view."
+        },
+        {
+          "name": "false",
+          "description": "Never, for this link or region."
+        }
+      ],
+      "inherited": false,
+      "doc": "https://ypy.dev/docs/reference/navigation"
+    },
+    {
+      "name": "ypy-once",
+      "description": "On a `<script>` in swapped content: it runs only once per page. When a later response brings it again it is taken out before the swap. The script is told apart by the value of the attribute when it has one, else by its `src`, else by its text. A script that came with the page counts as already run.",
+      "valueType": "string",
+      "syntax": "`[<name>]`",
+      "inherited": false,
+      "doc": "https://ypy.dev/docs/reference/navigation"
+    }
+  ],
+  "events": [],
+  "config": [
+    {
+      "name": "nav",
+      "description": "Settings of global boost and prefetch.",
+      "schema": {
+        "type": "object"
+      }
+    },
+    {
+      "name": "nav.boost",
+      "description": "Navigate every link and form of the page with a request and a swap, with no attribute. Off when `nonce` is set. A region turns it off with `ypy-boost=\"false\"`.",
+      "schema": {
+        "type": "boolean"
+      },
+      "default": false
+    },
+    {
+      "name": "nav.prefetch",
+      "description": "When a link the page navigates is requested ahead of the click.",
+      "schema": {
+        "enum": [
+          false,
+          true,
+          "hover",
+          "visible",
+          "hover visible",
+          "visible hover"
+        ]
+      },
+      "default": false
+    },
+    {
+      "name": "nav.prefetchDelay",
+      "description": "Milliseconds of hover, or of keyboard focus, before the prefetch starts.",
+      "schema": {
+        "type": "integer",
+        "minimum": 0
+      },
+      "default": 65
+    },
+    {
+      "name": "nav.prefetchTtl",
+      "description": "Milliseconds an unused prefetched response is kept.",
+      "schema": {
+        "type": "integer",
+        "minimum": 0
+      },
+      "default": 10000
+    },
+    {
+      "name": "nav.prefetchMax",
+      "description": "Prefetched responses alive at once; the oldest is dropped.",
+      "schema": {
+        "type": "integer",
+        "minimum": 1
+      },
+      "default": 10
+    },
+    {
+      "name": "nav.prefetchParallel",
+      "description": "Prefetches in flight at once for the visibility mode.",
+      "schema": {
+        "type": "integer",
+        "minimum": 1
+      },
+      "default": 2
+    },
+    {
+      "name": "nav.current",
+      "description": "Mark the link to the current page with `aria-current=\"page\"` and the class `ypy-current`, and renew the mark on every navigation. Set to `false` to turn it off.",
+      "schema": {
+        "type": "boolean"
+      },
+      "default": true
+    },
+    {
+      "name": "nav.settle",
+      "description": "Milliseconds a navigation (a boosted request, or one that pushes a history entry) waits for the requests the form being edited still has in flight, after the field in focus was blurred so its `change` ran. `0` turns the blur and the wait off.",
+      "schema": {
+        "type": "integer",
+        "minimum": 0
+      },
+      "default": 1000
+    },
+    {
+      "name": "nav.confirmLeave",
+      "description": "Show the browser's own leave-this-page dialog (`beforeunload`) while a form has changes no request has saved. A control is changed from its first `input` event until a request from it, or from its form, ends with a 2xx other than a GET, or the form is reset. A navigation that only swaps the page does not unload it, so the browser shows nothing then.",
+      "schema": {
+        "type": "boolean"
+      },
+      "default": false
+    },
+    {
+      "name": "nav.root",
+      "description": "CSS selector of the root of the app. A boosted response that is a whole page (it has a doctype, `html` or `body`) and does not contain it is not swapped in: its URL is loaded as a plain page. Without it, the element with `ypy-history-elt` of the current page is the root, and a page that has none checks nothing. A response that ended on another origin is always loaded in full.",
+      "schema": {
+        "type": "string"
+      }
+    }
+  ],
+  "headers": [
+    {
+      "name": "YPY-Purpose",
+      "direction": "request",
+      "description": "Sent with every prefetch, with `Purpose: prefetch` and `Sec-Purpose: prefetch`. A script cannot set `Sec-Purpose` (the browser drops it), so read `Purpose` or this header to tell a prefetch from a visit.",
+      "value": "prefetch"
+    }
+  ],
+  "internalNames": [
+    "ypy-nav"
+  ],
+  "classes": [
+    {
+      "name": "ypy-current",
+      "description": "Added, with `aria-current=\"page\"`, to a link that points to the URL of the page (same path and query, no fragment); renewed on every navigation."
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "extension": "ypy-browser-indicator",
+  "attributes": [
+    {
+      "name": "ypy-browser-indicator",
+      "description": "Shows the browser's own loading indicator (tab spinner, stop button) while the requests of this element run. Any value except `false` turns it on.",
+      "valueType": "boolean",
+      "values": [
+        {
+          "name": "true",
+          "description": "Show the browser indicator during the request."
+        },
+        {
+          "name": "false",
+          "description": "Do not show it, even when boosted elements show it by default."
+        }
+      ]
+    }
+  ],
+  "config": [
+    {
+      "name": "boostBrowserIndicator",
+      "description": "Show the browser indicator for every boosted element, without writing `ypy-browser-indicator` on each one.",
+      "schema": {
+        "type": "boolean"
+      },
+      "default": false
+    }
+  ]
+}

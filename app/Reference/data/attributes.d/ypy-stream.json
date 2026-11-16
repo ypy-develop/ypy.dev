@@ -1,0 +1,161 @@
+{
+  "extension": "ypy-stream",
+  "attributes": [
+    {
+      "name": "ypy-stream",
+      "description": "Opens a stream of the YPY streaming protocol (Server-Sent Events) with a GET request to the URL and applies its events: `ypy-patch-elements`, `ypy-patch-signals`, `ypy-redirect` and `ypy-event`. Opens on `load` or on the element's `ypy-trigger`; reconnects with backoff, `Last-Event-ID` and the current signals.",
+      "valueType": "url",
+      "inherited": false,
+      "doc": "https://ypy.dev/docs/reference/stream"
+    },
+    {
+      "name": "ypy-stream.post",
+      "description": "Like `ypy-stream`, with a POST request that carries the element's values.",
+      "valueType": "url",
+      "inherited": false,
+      "doc": "https://ypy.dev/docs/reference/stream"
+    },
+    {
+      "name": "ypy-stream.put",
+      "description": "Like `ypy-stream`, with a PUT request.",
+      "valueType": "url",
+      "inherited": false,
+      "doc": "https://ypy.dev/docs/reference/stream"
+    },
+    {
+      "name": "ypy-stream.patch",
+      "description": "Like `ypy-stream`, with a PATCH request.",
+      "valueType": "url",
+      "inherited": false,
+      "doc": "https://ypy.dev/docs/reference/stream"
+    },
+    {
+      "name": "ypy-stream.delete",
+      "description": "Like `ypy-stream`, with a DELETE request.",
+      "valueType": "url",
+      "inherited": false,
+      "doc": "https://ypy.dev/docs/reference/stream"
+    }
+  ],
+  "events": [
+    {
+      "name": "ypy:stream:open",
+      "description": "A connection delivered its headers and is being read, the first time or after a reconnection.",
+      "detail": {
+        "stream": "object"
+      },
+      "cancelable": false,
+      "target": "element"
+    },
+    {
+      "name": "ypy:stream:reconnect",
+      "description": "The client is about to wait `detail.delay` ms before the next connection attempt.",
+      "detail": {
+        "stream": "object",
+        "delay": "number"
+      },
+      "cancelable": false,
+      "target": "element"
+    },
+    {
+      "name": "ypy:stream:close",
+      "description": "The stream ended for good. `detail.reason` is `api`, `removed`, `redirect`, `replaced`, `status <code>` or `error`.",
+      "detail": {
+        "stream": "object",
+        "reason": "string"
+      },
+      "cancelable": false,
+      "target": "element"
+    },
+    {
+      "name": "ypy:stream:error",
+      "description": "An event failed, or the read broke; after a read error the client reconnects.",
+      "detail": {
+        "stream": "object",
+        "error": "unknown"
+      },
+      "cancelable": false,
+      "target": "element"
+    },
+    {
+      "name": "ypy:stream:signals",
+      "description": "A signals patch arrived and the signals extension is not loaded, so the page can apply it itself.",
+      "detail": {
+        "patch": "Record<string, unknown>",
+        "onlyIfMissing": "boolean"
+      },
+      "cancelable": false,
+      "target": "element"
+    },
+    {
+      "name": "ypy:stream:refresh",
+      "description": "A `ypy-refresh` event is about to make its request, after its debounce and jitter. `detail.selector` is the selector of the event, empty for the page. Cancel it to skip that refresh.",
+      "detail": {
+        "stream": "object",
+        "selector": "string"
+      },
+      "cancelable": true,
+      "target": "element"
+    },
+    {
+      "name": "ypy:stream:pause",
+      "description": "The tab went to the background and the stream, which has `pauseOnBackground`, closed its connection. It opens another one when the tab is visible again.",
+      "detail": {
+        "stream": "object"
+      },
+      "cancelable": false,
+      "target": "element"
+    },
+    {
+      "name": "ypy:stream:resume",
+      "description": "The tab is visible again and the stream that was paused opens its connection now, with `Last-Event-ID`.",
+      "detail": {
+        "stream": "object"
+      },
+      "cancelable": false,
+      "target": "element"
+    }
+  ],
+  "config": [
+    {
+      "name": "stream",
+      "description": "Defaults of the ypy-stream extension. A single element overrides them with `ypy-config='{\"stream\":{...}}'`.",
+      "schema": {
+        "type": "object"
+      }
+    },
+    {
+      "name": "stream.pauseOnBackground",
+      "description": "Close the connection while the tab is in the background and open it again, at once and with `Last-Event-ID`, when it is visible. Off by default.",
+      "schema": {
+        "type": "boolean"
+      },
+      "default": false
+    },
+    {
+      "name": "stream.merge",
+      "description": "Merge consecutive `ypy-patch-elements` events of the same mode (`inner`, `outer`, `append`) and selector that are waiting to be applied: the last `inner` or `outer` wins and `append` payloads join. The page ends the same. On by default.",
+      "schema": {
+        "type": "boolean"
+      },
+      "default": true
+    },
+    {
+      "name": "stream.frame",
+      "description": "Apply the events of a stream one animation frame apart (at most 100 ms in a hidden tab), so a fast stream, such as the tokens of a model answer, costs one round of DOM work per frame. Off by default.",
+      "schema": {
+        "type": "boolean"
+      },
+      "default": false
+    }
+  ],
+  "internalNames": [
+    "ypy-patch-elements",
+    "ypy-patch-signals",
+    "ypy-redirect",
+    "ypy-event",
+    "ypy-ns",
+    "ypy-sse",
+    "ypy-refresh"
+  ]
+}

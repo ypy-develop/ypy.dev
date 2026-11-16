@@ -1,0 +1,48 @@
+{
+  "extension": "ypy-persist",
+  "attributes": [
+    {
+      "name": "ypy-persist",
+      "description": "Keeps the element (it needs an `id`) in the page across a navigation whose response has an element with the same id. `false` turns it off.",
+      "valueType": "string",
+      "syntax": "`false`",
+      "values": [
+        {
+          "name": "false",
+          "description": "Do not keep the element."
+        }
+      ],
+      "inherited": false,
+      "doc": "https://ypy.dev/docs/reference/navigation"
+    },
+    {
+      "name": "ypy-track",
+      "description": "On an element of the page, usually in `<head>`: its value (`content`, `href`, `src`, `value` or text) is compared with the same element of a page response. A difference means a new deploy: the page is loaded instead of swapped.",
+      "valueType": "string",
+      "syntax": "`reload`",
+      "values": [
+        {
+          "name": "reload",
+          "description": "Load the response as a page when the tracked values change."
+        }
+      ],
+      "inherited": false,
+      "doc": "https://ypy.dev/docs/reference/navigation"
+    }
+  ],
+  "events": [
+    {
+      "name": "ypy:track:reload",
+      "description": "A page response carries other `ypy-track=\"reload\"` values than the page. Cancel it to swap the response instead of loading `url`.",
+      "detail": {
+        "ctx": "YpyRequestCtx",
+        "url": "string",
+        "from": "string[]",
+        "to": "string[]"
+      },
+      "cancelable": true,
+      "target": "element"
+    }
+  ],
+  "config": []
+}

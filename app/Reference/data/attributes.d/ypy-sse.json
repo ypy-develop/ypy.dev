@@ -1,0 +1,214 @@
+{
+  "extension": "ypy-sse",
+  "attributes": [
+    {
+      "name": "ypy-sse:connect",
+      "description": "Opens a Server-Sent Events stream with a GET request to the URL. The element connects on its `ypy-trigger` (default `load`). Each unnamed message is swapped into the target like a response; a message with an `event:` field is dispatched on the element as a DOM event with `detail.data` and `detail.id`. The connection reconnects with backoff and pauses while the tab is in the background. With `sse.heartbeat` a stream that goes silent is closed and opened again, and it is opened again at once when the page comes back (`pageshow`, `online`, a visible tab).",
+      "valueType": "url",
+      "inherited": false,
+      "doc": "https://ypy.dev/docs/reference/extensions"
+    },
+    {
+      "name": "ypy-sse:close",
+      "description": "Closes the stream when a message with this event name arrives. Without it the stream ends when the element is removed or the server closes it.",
+      "valueType": "string",
+      "syntax": "<event name>",
+      "inherited": false
+    },
+    {
+      "name": "ypy-sse-connect",
+      "description": "Legacy spelling of `ypy-sse:connect`. The extension copies it to the new name and warns in the console.",
+      "valueType": "url",
+      "deprecated": "Use ypy-sse:connect."
+    },
+    {
+      "name": "ypy-sse-close",
+      "description": "Legacy spelling of `ypy-sse:close`. The extension copies it to the new name and warns in the console.",
+      "valueType": "string",
+      "deprecated": "Use ypy-sse:close."
+    },
+    {
+      "name": "ypy-sse-swap",
+      "description": "No longer supported. Unnamed SSE messages are swapped automatically and named events are dispatched as DOM events. The extension only warns in the console.",
+      "valueType": "string",
+      "deprecated": "Remove it: unnamed messages are swapped automatically, named events are DOM events."
+    }
+  ],
+  "events": [
+    {
+      "name": "ypy:sse:before:connection",
+      "description": "Fires before a connection is made, and again before each reconnect attempt. Call `evt.preventDefault()` or set `detail.connection.cancelled = true` to stop connecting.",
+      "detail": {
+        "connection": "YpySseConnection"
+      },
+      "cancelable": true,
+      "target": "element"
+    },
+    {
+      "name": "ypy:sse:after:connection",
+      "description": "Fires when a response with `text/event-stream` was accepted, on the first connection and after each successful reconnect. `detail.connection.status` is the HTTP status.",
+      "detail": {
+        "connection": "YpySseConnection"
+      },
+      "cancelable": false,
+      "target": "element"
+    },
+    {
+      "name": "ypy:sse:before:message",
+      "description": "Fires for each parsed message before it is used. Cancel it, or set `detail.cancelled = true`, to ignore the message. Register asynchronous work with `detail.waitUntil(promise)`; YPY waits for it before deciding.",
+      "detail": {
+        "connection": "YpySseConnection",
+        "message": "YpySseMessage",
+        "cancelled": "boolean",
+        "waitUntil": "(promise: Promise<unknown>) => void"
+      },
+      "cancelable": true,
+      "target": "element"
+    },
+    {
+      "name": "ypy:sse:after:message",
+      "description": "Fires after a message was swapped, or after its named event was dispatched on the element.",
+      "detail": {
+        "connection": "YpySseConnection",
+        "message": "YpySseMessage"
+      },
+      "cancelable": false,
+      "target": "element"
+    },
+    {
+      "name": "ypy:sse:error",
+      "description": "Fires when a connection attempt or the stream fails. `detail.status` is set when a reconnect got a non-2xx response. An aborted stream is a normal end and does not fire it.",
+      "detail": {
+        "connection": "YpySseConnection | undefined",
+        "error": "unknown",
+        "status": "number | undefined",
+        "url": "string | undefined"
+      },
+      "cancelable": false,
+      "target": "element"
+    },
+    {
+      "name": "ypy:sse:close",
+      "description": "Fires once when the connection is cleaned up. `detail.reason` is `cancelled`, `message` (a `ypy-sse:close` event arrived), `ended`, `removed` or `cleanup`.",
+      "detail": {
+        "connection": "YpySseConnection",
+        "reason": "'cancelled' | 'message' | 'ended' | 'removed' | 'cleanup'"
+      },
+      "cancelable": false,
+      "target": "element"
+    },
+    {
+      "name": "ypy:release",
+      "description": "Named SSE event a server can send to release the request early (the queue slot and the indicators) while the stream stays open. It is dispatched on the element like any named event.",
+      "detail": {
+        "data": "string",
+        "id": "string"
+      },
+      "cancelable": false,
+      "target": "element"
+    }
+  ],
+  "config": [
+    {
+      "name": "sse",
+      "description": "Defaults of the ypy-sse extension. A single element overrides them with `ypy-config='{\"sse\":{...}}'`.",
+      "schema": {
+        "type": "object"
+      }
+    },
+    {
+      "name": "sse.reconnect",
+      "description": "Reconnect after the stream ends or fails. The default is `true` for an element with `ypy-sse:connect` and `false` for a stream opened by a request.",
+      "schema": {
+        "type": "boolean"
+      }
+    },
+    {
+      "name": "sse.reconnectDelay",
+      "description": "Wait before the first reconnect, in ms or as an interval string. The wait doubles on each attempt up to `reconnectMaxDelay`. A `retry:` field from the server replaces it.",
+      "schema": {
+        "type": [
+          "integer",
+          "string"
+        ],
+        "minimum": 0
+      },
+      "default": 500
+    },
+    {
+      "name": "sse.reconnectMaxDelay",
+      "description": "Longest wait between two reconnect attempts, in ms or as an interval string.",
+      "schema": {
+        "type": [
+          "integer",
+          "string"
+        ],
+        "minimum": 0
+      },
+      "default": 60000
+    },
+    {
+      "name": "sse.reconnectMaxAttempts",
+      "description": "How many consecutive reconnect attempts are made before giving up. Unlimited by default.",
+      "schema": {
+        "type": "integer",
+        "minimum": 0
+      }
+    },
+    {
+      "name": "sse.reconnectJitter",
+      "description": "Random spread applied to each reconnect delay, as a fraction of the delay (0.3 is plus or minus 30%). `0` turns it off.",
+      "schema": {
+        "type": "number",
+        "minimum": 0,
+        "maximum": 1
+      },
+      "default": 0.3
+    },
+    {
+      "name": "sse.connectTimeout",
+      "description": "Timeout of a connection attempt, in ms or as an interval string. `0` waits without limit. Defaults to `ypy.config.defaultTimeout`.",
+      "schema": {
+        "type": [
+          "integer",
+          "string"
+        ],
+        "minimum": 0
+      }
+    },
+    {
+      "name": "sse.pauseOnBackground",
+      "description": "Close the stream while the tab is hidden and reconnect when it is visible again. The default is `true` for an element with `ypy-sse:connect` and `false` otherwise.",
+      "schema": {
+        "type": "boolean"
+      }
+    },
+    {
+      "name": "sse.heartbeat",
+      "description": "Close the stream and open it again when no byte arrives for this long, in ms or as an interval string such as `45s`. A comment line (`: ping`) counts as a byte, so a server that pings keeps the stream alive. It catches a connection that a sleeping phone left open: it neither fails nor ends, so the retry would never run. Off by default (`0`). It reconnects only when `sse.reconnect` is on; otherwise the silent stream ends. When the page is shown again (`pageshow` from the back/forward cache, `online`, a tab that is visible again) a stream silent for longer than this is opened again at once, and a wait for the next attempt is skipped.",
+      "schema": {
+        "type": [
+          "integer",
+          "string"
+        ],
+        "minimum": 0
+      },
+      "default": 0
+    },
+    {
+      "name": "sse.releaseOn",
+      "description": "When the request gives back its queue slot and indicators: `immediate`, after the `first` swapped message, or at the `end` of the stream. The default is `immediate` for an element with `ypy-sse:connect` and `end` otherwise.",
+      "schema": {
+        "type": "string",
+        "enum": [
+          "immediate",
+          "first",
+          "end"
+        ]
+      }
+    }
+  ],
+  "internalNames": [
+    "ypy-sse"
+  ]
+}

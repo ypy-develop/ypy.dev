@@ -1,0 +1,157 @@
+{
+  "extension": "ypy-history-cache",
+  "attributes": [
+    {
+      "name": "ypy-history",
+      "description": "Set to `false` anywhere on the page to keep the page out of the history cache: it is not saved when the user leaves it.",
+      "valueType": "enum",
+      "values": [
+        {
+          "name": "false",
+          "description": "Do not cache this page."
+        }
+      ],
+      "doc": "https://ypy.dev/docs/reference/history-cache"
+    }
+  ],
+  "events": [
+    {
+      "name": "ypy:history:cache:before:save",
+      "description": "Fires on `document` before the current page is saved to `sessionStorage`. `head` may be changed. Cancel it to skip saving this page.",
+      "detail": {
+        "target": "Element",
+        "head": "string"
+      },
+      "cancelable": true,
+      "target": "document",
+      "doc": "https://ypy.dev/docs/reference/history-cache"
+    },
+    {
+      "name": "ypy:history:cache:after:save",
+      "description": "Fires on `document` after a page was saved to the cache.",
+      "detail": {
+        "content": "string",
+        "head": "string",
+        "scroll": "number",
+        "title": "string"
+      },
+      "cancelable": false,
+      "target": "document",
+      "doc": "https://ypy.dev/docs/reference/history-cache"
+    },
+    {
+      "name": "ypy:history:cache:before:restore",
+      "description": "Fires on `document` before cached content is swapped back. A listener may set `ready` to a promise that the extension awaits before the swap.",
+      "detail": {
+        "head": "string",
+        "ready": "Promise<void> | null"
+      },
+      "cancelable": false,
+      "target": "document",
+      "doc": "https://ypy.dev/docs/reference/history-cache"
+    },
+    {
+      "name": "ypy:history:cache:after:restore",
+      "description": "Fires on `document` after cached content was restored and the scroll position was set.",
+      "detail": {
+        "head": "string",
+        "ready": "Promise<void> | null",
+        "item": "YpyHistoryCacheItem"
+      },
+      "cancelable": false,
+      "target": "document",
+      "doc": "https://ypy.dev/docs/reference/history-cache"
+    },
+    {
+      "name": "ypy:history:cache:hit",
+      "description": "Fires on `document` when back or forward finds the page in the cache. Cancel it to ignore the cache and request the page. `item` may be replaced.",
+      "detail": {
+        "path": "string",
+        "item": "YpyHistoryCacheItem"
+      },
+      "cancelable": true,
+      "target": "document",
+      "doc": "https://ypy.dev/docs/reference/history-cache"
+    },
+    {
+      "name": "ypy:history:cache:miss",
+      "description": "Fires on `document` when back or forward finds no cached page. A listener may set `refreshOnMiss` to reload the page.",
+      "detail": {
+        "path": "string",
+        "refreshOnMiss": "boolean"
+      },
+      "cancelable": false,
+      "target": "document",
+      "doc": "https://ypy.dev/docs/reference/history-cache"
+    }
+  ],
+  "config": [
+    {
+      "name": "historyCache",
+      "description": "Options of the history cache extension.",
+      "schema": {
+        "type": "object"
+      }
+    },
+    {
+      "name": "historyCache.size",
+      "description": "How many pages are kept in `sessionStorage`; the oldest is dropped first. `0` turns saving off.",
+      "schema": {
+        "type": "integer",
+        "minimum": 0
+      },
+      "default": 10
+    },
+    {
+      "name": "historyCache.refreshOnMiss",
+      "description": "Reload the page on back or forward when it is not in the cache.",
+      "schema": {
+        "type": "boolean"
+      },
+      "default": false
+    },
+    {
+      "name": "historyCache.disable",
+      "description": "Turn the cache off without unloading the extension.",
+      "schema": {
+        "type": "boolean"
+      },
+      "default": false
+    },
+    {
+      "name": "historyCache.swapStyle",
+      "description": "Swap style used to put the cached content back.",
+      "schema": {
+        "type": "string"
+      },
+      "default": "outerSync"
+    },
+    {
+      "name": "historyCache.encrypt",
+      "description": "Seal the pages kept in `sessionStorage` with WebCrypto (AES-GCM, a key made for the session). `true` keeps the key in `sessionStorage`, so the pages survive a reload; `\"memory\"` keeps it in memory only, so after a reload the old pages are not readable. Without WebCrypto nothing is stored. `ypy.history.clear()` replaces the key.",
+      "schema": {
+        "anyOf": [
+          {
+            "type": "boolean"
+          },
+          {
+            "const": "memory"
+          }
+        ]
+      },
+      "default": false
+    }
+  ],
+  "internalNames": [
+    "ypy-history-cache",
+    "ypy-history-",
+    "ypy-history-index",
+    "data-ypy-history-value",
+    "data-ypy-history-checked",
+    "data-ypy-history-scroll",
+    "ypy-history-value",
+    "ypy-history-checked",
+    "ypy-history-scroll",
+    "ypy-history-key"
+  ]
+}

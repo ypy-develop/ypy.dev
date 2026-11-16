@@ -1,0 +1,54 @@
+{
+  "extension": "ypy-preload",
+  "attributes": [
+    {
+      "name": "ypy-preload",
+      "description": "Fetches the `GET` response ahead of the request, on the given events, and reuses it when the real request has the same URL and the preload is still fresh. Without a value, an element with `ypy-get` preloads on `mousedown` and `touchstart`.",
+      "valueType": "string",
+      "syntax": "`<event> [<event> ...] [timeout:<time>]`",
+      "modifiers": [
+        {
+          "name": "timeout:<time>",
+          "description": "How long the preloaded response stays valid. Default `5s`."
+        }
+      ],
+      "inherited": true
+    }
+  ],
+  "config": [
+    {
+      "name": "preload",
+      "description": "Options of the preload extension.",
+      "schema": {
+        "type": "object"
+      }
+    },
+    {
+      "name": "preload.autoBoost",
+      "description": "Preload boosted links without writing `ypy-preload`. Set `false` to turn that off.",
+      "schema": {
+        "type": "boolean"
+      },
+      "default": true
+    },
+    {
+      "name": "preload.boostTimeout",
+      "description": "How long a preloaded response stays valid for the automatic preload, in milliseconds or as `\"5s\"`.",
+      "schema": {
+        "type": [
+          "number",
+          "string"
+        ]
+      },
+      "default": 5000
+    },
+    {
+      "name": "preload.boostEvent",
+      "description": "Event that starts the automatic preload of boosted links and bare `ypy-preload` elements. `touchstart` always does too.",
+      "schema": {
+        "type": "string"
+      },
+      "default": "mousedown"
+    }
+  ]
+}

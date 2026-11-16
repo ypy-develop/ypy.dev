@@ -1,0 +1,161 @@
+{
+  "extension": "ypy-retry",
+  "attributes": [
+    {
+      "name": "ypy-retry",
+      "description": "Repeats a failed request, with exponential backoff and optional jitter. Off unless set. A bare attribute means 3 attempts; `false`, `on:never` or `attempts:0` turns it off for the element. By default only a request that could not reach the server is repeated; `on:error` also repeats a 5xx answer. Only safe methods are repeated unless `unsafe:true`.",
+      "valueType": "string",
+      "syntax": "`[attempts:<n>] [on:<mode>] [delay:<time>] [max:<time>] [backoff:<n>] [jitter:<n>] [methods:<list>] [unsafe:true]`",
+      "values": [
+        {
+          "name": "false",
+          "description": "Do not repeat requests of this element."
+        }
+      ],
+      "modifiers": [
+        {
+          "name": "attempts:<n>",
+          "description": "How many times a failed request is repeated. 3 for a bare attribute, else 0."
+        },
+        {
+          "name": "on:<mode>",
+          "description": "What counts as a failure. `network` (default): the request did not reach the server. `error`: also a response with status 500 or more. `always`: also any response with status 400 or more. `never`: do not repeat. A 503 or 429 that is repeated waits at least its `Retry-After`."
+        },
+        {
+          "name": "delay:<time>",
+          "description": "Wait before the first repeat. Default `1s`."
+        },
+        {
+          "name": "max:<time>",
+          "description": "Longest wait between two attempts. Default `30s`."
+        },
+        {
+          "name": "backoff:<n>",
+          "description": "Each wait is this many times longer than the one before. Default 2; `1` keeps it constant."
+        },
+        {
+          "name": "jitter:<n>",
+          "description": "Each wait varies at random by up to this fraction (`0.2`) or percentage (`20%`), up and down, so clients do not retry at the same moment. Default `0`; `0` keeps the waits exact."
+        },
+        {
+          "name": "methods:<list>",
+          "description": "Narrows the repeated methods. Default `GET HEAD QUERY`."
+        },
+        {
+          "name": "unsafe:true",
+          "description": "Repeat every method, including POST, PUT, PATCH and DELETE."
+        }
+      ],
+      "inherited": true,
+      "doc": "https://ypy.dev/docs/reference/attributes/ypy-retry"
+    }
+  ],
+  "events": [
+    {
+      "name": "ypy:request:retry",
+      "description": "Fires on the source element before a failed request is repeated, after `delay` ms or when the window goes online. `attempt` is 1 for the first repeat. `status` is the status of the answer that is repeated, absent after a network failure. Cancel it to give up; the error is then reported as usual, or the answer is handled as without retry.",
+      "detail": {
+        "attempt": "number",
+        "delay": "number",
+        "ctx": "YpyRequestCtx"
+      },
+      "cancelable": true,
+      "target": "element"
+    }
+  ],
+  "config": [
+    {
+      "name": "retry",
+      "description": "Default retry options for the whole page; the `ypy-retry` attribute overrides them per element.",
+      "schema": {
+        "type": "object"
+      }
+    },
+    {
+      "name": "retry.attempts",
+      "description": "How many times a failed request is repeated.",
+      "schema": {
+        "type": "integer",
+        "minimum": 0
+      },
+      "default": 0
+    },
+    {
+      "name": "retry.on",
+      "description": "What counts as a failure: `network` (the request did not reach the server), `error` (also a 5xx answer), `always` (also a 4xx answer) or `never`.",
+      "schema": {
+        "type": "string",
+        "enum": [
+          "network",
+          "error",
+          "always",
+          "never"
+        ]
+      },
+      "default": "network"
+    },
+    {
+      "name": "retry.delay",
+      "description": "Wait before the first repeat, in milliseconds or as `\"1s\"`.",
+      "schema": {
+        "type": [
+          "number",
+          "string"
+        ]
+      },
+      "default": 1000
+    },
+    {
+      "name": "retry.max",
+      "description": "Longest wait between two attempts, in milliseconds or as `\"30s\"`.",
+      "schema": {
+        "type": [
+          "number",
+          "string"
+        ]
+      },
+      "default": 30000
+    },
+    {
+      "name": "retry.backoff",
+      "description": "Each wait is this many times longer than the one before. `1` keeps it constant.",
+      "schema": {
+        "type": "number"
+      },
+      "default": 2
+    },
+    {
+      "name": "retry.jitter",
+      "description": "How much each wait varies at random, as a fraction (`0.2`) or a percentage (`\"20%\"`), up and down. `0` keeps the waits exact.",
+      "schema": {
+        "type": [
+          "number",
+          "string"
+        ]
+      },
+      "default": 0
+    },
+    {
+      "name": "retry.methods",
+      "description": "Methods that are repeated, a space or comma separated string or an array of upper-case names. It can only narrow the safe methods.",
+      "schema": {
+        "type": [
+          "string",
+          "array"
+        ],
+        "items": {
+          "type": "string"
+        }
+      },
+      "default": "GET HEAD QUERY"
+    },
+    {
+      "name": "retry.unsafe",
+      "description": "Repeat every method, including POST, PUT, PATCH and DELETE. The server may have run the first attempt.",
+      "schema": {
+        "type": "boolean"
+      },
+      "default": false
+    }
+  ]
+}

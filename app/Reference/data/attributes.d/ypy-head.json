@@ -1,0 +1,64 @@
+{
+  "extension": "ypy-head",
+  "attributes": [
+    {
+      "name": "ypy-head",
+      "description": "On the `<head>` of a response, chooses how the head is merged into the page. On an element of the current `<head>`, `re-eval` removes and appends it again on every response so scripts run again.",
+      "valueType": "enum",
+      "values": [
+        {
+          "name": "merge",
+          "description": "Make the page head equal to the response head: remove what the response lacks, add what is new. The default when the target is `body`."
+        },
+        {
+          "name": "append",
+          "description": "Only add new head elements and keep the old ones. The default when the target is not `body`."
+        },
+        {
+          "name": "re-eval",
+          "description": "On a head element: remove it and append it again on every response."
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "name": "ypy:head:before:merge",
+      "description": "Fires on `document.body` before the head of a response is merged. Cancel it to skip the merge. The detail is the one of `ypy:before:response`.",
+      "detail": {
+        "ctx": "YpyRequestCtx"
+      },
+      "cancelable": true,
+      "target": "document"
+    },
+    {
+      "name": "ypy:head:before:add",
+      "description": "Fires before a new element is appended to `<head>`. Cancel it to leave that element out.",
+      "detail": {
+        "headElement": "Element"
+      },
+      "cancelable": true,
+      "target": "document"
+    },
+    {
+      "name": "ypy:head:before:remove",
+      "description": "Fires before an element is removed from `<head>`. Cancel it to keep that element.",
+      "detail": {
+        "headElement": "Element"
+      },
+      "cancelable": true,
+      "target": "document"
+    },
+    {
+      "name": "ypy:head:after:merge",
+      "description": "Fires after the head was merged, with the elements that were added, kept and removed.",
+      "detail": {
+        "added": "Element[]",
+        "kept": "Element[]",
+        "removed": "Element[]"
+      },
+      "cancelable": false,
+      "target": "document"
+    }
+  ]
+}

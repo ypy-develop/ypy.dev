@@ -1,0 +1,77 @@
+# What never belongs in the repository.
+#
+# The per-directory .gitignore files are a different job: storage/ has to exist
+# in a clone and be empty, so each of its leaves carries a `*` plus
+# `!.gitignore`. This file is about what the project produces, not about what it
+# has to keep an empty place for.
+
+# Secrets. .env.example is committed; .env never is.
+.env
+.env.*
+!.env.example
+
+# Build output.
+bin/
+tmp/
+*.test
+*.out
+coverage.*
+
+# `go build .` from the root drops the binary here, named after the module.
+#
+# It is NOT "/app". That rule was here while the entry point was ./cmd/app, and
+# it silently excluded the whole app/ directory the day one appeared at the
+# root -- every controller, model and policy, untracked and invisible.
+/arandu
+
+# Local module resolution while the framework is not published.
+go.work
+go.work.sum
+
+# SQLite lives here in development. The file is never committed: the schema is
+# database/migrations, and a committed database disagrees with them by the
+# second day.
+database/*.sqlite
+database/*.sqlite-shm
+database/*.sqlite-wal
+database/*.db
+
+# The compiled views.
+#
+# `aru view:build` turns resources/views/home.kyse.go into
+# storage/framework/views/home.go. A compiled view is build output, and build
+# output in a repository is a file people read diffs of, resolve conflicts in,
+# and eventually edit -- this one opens with DO NOT EDIT.
+#
+# It sat beside the source before this, and hiding it in the editor was half an
+# answer: it was still in the tree, in diffs, on GitHub and in every clone.
+# resources/views now holds what somebody wrote and nothing else.
+#
+# The build step was never optional -- aru dev and the Taskfile ran it -- and CI
+# and the Dockerfile run it now too.
+#
+# A component LIBRARY is the opposite case and commits its output: go get has no
+# build step to run, so a module whose generated files are missing is one nobody
+# can import. See arandu-io/kyse.
+storage/framework/views/
+
+# The Tailwind binary `aru view:build` downloads and pins. It is a tool, not a
+# dependency: arandu.toml records which version, and that is what is committed.
+.arandu/
+
+# What the editors and the operating systems leave behind.
+.DS_Store
+Thumbs.db
+*.swp
+*~
+.idea/
+
+# .vscode IS committed, deliberately: it is what hides the generated views from
+# the file tree, and a project where half the team sees them and half does not
+# is a project arguing about a file nobody edits.
+!.vscode/
+
+# Configuracao do harness. Vive na raiz do diretorio de trabalho, nao aqui:
+# um arquivo por repositorio ja divergiu, e o hook de commit-msg em .githooks/
+# e a camada que de fato reprova atribuicao de IA.
+.claude/

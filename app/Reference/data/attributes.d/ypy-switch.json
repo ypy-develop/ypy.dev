@@ -1,0 +1,24 @@
+{
+  "extension": "ypy-switch",
+  "attributes": [
+    {
+      "name": "ypy-switch",
+      "description": "Shows this part of a form only while a rule about a field holds, with no request: `kind=company`, `kind=company|ngo`, `kind!=person`, or just `news` for a field that has a value (a checkbox that is checked). The field is found by name in the form that holds the part. A hidden part gets the `hidden` attribute and its fields are disabled, so they are not submitted and a required one does not block the submit.",
+      "valueType": "string",
+      "syntax": "`<field>[=<value>[|<value>...]] | <field>!=<value>[|<value>...]`",
+      "inherited": false,
+      "doc": "https://ypy.dev/docs/reference/switch"
+    }
+  ],
+  "events": [
+    {
+      "name": "ypy:switch",
+      "description": "Fires on a part with `ypy-switch` when it goes from shown to hidden or the other way. Its first evaluation is silent.",
+      "detail": {
+        "shown": "boolean"
+      },
+      "cancelable": false,
+      "target": "element"
+    }
+  ]
+}

@@ -1,0 +1,85 @@
+{
+  "extension": "ypy-poll",
+  "attributes": [
+    {
+      "name": "ypy-poll",
+      "description": "Options of the smart polling of an element with an `every` trigger: how a hidden tab is polled, and the shortest interval a server may ask for. `false` leaves the element to the core.",
+      "valueType": "string",
+      "syntax": "`[hidden:<n>|pause] [min:<time>]`",
+      "values": [
+        {
+          "name": "false",
+          "description": "The extension does not touch the polling of this element."
+        }
+      ],
+      "modifiers": [
+        {
+          "name": "hidden:<n>",
+          "description": "Factor applied to the interval while the tab is hidden. Default 4."
+        },
+        {
+          "name": "hidden:pause",
+          "description": "No polling while the tab is hidden."
+        },
+        {
+          "name": "min:<time>",
+          "description": "Shortest interval that a `YPY-Poll-Interval` header may set. Default `100ms`."
+        }
+      ],
+      "inherited": false,
+      "doc": "https://ypy.dev/docs/reference/poll"
+    }
+  ],
+  "events": [
+    {
+      "name": "ypy:poll:stop",
+      "description": "Fires on the element when a response with status `286` stopped its polling. The content of that response is swapped as usual.",
+      "detail": {
+        "ctx": "YpyRequestCtx",
+        "status": "number"
+      },
+      "cancelable": false,
+      "target": "element",
+      "doc": "https://ypy.dev/docs/reference/poll"
+    }
+  ],
+  "headers": [
+    {
+      "name": "YPY-Poll-Interval",
+      "direction": "response",
+      "description": "Sets the interval of the polling of the element that sent the request, from the next poll on. It stays until another response changes it.",
+      "value": "milliseconds, or a time such as `5s`, `500ms` or `1m`"
+    }
+  ],
+  "config": [
+    {
+      "name": "poll",
+      "description": "Default options of the smart polling for the whole page; the `ypy-poll` attribute overrides them per element.",
+      "schema": {
+        "type": "object"
+      }
+    },
+    {
+      "name": "poll.hidden",
+      "description": "Factor applied to the interval of a poll while the tab is hidden, or `\"pause\"` to stop polling until the tab is shown.",
+      "schema": {
+        "type": [
+          "number",
+          "string"
+        ]
+      },
+      "default": 4
+    },
+    {
+      "name": "poll.min",
+      "description": "Shortest interval a `YPY-Poll-Interval` header may set, in milliseconds or as `\"100ms\"`.",
+      "schema": {
+        "type": [
+          "number",
+          "string"
+        ]
+      },
+      "default": 100
+    }
+  ]
+}

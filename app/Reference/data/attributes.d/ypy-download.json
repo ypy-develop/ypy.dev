@@ -1,0 +1,49 @@
+{
+  "extension": "ypy-download",
+  "internalNames": [
+    "ypy-download"
+  ],
+  "headers": [
+    {
+      "name": "YPY-Download",
+      "direction": "response",
+      "description": "Makes the extension fetch the given URL and save it as a download, for backends that cannot stream the file as the YPY response itself.",
+      "value": "a URL"
+    }
+  ],
+  "events": [
+    {
+      "name": "ypy:download:start",
+      "description": "Fires on the source element when a download begins streaming. `total` is the `Content-Length`, or `null` when the server sent none.",
+      "detail": {
+        "total": "number | null",
+        "ctx": "YpyRequestCtx"
+      },
+      "cancelable": false,
+      "target": "element"
+    },
+    {
+      "name": "ypy:download:progress",
+      "description": "Fires on the source element for every chunk received, for progress bars. `percent` is `null` when the total is unknown.",
+      "detail": {
+        "loaded": "number",
+        "total": "number | null",
+        "percent": "number | null",
+        "ctx": "YpyRequestCtx"
+      },
+      "cancelable": false,
+      "target": "element"
+    },
+    {
+      "name": "ypy:download:complete",
+      "description": "Fires on the source element after the file was handed to the browser as a download.",
+      "detail": {
+        "filename": "string",
+        "size": "number",
+        "ctx": "YpyRequestCtx"
+      },
+      "cancelable": false,
+      "target": "element"
+    }
+  ]
+}

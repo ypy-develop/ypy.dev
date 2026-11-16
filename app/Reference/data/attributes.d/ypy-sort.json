@@ -1,0 +1,103 @@
+{
+  "extension": "ypy-sort",
+  "attributes": [
+    {
+      "name": "ypy-sort",
+      "description": "On a list container: its children that have an `id` can be reordered by dragging them, or with the keyboard (Space picks an item up and puts it down, the arrow keys move it, Escape puts everything back). `false` leaves the container to the page.",
+      "valueType": "enum",
+      "values": [
+        {
+          "name": "false",
+          "description": "The extension does not touch this container."
+        }
+      ],
+      "inherited": false,
+      "doc": "https://ypy.dev/docs/reference/sort"
+    },
+    {
+      "name": "ypy-sort-url",
+      "description": "The URL that gets a POST when an item is dropped in a new place: the field `id` once per item, in the new order. An answer of 400 or more, or a connection that fails, puts the list back. Without it the list only reorders.",
+      "valueType": "url",
+      "inherited": false,
+      "doc": "https://ypy.dev/docs/reference/sort"
+    }
+  ],
+  "events": [
+    {
+      "name": "ypy:sort:change",
+      "description": "Fires on the container when an item was put down in a new place, before the order is sent. Cancel it to put the list back.",
+      "detail": {
+        "ids": "string[]",
+        "item": "Element"
+      },
+      "cancelable": true,
+      "target": "element",
+      "doc": "https://ypy.dev/docs/reference/sort"
+    },
+    {
+      "name": "ypy:sort:revert",
+      "description": "Fires on the container after the list was put back in its old order: the change was cancelled, the server refused it or did not answer, or the drag was abandoned.",
+      "detail": {
+        "ids": "string[]",
+        "reason": "'cancelled' | 'failed'"
+      },
+      "cancelable": false,
+      "target": "element",
+      "doc": "https://ypy.dev/docs/reference/sort"
+    }
+  ],
+  "config": [
+    {
+      "name": "sort",
+      "description": "Settings of sortable lists.",
+      "schema": {
+        "type": "object"
+      }
+    },
+    {
+      "name": "sort.messages",
+      "description": "What the live region says while a list is sorted with the keyboard: `grab`, `move`, `drop`, `cancel` and `revert`, each a text where `{position}` and `{total}` are replaced. A message that is not set is not said.",
+      "schema": {
+        "type": "object"
+      }
+    },
+    {
+      "name": "sort.messages.grab",
+      "description": "What is said when a list item is picked up; `{position}` and `{total}` are replaced.",
+      "schema": {
+        "type": "string"
+      }
+    },
+    {
+      "name": "sort.messages.move",
+      "description": "What is said when a picked up item is moved; `{position}` and `{total}` are replaced.",
+      "schema": {
+        "type": "string"
+      }
+    },
+    {
+      "name": "sort.messages.drop",
+      "description": "What is said when an item is put down; `{position}` and `{total}` are replaced.",
+      "schema": {
+        "type": "string"
+      }
+    },
+    {
+      "name": "sort.messages.cancel",
+      "description": "What is said when a pick up is cancelled with Escape; `{position}` and `{total}` are replaced.",
+      "schema": {
+        "type": "string"
+      }
+    },
+    {
+      "name": "sort.messages.revert",
+      "description": "What is said when the list is put back after a refusal; `{position}` and `{total}` are replaced.",
+      "schema": {
+        "type": "string"
+      }
+    }
+  ],
+  "internalNames": [
+    "ypy-sort-live"
+  ]
+}

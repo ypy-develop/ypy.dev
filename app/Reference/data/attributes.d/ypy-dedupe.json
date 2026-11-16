@@ -1,0 +1,54 @@
+{
+  "extension": "ypy-dedupe",
+  "attributes": [
+    {
+      "name": "ypy-dedupe",
+      "description": "Set to `false` on an element to keep its GET requests out of the sharing of identical requests that are in flight. Write `ypy-dedupe:inherited=\"false\"` on a container to do it for everything inside.",
+      "valueType": "enum",
+      "values": [
+        {
+          "name": "false",
+          "description": "This element's requests are never shared."
+        }
+      ],
+      "inherited": true,
+      "doc": "https://ypy.dev/docs/reference/dedupe"
+    }
+  ],
+  "events": [
+    {
+      "name": "ypy:dedupe:joined",
+      "description": "Fires on the source element when its GET request joined an identical request that was already in flight, so only one request goes to the network. `waiters` counts the requests that wait for it, this one included.",
+      "detail": {
+        "ctx": "YpyRequestCtx",
+        "url": "string",
+        "waiters": "number"
+      },
+      "cancelable": false,
+      "target": "element",
+      "doc": "https://ypy.dev/docs/reference/dedupe"
+    }
+  ],
+  "config": [
+    {
+      "name": "dedupe",
+      "description": "Settings of the sharing of identical GET requests.",
+      "schema": {
+        "type": "object"
+      }
+    },
+    {
+      "name": "dedupe.ignore",
+      "description": "Names of the request headers that do not make two requests different (compared without regard to case). Every other header must be equal for the requests to be shared.",
+      "schema": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "default": [
+        "YPY-Source"
+      ]
+    }
+  ]
+}

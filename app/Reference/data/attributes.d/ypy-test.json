@@ -1,0 +1,51 @@
+{
+  "extension": "ypy-test",
+  "events": [
+    {
+      "name": "ypy:test:idle",
+      "description": "Fires on the document when a `ypy.idle()` call resolves: no request in flight, no swap or settle pending, and the quiet period passed. `waited` is how long the call waited, in milliseconds.",
+      "detail": {
+        "waited": "number"
+      },
+      "cancelable": false,
+      "target": "document",
+      "doc": "https://ypy.dev/docs/reference/testing"
+    }
+  ],
+  "config": [
+    {
+      "name": "test",
+      "description": "Defaults of `ypy.idle()` (how long it waits, the quiet period). While work is pending `ypy-test` also writes `data-ypy-busy` on `<html>` and removes it when the work ends: the value lists the kinds of work, space separated (`request` in flight, `queued` in an `ypy-sync` queue, `swap` being inserted, `settle` settling). It is output for tests and styles, never something to write by hand.",
+      "schema": {
+        "type": "object"
+      }
+    },
+    {
+      "name": "test.timeout",
+      "description": "Milliseconds `ypy.idle()` waits before it rejects with an error that names the work still pending. `0` waits for ever. A time such as `\"2s\"` also works.",
+      "schema": {
+        "type": [
+          "integer",
+          "string"
+        ],
+        "minimum": 0
+      },
+      "default": 5000
+    },
+    {
+      "name": "test.quiet",
+      "description": "Milliseconds the page must stay without pending work before `ypy.idle()` resolves; content just swapped in may start the next request (a `load` trigger) in that time. `0` resolves at once.",
+      "schema": {
+        "type": [
+          "integer",
+          "string"
+        ],
+        "minimum": 0
+      },
+      "default": 50
+    }
+  ],
+  "internalNames": [
+    "ypy-test"
+  ]
+}

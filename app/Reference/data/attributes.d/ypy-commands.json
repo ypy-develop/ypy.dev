@@ -1,0 +1,57 @@
+{
+  "extension": "ypy-commands",
+  "headers": [
+    {
+      "name": "YPY-Commands",
+      "direction": "response",
+      "description": "A JSON list of typed client commands that run after the response was swapped, with no eval. Each command has a `type` and a `target` (a CSS selector; the command acts on every match): `addClass`, `removeClass`, `toggleClass` (`class`, optional `force`), `setAttribute` (`name`, `value`), `removeAttribute` (`name`), `focus`, `scrollIntoView` (`behavior`, `block`, `inline`), `remove`, `dispatch` (`event`, `detail`, `bubbles`; the target is optional and defaults to the document), `show` and `hide`. An unknown or invalid command is ignored with a console warning.",
+      "value": "a JSON list, for example `[{\"type\":\"addClass\",\"target\":\"#row-4\",\"class\":\"saved\"}]`"
+    }
+  ],
+  "events": [
+    {
+      "name": "ypy:before:command",
+      "description": "Fires on the element that sent the request before one command of `YPY-Commands` runs. `targets` are the elements the selector matched. Cancel it to skip that command.",
+      "detail": {
+        "ctx": "YpyRequestCtx | undefined",
+        "command": "YpyCommand",
+        "targets": "Array<Element | Document>"
+      },
+      "cancelable": true,
+      "target": "element",
+      "doc": "https://ypy.dev/docs/reference/commands"
+    },
+    {
+      "name": "ypy:commands:ignored",
+      "description": "Fires on the element that sent the request when a command, or the whole list, of `YPY-Commands` was not run: unknown type, an invalid field, an invalid selector, a blocked attribute (an event handler, `style`, `srcdoc`, an attribute of YPY or a `javascript:` URL), a list that is not JSON or is longer than `commands.max`. A console warning says the same.",
+      "detail": {
+        "command": "unknown",
+        "reason": "string"
+      },
+      "cancelable": false,
+      "target": "element",
+      "doc": "https://ypy.dev/docs/reference/commands"
+    }
+  ],
+  "config": [
+    {
+      "name": "commands",
+      "description": "Settings of the `YPY-Commands` header.",
+      "schema": {
+        "type": "object"
+      }
+    },
+    {
+      "name": "commands.max",
+      "description": "Most commands a `YPY-Commands` list may hold; a longer list is ignored as a whole.",
+      "schema": {
+        "type": "integer",
+        "minimum": 0
+      },
+      "default": 100
+    }
+  ],
+  "internalNames": [
+    "ypy-commands"
+  ]
+}

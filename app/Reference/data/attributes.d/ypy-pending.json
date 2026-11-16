@@ -1,0 +1,17 @@
+{
+  "extension": "ypy-pending",
+  "attributes": [
+    {
+      "name": "ypy-pending",
+      "description": "Shows the content of another element, or of a `<template>`, in the target while the request is pending. The placeholder is removed before the swap or on error. Request parameters become `data-*` attributes of the placeholder.",
+      "valueType": "selector",
+      "inherited": true
+    }
+  ],
+  "classes": [
+    {
+      "name": "ypy-pending",
+      "description": "Applied to the placeholder element inserted by `ypy-pending`, until the request ends."
+    }
+  ]
+}

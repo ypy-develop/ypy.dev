@@ -1,0 +1,14 @@
+{
+  "name": "YPY",
+  "short_name": "YPY",
+  "description": "YPY is a hypermedia framework: HTML attributes ask the server for HTML and say where the answer goes.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "browser",
+  "theme_color": "#fbf8f1",
+  "background_color": "#fbf8f1",
+  "icons": [
+    { "src": "/android-chrome-192x192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/android-chrome-512x512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

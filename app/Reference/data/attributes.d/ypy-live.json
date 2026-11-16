@@ -1,0 +1,55 @@
+{
+  "extension": "ypy-live",
+  "attributes": [
+    {
+      "name": "ypy-live",
+      "description": "Runs a JavaScript expression when the element is processed and again whenever the DOM, an input or a swap may have changed what it reads. The expression runs with the `ypy-live` scope: `q()`, `take()`, `toggle()`, `trigger()`, `debounce()`, `forEvent()`, `nextFrame()`, `insert()`, `attr`, `data`, `aria`, `local` and `closest`. It needs `config.callbacks` to allow code.",
+      "valueType": "expression"
+    },
+    {
+      "name": "ypy-live:*",
+      "description": "Binds a JavaScript expression to a property of the element, re-evaluated like `ypy-live`. The name after the colon is an attribute or property (`value`, `disabled`, `aria-label`, `data-x`), `text` (textContent), `html` (innerHTML), `style`, `class` (object or string), `.name` (one class) or `?name` (a boolean attribute). The short form `:name` works when `config.live.bindPrefix` is `:` (the default).",
+      "valueType": "expression",
+      "pattern": "^ypy-live:.+$",
+      "variants": [
+        "ypy-live:text",
+        "ypy-live:html",
+        "ypy-live:style",
+        "ypy-live:class",
+        "ypy-live:value",
+        "ypy-live:checked",
+        "ypy-live:disabled",
+        "ypy-live:hidden",
+        "ypy-live:aria-label",
+        "ypy-live:aria-expanded",
+        "ypy-live:?disabled",
+        "ypy-live:.active"
+      ]
+    }
+  ],
+  "config": [
+    {
+      "name": "live",
+      "description": "Settings of the ypy-live extension.",
+      "schema": { "type": "object" }
+    },
+    {
+      "name": "live.inputDebounce",
+      "description": "Debounces `input` events before expressions are re-evaluated, in ms or as an interval string.",
+      "schema": { "type": ["integer", "string"], "minimum": 0 },
+      "default": 100
+    },
+    {
+      "name": "live.bindPrefix",
+      "description": "Short binding prefix: `\":\"` makes `:text` work, `\"ypy:\"` makes `ypy:text` work, and `\"\"` or `false` turns the short form off. When Alpine.js is detected the short form is off unless this is set.",
+      "schema": { "oneOf": [{ "type": "string" }, { "const": false }] },
+      "default": ":"
+    },
+    {
+      "name": "live.useDollar",
+      "description": "Adds `$()` as an alias of `q()` in `ypy-live`, `:attr`, `ypy-on`, `js:` attributes and `ypy-trigger` filters.",
+      "schema": { "type": "boolean" },
+      "default": false
+    }
+  ]
+}

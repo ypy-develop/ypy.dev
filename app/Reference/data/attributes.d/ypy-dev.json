@@ -1,0 +1,94 @@
+{
+  "extension": "ypy-dev",
+  "attributes": [],
+  "events": [
+    {
+      "name": "ypy:dev:message",
+      "description": "Fired by the development extension for every message it writes to the console (an error with context, a warning for incorrect or legacy use, a reload, a POST, PUT, PATCH or DELETE cut by `ypy-sync` as `sync-aborted` or `sync-dropped`, a 401, 403 or 419 as `status-401` and the like with `auth: true`). `code` is a stable name, `text` the sentence; other keys depend on the code (`ctx`, `selector`, `status`, `attribute`, `suggestion`, `guide`).",
+      "detail": {
+        "level": "'info' | 'warn' | 'error'",
+        "code": "string",
+        "text": "string",
+        "elt": "Element | null"
+      },
+      "cancelable": false,
+      "target": "element"
+    }
+  ],
+  "config": [
+    {
+      "name": "dev",
+      "description": "Options of the development extension `ypy-dev`; `false` turns it off.",
+      "schema": {
+        "type": [
+          "object",
+          "boolean"
+        ]
+      }
+    },
+    {
+      "name": "dev.latency",
+      "description": "Simulated latency in milliseconds, or `[min, max]` (the JSON form of the tag). Off by default.",
+      "schema": {
+        "type": [
+          "number",
+          "array"
+        ]
+      }
+    },
+    {
+      "name": "dev.offline",
+      "description": "Start with the simulated offline state on.",
+      "schema": {
+        "type": "boolean"
+      },
+      "default": false
+    },
+    {
+      "name": "dev.reload",
+      "description": "Reload the page when a template changes: `true` listens on `/__ypy/reload`, a string is the URL of the Server-Sent Events endpoint.",
+      "schema": {
+        "type": [
+          "boolean",
+          "string"
+        ]
+      },
+      "default": false
+    },
+    {
+      "name": "dev.lint",
+      "description": "`false` turns the markup and legacy warnings off.",
+      "schema": {
+        "type": "boolean"
+      },
+      "default": true
+    },
+    {
+      "name": "dev.log",
+      "description": "`false` keeps the console quiet; messages are still recorded and fired as `ypy:dev:message`.",
+      "schema": {
+        "type": "boolean"
+      },
+      "default": true
+    },
+    {
+      "name": "dev.overlay",
+      "description": "Show a panel with the status, the URL, the start of the response and the element when a request fails; Esc closes it. On by default only on a development host (`localhost`, `127.*`, `[::1]`, `*.local`, `*.test`, `*.localhost`).",
+      "schema": {
+        "type": "boolean"
+      }
+    },
+    {
+      "name": "dev.docs",
+      "description": "Base URL of the guide pages that the legacy warnings link to.",
+      "schema": {
+        "type": "string"
+      },
+      "default": "https://ypy.dev/guides/upgrade-check"
+    }
+  ],
+  "internalNames": [
+    "ypy-dev",
+    "ypy-dev-overlay"
+  ]
+}

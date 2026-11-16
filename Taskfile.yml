@@ -1,0 +1,53 @@
+version: '3'
+
+# Every command the site needs. The Go toolchain and `aru` are the only tools:
+# there is no Node and no package.json (RULE 13 of the framework).
+
+tasks:
+  sync:
+    desc: Copy the name tables, the version and the browser files from the YPY source tree (../ypy, or YPY_DIR)
+    cmds: [go generate ./app/Reference]
+
+  views:
+    desc: Compile the kyse views, the stylesheet and the script bundles
+    cmds: [aru view:build]
+
+  serve:
+    desc: Run the site on http://localhost:8080
+    deps: [views]
+    cmds: [go run . serve]
+
+  routes:
+    desc: List the registered routes
+    cmds: [go run . routes]
+
+  build:
+    desc: Build the binary into bin/ypy.dev
+    deps: [views]
+    cmds: ['go build -o bin/ypy.dev .']
+
+  test:
+    desc: The tests
+    deps: [views]
+    cmds: [go test ./...]
+
+  check:
+    desc: The gates CI runs, which need neither Docker nor the network
+    env:
+      GOWORK: 'off'
+    cmds:
+      - aru view:build
+      # gofmt ignores build constraints, so it has to be told to skip the
+      # .kyse.go sources -- they are markup, not Go -- and testdata/. It also
+      # exits zero when it finds something, so what it prints is the answer.
+      - |
+        unformatted=$(find . -name '*.go' -not -path '*/testdata/*' -not -name '*.kyse.go' -exec gofmt -l {} +)
+        if [ -n "$unformatted" ]; then
+          echo "not gofmt'd:"
+          echo "$unformatted"
+          exit 1
+        fi
+      - go vet ./...
+      - bash tests/test-layout-guard.sh
+      - go test -race ./...
+      - go build ./...

@@ -1,0 +1,778 @@
+/* The documentation: the three-column page (sidebar, article, contents), the
+ * rendered Markdown, the reference tables and the search box. Colours come from
+ * the tokens of app.css, so everything turns over with the theme. */
+
+.docs-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 2rem;
+  padding: 1.5rem 2rem 4rem;
+}
+
+.docs-layout > * {
+  min-width: 0;
+}
+
+@media (min-width: 1024px) {
+  .docs-layout {
+    grid-template-columns: 15rem minmax(0, 1fr);
+    gap: 3rem;
+    padding-top: 2.5rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  .docs-layout {
+    grid-template-columns: 15rem minmax(0, 1fr) 13rem;
+  }
+}
+
+.docs-layout-wide {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+@media (min-width: 1024px) {
+  .docs-layout-wide {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 639px) {
+  .docs-layout {
+    padding-inline: 1.25rem;
+  }
+}
+
+/* The sidebar. A disclosure below the width where it fits beside the article,
+ * a sticky column above it: the same markup, so there is one navigation. */
+.docs-sidebar {
+  min-width: 0;
+}
+
+@media (max-width: 1023px) {
+  .docs-menu-summary {
+    display: flex;
+    min-height: 44px;
+    cursor: pointer;
+    align-items: center;
+    border: 1px solid var(--border-strong);
+    border-radius: 0.5rem;
+    padding-inline: 0.9rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    list-style: none;
+  }
+
+  .docs-menu-summary::-webkit-details-marker {
+    display: none;
+  }
+
+}
+
+@media (min-width: 1024px) {
+  .docs-sidebar {
+    position: sticky;
+    top: calc(var(--signature-strip-height) + 1.5rem);
+    align-self: start;
+    max-height: calc(100vh - var(--signature-strip-height) - 3rem);
+    overflow-y: auto;
+    padding-right: 0.5rem;
+    scrollbar-width: thin;
+  }
+
+  .docs-menu-summary {
+    display: none;
+  }
+
+  .docs-menu {
+    display: block;
+  }
+}
+
+.docs-nav {
+  margin-top: 0.75rem;
+}
+
+.docs-nav-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.docs-group {
+  margin-top: 0.4rem;
+}
+
+.docs-group-title {
+  display: flex;
+  min-height: 2rem;
+  cursor: pointer;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.25rem 0.5rem;
+  color: var(--foreground);
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.14em;
+  list-style: none;
+  text-transform: uppercase;
+}
+
+.docs-group-title::-webkit-details-marker {
+  display: none;
+}
+
+.docs-group-title::after {
+  content: "+";
+  color: var(--text-muted);
+}
+
+.docs-group[open] > .docs-group-title::after {
+  content: "-";
+}
+
+.docs-nav-link {
+  display: block;
+  border-left: 2px solid transparent;
+  padding: 0.3rem 0.5rem 0.3rem 0.75rem;
+  color: var(--text-muted);
+  font-size: 0.84rem;
+  line-height: 1.4;
+  transition: color var(--motion-fast) var(--ease-interaction);
+}
+
+.docs-nav-link:hover {
+  color: var(--foreground);
+}
+
+.docs-nav-link[aria-current="page"] {
+  border-left-color: var(--primary);
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.docs-sub-title {
+  margin: 0.5rem 0 0.1rem 0.5rem;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+/* The article. */
+.docs-article {
+  min-width: 0;
+  max-width: 50rem;
+}
+
+.docs-article-wide {
+  max-width: none;
+}
+
+.docs-crumbs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.docs-crumbs a:hover {
+  color: var(--primary);
+}
+
+.docs-title {
+  margin-top: 0.9rem;
+  font-size: clamp(1.9rem, 3.4vw, 2.6rem);
+  font-weight: 750;
+  line-height: 1.08;
+  letter-spacing: -0.04em;
+  text-wrap: balance;
+}
+
+.docs-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 0.9rem;
+}
+
+.ref-intro {
+  max-width: 60ch;
+  margin-top: 1rem;
+  line-height: 1.65;
+}
+
+/* The page contents, on the right of a wide screen. */
+.docs-toc {
+  display: none;
+}
+
+@media (min-width: 1280px) {
+  .docs-toc {
+    position: sticky;
+    top: calc(var(--signature-strip-height) + 1.5rem);
+    display: block;
+    align-self: start;
+    max-height: calc(100vh - var(--signature-strip-height) - 3rem);
+    overflow-y: auto;
+    font-size: 0.8rem;
+  }
+}
+
+.docs-toc-title {
+  margin-bottom: 0.6rem;
+}
+
+.docs-toc ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-left: 1px solid var(--grid);
+}
+
+.docs-toc-item a {
+  display: block;
+  padding: 0.25rem 0 0.25rem 0.8rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.docs-toc-item[data-level="3"] a {
+  padding-left: 1.6rem;
+  font-size: 0.76rem;
+}
+
+.docs-toc-item a:hover {
+  color: var(--primary);
+}
+
+/* Previous and next. */
+.docs-pager {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin-top: 3.5rem;
+  border-top: 1px solid var(--grid);
+  padding-top: 1.5rem;
+}
+
+.docs-pager-link {
+  display: grid;
+  gap: 0.25rem;
+  border: 1px solid var(--border);
+  border-radius: 0.6rem;
+  padding: 0.9rem 1.1rem;
+  transition:
+    border-color var(--motion-fast) var(--ease-interaction),
+    background-color var(--motion-fast) var(--ease-interaction);
+}
+
+.docs-pager-link:hover {
+  border-color: var(--border-strong);
+  background: var(--surface-raised);
+}
+
+.docs-pager-next {
+  grid-column: 2;
+  text-align: right;
+}
+
+.docs-pager-title {
+  color: var(--primary);
+  font-weight: 650;
+}
+
+/* A folder with no index page. */
+.landing-list {
+  list-style: none;
+  margin: 1.5rem 0 0;
+  padding: 0;
+  border-top: 1px solid var(--grid);
+}
+
+.landing-item {
+  border-bottom: 1px solid var(--grid);
+  padding: 1rem 0;
+}
+
+.landing-title {
+  color: var(--foreground);
+  font-weight: 650;
+}
+
+.landing-title:hover {
+  color: var(--primary);
+}
+
+.landing-item p {
+  margin-top: 0.25rem;
+  max-width: 70ch;
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+.landing-sub {
+  margin-top: 2.5rem;
+  font-size: 1.3rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+/* The rendered Markdown. */
+.prose {
+  margin-top: 1.75rem;
+  font-weight: var(--font-weight-reading);
+  font-size: 0.97rem;
+  line-height: 1.75;
+}
+
+.prose > * + * {
+  margin-top: 1.1rem;
+}
+
+.prose h2,
+.prose h3,
+.prose h4 {
+  scroll-margin-top: calc(var(--signature-strip-height) + 1.25rem);
+  font-family: var(--font-display);
+  letter-spacing: -0.025em;
+  line-height: 1.2;
+  text-wrap: balance;
+}
+
+.prose h2 {
+  margin-top: 2.75rem;
+  border-top: 1px solid var(--grid);
+  padding-top: 1.75rem;
+  font-size: 1.55rem;
+  font-weight: 750;
+}
+
+.prose h3 {
+  margin-top: 2rem;
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.prose h4 {
+  margin-top: 1.5rem;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.prose a {
+  color: var(--primary);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+}
+
+.prose a:hover {
+  text-decoration-thickness: 2px;
+}
+
+.prose ul,
+.prose ol {
+  padding-left: 1.4rem;
+}
+
+.prose ul {
+  list-style: disc;
+}
+
+.prose ol {
+  list-style: decimal;
+}
+
+.prose li + li {
+  margin-top: 0.35rem;
+}
+
+.prose li::marker {
+  color: var(--text-muted);
+}
+
+.prose :not(pre) > code {
+  border: 1px solid var(--border);
+  border-radius: 0.3rem;
+  background: var(--surface-raised);
+  padding: 0.1rem 0.35rem;
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+}
+
+.prose blockquote {
+  border-left: 3px solid var(--primary);
+  background: var(--accent-soft);
+  padding: 0.75rem 1.1rem;
+  color: var(--foreground);
+}
+
+.prose blockquote > * + * {
+  margin-top: 0.6rem;
+}
+
+.prose hr {
+  border: 0;
+  border-top: 1px solid var(--grid);
+  margin-block: 2rem;
+}
+
+.prose img {
+  max-width: 100%;
+  height: auto;
+}
+
+.prose figure {
+  margin-inline: 0;
+}
+
+.prose figcaption {
+  margin-top: 0.4rem;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+}
+
+/* Tables scroll on their own, never the page. */
+.prose table,
+.ref-table {
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+  line-height: 1.55;
+}
+
+.prose th,
+.prose td,
+.ref-table th,
+.ref-table td {
+  border: 1px solid var(--grid);
+  padding: 0.55rem 0.8rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+.prose th,
+.ref-table th {
+  background: var(--surface-raised);
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.prose tbody tr:nth-child(even) td {
+  background: color-mix(in srgb, var(--surface-raised) 45%, transparent);
+}
+
+.prose input[type="checkbox"] {
+  margin-right: 0.4rem;
+}
+
+/* A code block: the terminal frame of the front page, with a copy button. The
+ * panel does not invert with the theme -- night stays night -- so the chroma
+ * colours of app.css are right in both. */
+.doc-code {
+  overflow: hidden;
+  border: 1px solid var(--code-border);
+  border-radius: 0.7rem;
+  background: var(--code-bg);
+  color: var(--color-cream);
+}
+
+.doc-code-bar {
+  display: flex;
+  min-height: 2.5rem;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--code-divider);
+  padding-inline: 0.9rem 0.4rem;
+  color: var(--code-muted);
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.doc-code-copy {
+  min-height: 2rem;
+  min-width: 3.5rem;
+  border-radius: 0.35rem;
+  padding-inline: 0.6rem;
+  color: var(--code-muted);
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.doc-code-copy:hover {
+  background: color-mix(in srgb, var(--color-cream) 8%, transparent);
+  color: var(--color-cream);
+}
+
+.doc-code pre {
+  margin: 0;
+  overflow-x: auto;
+  padding: 1rem 1.2rem;
+  background: var(--code-bg);
+  color: var(--color-cream);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  line-height: 1.7;
+  tab-size: 4;
+  scrollbar-color: var(--code-border) transparent;
+}
+
+.doc-code pre code {
+  display: block;
+  border: 0;
+  background: none;
+  padding: 0;
+  font-size: inherit;
+}
+
+/* The generated reference. */
+.table-scroll {
+  margin-top: 2rem;
+  overflow-x: auto;
+}
+
+.ref-table {
+  display: table;
+  width: 100%;
+  min-width: 42rem;
+}
+
+.ref-table td p + p {
+  margin-top: 0.4rem;
+}
+
+.ref-name {
+  min-width: 13rem;
+  white-space: nowrap;
+}
+
+.ref-name > * + * {
+  margin-left: 0.35rem;
+}
+
+.ref-anchor code {
+  border: 0;
+  background: none;
+  padding: 0;
+  color: var(--foreground);
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.ref-anchor:hover code {
+  color: var(--primary);
+}
+
+.ref-table code {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+}
+
+.ref-table tr:target td {
+  background: var(--accent-soft);
+}
+
+.ref-table tbody tr {
+  scroll-margin-top: calc(var(--signature-strip-height) + 1rem);
+}
+
+.ref-tag {
+  display: inline-block;
+  border: 1px solid var(--border-strong);
+  border-radius: 0.3rem;
+  padding: 0.05rem 0.4rem;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.ref-tag-warn {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.ref-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin-top: 0.4rem;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+}
+
+.ref-note {
+  margin-top: 0.4rem;
+  color: var(--primary);
+  font-size: 0.82rem;
+}
+
+.ref-values {
+  list-style: none;
+  margin: 0.5rem 0 0;
+  padding: 0;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+}
+
+.ref-values li + li {
+  margin-top: 0.2rem;
+}
+
+.ref-guide {
+  white-space: nowrap;
+}
+
+.ref-guide a {
+  color: var(--primary);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+/* The search box of the header, and its results. */
+.site-search {
+  position: relative;
+  display: none;
+  align-items: center;
+}
+
+@media (min-width: 640px) {
+  .site-search {
+    display: flex;
+  }
+}
+
+.site-search-icon {
+  position: absolute;
+  left: 0.7rem;
+  display: inline-flex;
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.site-search-input {
+  width: 9.5rem;
+  height: 2.5rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 0.5rem;
+  background: var(--background);
+  padding: 0 2.2rem 0 2.2rem;
+  color: var(--foreground);
+  font-size: 0.85rem;
+  transition:
+    width var(--motion-base) var(--ease-interaction),
+    border-color var(--motion-fast) var(--ease-interaction);
+}
+
+.site-search-input:focus {
+  width: 15rem;
+  border-color: var(--primary);
+  outline: none;
+}
+
+.site-search-key {
+  position: absolute;
+  right: 0.6rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 0.25rem;
+  padding: 0 0.35rem;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  pointer-events: none;
+}
+
+.site-search-input:focus ~ .site-search-key {
+  display: none;
+}
+
+.site-search-results {
+  position: absolute;
+  top: calc(100% + 0.4rem);
+  right: 0;
+  z-index: 90;
+  width: min(26rem, 90vw);
+  max-height: 24rem;
+  overflow-y: auto;
+  border: 1px solid var(--border-strong);
+  border-radius: 0.6rem;
+  background: var(--popover);
+  box-shadow: 0 18px 48px color-mix(in srgb, var(--color-night) 18%, transparent);
+}
+
+.site-search-hit {
+  display: grid;
+  gap: 0.15rem;
+  padding: 0.6rem 0.9rem;
+  border-bottom: 1px solid var(--grid);
+}
+
+.site-search-hit:last-child {
+  border-bottom: 0;
+}
+
+.site-search-hit:hover,
+.site-search-hit[data-active] {
+  background: var(--accent);
+}
+
+.site-search-hit-title {
+  font-weight: 650;
+  font-size: 0.88rem;
+}
+
+.site-search-hit-where {
+  color: var(--text-muted);
+  font-size: 0.6rem;
+}
+
+.site-search-none {
+  padding: 0.9rem;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.search-page-form {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.search-page-input {
+  min-width: 0;
+  flex: 1;
+  height: 2.75rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 0.5rem;
+  background: var(--background);
+  padding-inline: 1rem;
+  color: var(--foreground);
+}
+
+.search-page-input:focus {
+  border-color: var(--primary);
+  outline: none;
+}
+
+.footer-logo {
+  display: block;
+}

@@ -1,0 +1,29 @@
+{
+  "extension": "ypy-csrf",
+  "elements": [
+    {
+      "name": "ypy-csrf",
+      "description": "Not an element: the `name` of the `<meta name=\"ypy-csrf\" content=\"TOKEN\">` tag that carries the CSRF token. `data-header` names the request header (default `X-CSRF-Token`)."
+    }
+  ],
+  "headers": [
+    {
+      "name": "YPY-CSRF",
+      "direction": "response",
+      "description": "A new CSRF token. A same-origin response that carries it replaces the content of the `ypy-csrf` meta tag (created when missing), and the next request sends it.",
+      "value": "the new token"
+    }
+  ],
+  "events": [
+    {
+      "name": "ypy:csrf:missing",
+      "description": "An unsafe (not GET or HEAD) request to the page's own origin is about to leave without a CSRF token: the `ypy-csrf` meta tag is missing or empty. Cancel it to silence the console warning, which is shown once per URL. The request is still sent.",
+      "detail": {
+        "ctx": "YpyRequestCtx",
+        "header": "string"
+      },
+      "cancelable": true,
+      "target": "element"
+    }
+  ]
+}

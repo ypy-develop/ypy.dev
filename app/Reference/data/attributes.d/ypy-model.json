@@ -1,0 +1,113 @@
+{
+  "extension": "ypy-model",
+  "attributes": [
+    {
+      "name": "ypy-untrusted",
+      "description": "Marks a container whose content a language model writes, with the `ypy-model` extension (included in `ypy.max`). Whatever enters it loses scripts, styles, frames, forms, svg, `ypy-*`, `data-ypy-*`, `on*` and framework attributes, `javascript:` and `data:` addresses and media that loads from the network. The value `images` keeps images.",
+      "valueType": "string",
+      "values": [
+        {
+          "name": "images",
+          "description": "Images are kept (their handlers and bad addresses are still removed)."
+        }
+      ],
+      "inherited": false,
+      "doc": "https://ypy.dev/docs/guides/model-streaming"
+    },
+    {
+      "name": "ypy-follow",
+      "description": "On the container of a model answer: the page scrolls down while the answer grows, only when the reader was already at the bottom and `prefers-reduced-motion` is not set.",
+      "valueType": "boolean",
+      "inherited": false,
+      "doc": "https://ypy.dev/docs/guides/model-streaming"
+    },
+    {
+      "name": "ypy-stop",
+      "description": "On a button: a selector of the elements that get `ypy:abort` when it is clicked, which closes their stream. The answer that was open is closed in the page as stopped. Pair it with a request of the button (`ypy-post`) that tells the server.",
+      "valueType": "selector",
+      "inherited": false,
+      "doc": "https://ypy.dev/docs/guides/model-streaming"
+    },
+    {
+      "name": "ypy-announce-start",
+      "description": "The live-region text said when the answer in this container starts. Falls back to `config.announce.messages.answerStart`.",
+      "valueType": "string",
+      "inherited": false
+    },
+    {
+      "name": "ypy-announce-stop",
+      "description": "The live-region text, assertive, said when the answer was stopped (`data-ypy-answer=\"stopped\"`). Falls back to `config.announce.messages.answerStopped`.",
+      "valueType": "string",
+      "inherited": false
+    },
+    {
+      "name": "ypy-announce-error",
+      "description": "The live-region text, assertive, said when the answer failed (`data-ypy-answer=\"failed\"`). Falls back to `config.announce.messages.answerFailed`.",
+      "valueType": "string",
+      "inherited": false
+    },
+    {
+      "name": "ypy-answer",
+      "description": "Written by the server on the answer container (as `data-ypy-answer`) in the final patch: `done`, `stopped` or `failed`. The `ypy-model` extension reads it to pick the closing announcement, and writes `stopped` itself when the reader stops the answer.",
+      "valueType": "enum",
+      "values": [
+        {
+          "name": "done",
+          "description": "the answer finished"
+        },
+        {
+          "name": "stopped",
+          "description": "the reader stopped it"
+        },
+        {
+          "name": "failed",
+          "description": "the server or the model failed"
+        }
+      ],
+      "inherited": false,
+      "doc": "https://ypy.dev/docs/guides/model-streaming"
+    }
+  ],
+  "config": [
+    {
+      "name": "announce.stream",
+      "description": "`blocks` says the text of each closed block of a model answer, shortened, at most once every 3 seconds. Unset: only the start and the end of the answer are said.",
+      "schema": {
+        "enum": [
+          "blocks"
+        ]
+      }
+    },
+    {
+      "name": "announce.messages.answerStart",
+      "description": "Said when a model answer starts.",
+      "schema": {
+        "type": "string"
+      }
+    },
+    {
+      "name": "announce.messages.answerReady",
+      "description": "Said when a model answer is finished (also the text of the `ypy-announce` attribute of its container).",
+      "schema": {
+        "type": "string"
+      }
+    },
+    {
+      "name": "announce.messages.answerStopped",
+      "description": "Said, assertive, when a model answer was stopped.",
+      "schema": {
+        "type": "string"
+      }
+    },
+    {
+      "name": "announce.messages.answerFailed",
+      "description": "Said, assertive, when a model answer failed.",
+      "schema": {
+        "type": "string"
+      }
+    }
+  ],
+  "internalNames": [
+    "ypy-model"
+  ]
+}

@@ -1,0 +1,306 @@
+{
+  "extension": "ypy-layers",
+  "attributes": [
+    {
+      "name": "ypy-layer",
+      "description": "Opens the response of this link, form or `ypy-get`-style element in a layer built on a native `<dialog>`, instead of swapping it into the page. The value is the kind of layer.",
+      "valueType": "enum",
+      "syntax": "modal | drawer | popup",
+      "values": [
+        {
+          "name": "modal",
+          "description": "A centered modal dialog."
+        },
+        {
+          "name": "drawer",
+          "description": "A modal panel at the edge of the screen."
+        },
+        {
+          "name": "popup",
+          "description": "A non-modal dialog, anchored below its opener."
+        }
+      ],
+      "inherited": false,
+      "doc": "https://ypy.dev/docs/reference/layers"
+    },
+    {
+      "name": "ypy-layer-close-on",
+      "description": "Event names that accept the layer. The first event of one of these names, fired inside the layer (or on the page, for the top layer), closes it and its `detail` becomes the result value.",
+      "valueType": "string",
+      "syntax": "<event name>[, <event name>]",
+      "inherited": true,
+      "doc": "https://ypy.dev/docs/reference/layers"
+    },
+    {
+      "name": "ypy-layer-close-on-url",
+      "description": "URL patterns that accept the layer. When the layer navigates to a matching path and query (`*` matches any text) the page is not swapped in: the layer closes with the URL as its value.",
+      "valueType": "string",
+      "syntax": "<pattern>[, <pattern>]",
+      "inherited": true,
+      "doc": "https://ypy.dev/docs/reference/layers"
+    },
+    {
+      "name": "ypy-layer-close-on-fragment",
+      "description": "Selector that accepts the layer. When a response holds a matching element the response is not swapped in: the layer closes with the `ypy-layer-value` of that element as its value.",
+      "valueType": "selector",
+      "inherited": true,
+      "doc": "https://ypy.dev/docs/reference/layers"
+    },
+    {
+      "name": "ypy-layer-outside",
+      "description": "`false` keeps the layer open when the user clicks outside it. Default `true`.",
+      "valueType": "boolean",
+      "syntax": "true | false",
+      "inherited": true,
+      "doc": "https://ypy.dev/docs/reference/layers"
+    },
+    {
+      "name": "ypy-layer-escape",
+      "description": "`false` keeps the layer open on Esc. Default `true`.",
+      "valueType": "boolean",
+      "syntax": "true | false",
+      "inherited": true,
+      "doc": "https://ypy.dev/docs/reference/layers"
+    },
+    {
+      "name": "ypy-layer-history",
+      "description": "Shows the URL of the layer in the address bar while it is open; Back closes the layer.",
+      "valueType": "boolean",
+      "syntax": "true | false",
+      "inherited": true,
+      "doc": "https://ypy.dev/docs/reference/layers"
+    },
+    {
+      "name": "ypy-layer-side",
+      "description": "The side a drawer comes from, written as `data-ypy-layer-side` on the dialog for the style.",
+      "valueType": "enum",
+      "syntax": "start | end | top | bottom",
+      "values": [
+        {
+          "name": "start",
+          "description": "The start edge."
+        },
+        {
+          "name": "end",
+          "description": "The end edge (default)."
+        },
+        {
+          "name": "top",
+          "description": "The top edge."
+        },
+        {
+          "name": "bottom",
+          "description": "The bottom edge."
+        }
+      ],
+      "inherited": true,
+      "doc": "https://ypy.dev/docs/reference/layers"
+    },
+    {
+      "name": "ypy-layer-label",
+      "description": "The accessible name of the layer (`aria-label`). Without it the first heading of the content names the layer.",
+      "valueType": "text",
+      "inherited": true,
+      "doc": "https://ypy.dev/docs/reference/layers"
+    },
+    {
+      "name": "ypy-layer-class",
+      "description": "Classes added to the dialog of this layer, after those of `config.layers.classes`.",
+      "valueType": "string",
+      "syntax": "<class>[ <class>]",
+      "inherited": true,
+      "doc": "https://ypy.dev/docs/reference/layers"
+    },
+    {
+      "name": "ypy-layer-accept",
+      "description": "Inside a layer: a click on this element accepts the layer. The value, parsed as JSON when it is valid and kept as text otherwise, is the result value.",
+      "valueType": "json",
+      "syntax": "<value>",
+      "inherited": false,
+      "doc": "https://ypy.dev/docs/reference/layers"
+    },
+    {
+      "name": "ypy-layer-dismiss",
+      "description": "Inside a layer: a click on this element dismisses the layer. The value is the reason (default `dismissed`).",
+      "valueType": "string",
+      "syntax": "<reason>",
+      "inherited": false,
+      "doc": "https://ypy.dev/docs/reference/layers"
+    },
+    {
+      "name": "ypy-layer-value",
+      "description": "On an element of a response matched by `ypy-layer-close-on-fragment`: the value the layer is accepted with, as JSON or text.",
+      "valueType": "json",
+      "syntax": "<value>",
+      "inherited": false,
+      "doc": "https://ypy.dev/docs/reference/layers"
+    }
+  ],
+  "events": [
+    {
+      "name": "ypy:layer:before:open",
+      "description": "Fires on the opener (or on the document for a call of `ypy.layers.open()`) before a layer is built. Cancel it to open nothing.",
+      "detail": {
+        "options": "Record<string, any>",
+        "mode": "'modal' | 'drawer' | 'popup'"
+      },
+      "cancelable": true,
+      "target": "element"
+    },
+    {
+      "name": "ypy:layer:opened",
+      "description": "Fires on the dialog once its content is in and it is shown, with the focus inside.",
+      "detail": {
+        "layer": "YpyLayer"
+      },
+      "cancelable": false,
+      "target": "element"
+    },
+    {
+      "name": "ypy:layer:before:close",
+      "description": "Fires on the dialog before it closes, by accept or dismiss. Cancel it to keep the layer open (for example, unsaved changes).",
+      "detail": {
+        "layer": "YpyLayer",
+        "accepted": "boolean",
+        "value": "any",
+        "reason": "string"
+      },
+      "cancelable": true,
+      "target": "element"
+    },
+    {
+      "name": "ypy:layer:accepted",
+      "description": "Fires on the dialog, still in the page, when the layer is accepted. `detail.value` is the result value.",
+      "detail": {
+        "layer": "YpyLayer",
+        "accepted": "true",
+        "value": "any"
+      },
+      "cancelable": false,
+      "target": "element"
+    },
+    {
+      "name": "ypy:layer:dismissed",
+      "description": "Fires on the dialog, still in the page, when the layer is dismissed. `detail.reason` says why: `escape`, `outside`, `parent`, `history`, `toggle`, `navigate`, `error`, `dropped`, `replaced` or the text given to `dismiss()`.",
+      "detail": {
+        "layer": "YpyLayer",
+        "accepted": "false",
+        "reason": "string"
+      },
+      "cancelable": false,
+      "target": "element"
+    }
+  ],
+  "config": [
+    {
+      "name": "layers",
+      "description": "Defaults of the ypy-layers extension.",
+      "schema": {
+        "type": "object"
+      }
+    },
+    {
+      "name": "layers.style",
+      "description": "`false` does not add the optional default stylesheet (zero specificity, `--ypy-layer-*` variables).",
+      "schema": {
+        "type": "boolean"
+      },
+      "default": true
+    },
+    {
+      "name": "layers.scrollLock",
+      "description": "`false` leaves the page scrolling behind a modal or a drawer. The lock is the attribute `data-ypy-layer-lock` on `<html>`.",
+      "schema": {
+        "type": "boolean"
+      },
+      "default": true
+    },
+    {
+      "name": "layers.outside",
+      "description": "Whether a click outside a layer dismisses it.",
+      "schema": {
+        "type": "boolean"
+      },
+      "default": true
+    },
+    {
+      "name": "layers.escape",
+      "description": "Whether Esc dismisses a layer.",
+      "schema": {
+        "type": "boolean"
+      },
+      "default": true
+    },
+    {
+      "name": "layers.history",
+      "description": "Whether layers show their URL in the address bar by default.",
+      "schema": {
+        "type": "boolean"
+      },
+      "default": false
+    },
+    {
+      "name": "layers.classes",
+      "description": "Classes added to the dialog of each kind (`modal`, `drawer`, `popup`), for example Tailwind utilities, and `opener`, the class a popup puts on its opener for anchoring.",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "modal": {
+            "type": "string"
+          },
+          "drawer": {
+            "type": "string"
+          },
+          "popup": {
+            "type": "string"
+          },
+          "opener": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  ],
+  "classes": [
+    {
+      "name": "ypy-layer-opener",
+      "description": "Put on the element that opened a popup while the popup is open, so the default style can anchor the popup below it."
+    }
+  ],
+  "internalNames": [
+    "ypy-layers",
+    "ypy-layer-anchored",
+    "ypy-layer-backdrop",
+    "ypy-layer-bg",
+    "ypy-layer-border",
+    "ypy-layer-color",
+    "ypy-layer-depth",
+    "ypy-layer-drawer-height",
+    "ypy-layer-drawer-width",
+    "ypy-layer-kind",
+    "ypy-layer-lock",
+    "ypy-layer-max-height",
+    "ypy-layer-padding",
+    "ypy-layer-popup-right",
+    "ypy-layer-popup-top",
+    "ypy-layer-popup-width",
+    "ypy-layer-radius",
+    "ypy-layer-shadow",
+    "ypy-layer-width",
+    "ypy-layer-z"
+  ],
+  "headers": [
+    {
+      "name": "YPY-Layer",
+      "direction": "request",
+      "description": "Sent with every request that fills a layer or starts inside one: the kind of layer (`modal`, `drawer` or `popup`), so the server can answer a fragment without the page chrome. Send `Vary: YPY-Layer` when the answer is cacheable.",
+      "value": "modal | drawer | popup"
+    },
+    {
+      "name": "YPY-Open-Layer",
+      "direction": "response",
+      "description": "Opens a layer instead of swapping the response. A JSON object with `url` or `html` and the options `mode`, `closeOn`, `closeOnUrl`, `closeOnFragment`, `history`, `side`, `label`, `outside`, `escape` and `class`; any other value is the URL of the layer. Write non-ASCII characters as \\u escapes.",
+      "value": "JSON object or URL"
+    }
+  ]
+}

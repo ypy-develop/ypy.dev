@@ -1,0 +1,14 @@
+{
+  "extension": "ypy-preserve",
+  "config": [
+    {
+      "name": "compositionTimeout",
+      "description": "How long, in milliseconds, a swap waits for the end of an IME composition in a field its target contains. The swap goes on after that time even when the composition is still open.",
+      "schema": {
+        "type": "integer",
+        "minimum": 0
+      },
+      "default": 3000
+    }
+  ]
+}

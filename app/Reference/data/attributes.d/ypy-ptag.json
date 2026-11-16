@@ -1,0 +1,24 @@
+{
+  "extension": "ypy-ptag",
+  "attributes": [
+    {
+      "name": "ypy-ptag",
+      "description": "Sets the initial per-element polling tag. YPY sends it as the `YPY-PTag` request header and replaces it with the `YPY-PTag` of each response, so a server can answer `304` when nothing changed.",
+      "valueType": "string"
+    }
+  ],
+  "headers": [
+    {
+      "name": "YPY-PTag",
+      "direction": "request",
+      "description": "The current polling tag of the element, from `ypy-ptag` or the last response.",
+      "value": "opaque string chosen by the server"
+    },
+    {
+      "name": "YPY-PTag",
+      "direction": "response",
+      "description": "Stores a new polling tag on the element; it is sent back with the next request.",
+      "value": "opaque string"
+    }
+  ]
+}

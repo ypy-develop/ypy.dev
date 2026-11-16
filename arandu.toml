@@ -1,0 +1,65 @@
+# The build tools this project downloads, pinned.
+#
+# Pinned rather than tracked: a build that silently picks up a new major of
+# Tailwind is a build that breaks on someone else's machine and not on yours.
+# `aru view:build` fetches what is listed here on first use and caches it in
+# ~/.arandu/bin, the same way Go handles its own toolchain.
+#
+# There is one entry and it is not Node. tailwindcss is the standalone CLI that
+# Tailwind publishes for projects that do not want a package manager. There is
+# no package.json here and there never will be -- see doc 14 and RULE 13.
+#
+# The view compiler is deliberately absent. kyse is not a binary this file
+# pins: it is part of `aru` itself, and it moves in lockstep with the generator
+# that writes the views, which is what keeps the two from drifting (ADR 0020).
+# Nothing to download, nothing to verify, nothing to cache.
+
+# The oldest CLI this project can be built with.
+#
+# It is here because of what its absence looks like. A project written with a
+# current `aru`, opened with an older one, is refused view by view -- one message
+# per line, each about markup that is correct -- and nothing in that output says
+# the CLI is what is old. Sixty errors, and the first thing anybody tries is
+# editing a template that was never wrong.
+#
+# A floor, not a pin: a newer CLI is always fine. Raise it when the project
+# starts using something a released CLI cannot compile.
+[arandu]
+aru = "v0.58.0"
+
+[tools]
+tailwindcss = "v4.3.3"
+
+# --- aru font:add ---
+# The vendored faces. Written by `aru font:add`, and the files themselves are
+# under assets/fonts/ and committed -- so this section is not what makes the
+# build reproducible. The bytes are.
+#
+# What it records is what a diff cannot answer: which family this is, what
+# licence arrived with it, and what would be fetched if somebody ran the command
+# again. The metrics are here so removing one face does not send the other back
+# to the network for numbers already known.
+
+[fonts.body]
+family = "Montserrat"
+weight = "400..600"
+subsets = "latin"
+category = "Sans Serif"
+license = "ofl"
+files = "montserrat-400-600-latin.woff2|U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD|6438d7b8ea9c"
+ascent = "96.80"
+descent = "25.10"
+line_gap = "0.00"
+size_adjust = "100.96"
+
+[fonts.display]
+family = "Montserrat"
+weight = "600..800"
+subsets = "latin"
+category = "Sans Serif"
+license = "ofl"
+files = "montserrat-600-800-latin.woff2|U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD|6438d7b8ea9c"
+ascent = "96.80"
+descent = "25.10"
+line_gap = "0.00"
+size_adjust = "100.96"

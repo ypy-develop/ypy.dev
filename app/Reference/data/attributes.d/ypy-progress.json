@@ -1,0 +1,68 @@
+{
+  "extension": "ypy-progress",
+  "attributes": [
+    {
+      "name": "ypy-progress",
+      "description": "Shows the progress bar for the requests of this element or region, not only for navigations. `false` hides it for them.",
+      "valueType": "string",
+      "syntax": "`false`",
+      "values": [
+        {
+          "name": "false",
+          "description": "No bar for the requests of this element or region."
+        }
+      ],
+      "inherited": false,
+      "doc": "https://ypy.dev/docs/reference/navigation"
+    }
+  ],
+  "events": [],
+  "config": [
+    {
+      "name": "progress",
+      "description": "Settings of the progress bar.",
+      "schema": {
+        "type": "object"
+      }
+    },
+    {
+      "name": "progress.delay",
+      "description": "Milliseconds a request waits before the bar shows.",
+      "schema": {
+        "type": "integer",
+        "minimum": 0
+      },
+      "default": 200
+    },
+    {
+      "name": "progress.all",
+      "description": "Show the bar for every request, not only navigations and elements with `ypy-progress`.",
+      "schema": {
+        "type": "boolean"
+      },
+      "default": false
+    },
+    {
+      "name": "progress.label",
+      "description": "The accessible name of the bar.",
+      "schema": {
+        "type": "string"
+      },
+      "default": "Loading"
+    }
+  ],
+  "elements": [
+    {
+      "name": "ypy-progress-bar",
+      "description": "The progress bar: one element appended to `<html>` while a navigation waits, a shadow root host with its own adopted stylesheet. Theme it with the `--ypy-progress-*` variables on `:root`."
+    }
+  ],
+  "internalNames": [
+    "ypy-progress-color",
+    "ypy-progress-height",
+    "ypy-progress-shadow",
+    "ypy-progress-z",
+    "ypy-progress-max",
+    "ypy-progress-duration"
+  ]
+}

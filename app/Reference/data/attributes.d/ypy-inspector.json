@@ -1,0 +1,45 @@
+{
+  "extension": "ypy-inspector",
+  "attributes": [],
+  "config": [
+    {
+      "name": "inspector",
+      "description": "Options of the inspector panel `ypy-inspector`; `false` leaves the page untouched.",
+      "schema": {
+        "type": [
+          "object",
+          "boolean"
+        ]
+      }
+    },
+    {
+      "name": "inspector.open",
+      "description": "Show the panel at start.",
+      "schema": {
+        "type": "boolean"
+      },
+      "default": false
+    },
+    {
+      "name": "inspector.key",
+      "description": "The shortcut that opens and closes the panel: modifiers (`Alt`, `Shift`, `Ctrl`, `Meta`) and a letter, joined with `+`.",
+      "schema": {
+        "type": "string"
+      },
+      "default": "Alt+Shift+Y"
+    },
+    {
+      "name": "inspector.max",
+      "description": "Rows kept in each list; the oldest go first.",
+      "schema": {
+        "type": "integer",
+        "minimum": 1
+      },
+      "default": 500
+    }
+  ],
+  "internalNames": [
+    "ypy-inspector",
+    "ypy-inspector-"
+  ]
+}

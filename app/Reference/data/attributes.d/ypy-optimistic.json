@@ -1,0 +1,79 @@
+{
+  "extension": "ypy-optimistic",
+  "classes": [
+    {
+      "name": "ypy-optimistic",
+      "description": "Applied to the optimistic nodes while the request is in flight."
+    }
+  ],
+  "attributes": [
+    {
+      "name": "ypy-optimistic",
+      "description": "Shows the result of the request before the server answers and puts the page back if it fails. The value is a selector of a `<template>` or element to clone, `remove`, or the name of a function registered with `ypy.optimistic.register`. `false` turns it off.",
+      "valueType": "selector",
+      "values": [
+        {
+          "name": "remove",
+          "description": "Show the target gone."
+        },
+        {
+          "name": "false",
+          "description": "No optimistic change for this element."
+        }
+      ],
+      "inherited": true,
+      "doc": "https://ypy.dev/docs/reference/optimistic"
+    },
+    {
+      "name": "ypy-optimistic-target",
+      "description": "Where the optimistic change goes, instead of the target of the request. Takes a selector or an extended selector.",
+      "valueType": "selector",
+      "inherited": false,
+      "doc": "https://ypy.dev/docs/reference/optimistic"
+    },
+    {
+      "name": "ypy-optimistic-swap",
+      "description": "How the optimistic content is put in, instead of the swap style of the request (`innerHTML`, `outerHTML`, `beforeend`, `delete`...).",
+      "valueType": "string",
+      "inherited": false,
+      "doc": "https://ypy.dev/docs/reference/optimistic"
+    }
+  ],
+  "events": [
+    {
+      "name": "ypy:optimistic:applied",
+      "description": "The optimistic change was made. Cancel it to undo the change at once.",
+      "detail": {
+        "ctx": "YpyRequestCtx",
+        "target": "Element",
+        "nodes": "Node[]"
+      },
+      "cancelable": true,
+      "target": "element"
+    },
+    {
+      "name": "ypy:optimistic:confirmed",
+      "description": "The server accepted the request. The server's content replaces the optimistic one where they meet; elsewhere the optimistic content stays.",
+      "detail": {
+        "ctx": "YpyRequestCtx",
+        "target": "Element",
+        "status": "number"
+      },
+      "cancelable": false,
+      "target": "element"
+    },
+    {
+      "name": "ypy:optimistic:rolledback",
+      "description": "The page was put back: `reason` is `status`, `error`, `aborted` or `cancelled`.",
+      "detail": {
+        "ctx": "YpyRequestCtx",
+        "target": "Element",
+        "reason": "string",
+        "status": "number | undefined",
+        "kind": "string | undefined"
+      },
+      "cancelable": false,
+      "target": "element"
+    }
+  ]
+}
