@@ -171,3 +171,30 @@ func TestDemoWriteNeedsCSRFToken(t *testing.T) {
 		t.Errorf("a PUT with no token answered %d, want 419", rec.Code)
 	}
 }
+
+func TestBulkUpdate(t *testing.T) {
+	app := tests.Boot(t, config.EnvDev, true)
+	a := newVisitor(t, app)
+	page := a.open("/docs/examples/bulk-update")
+	if !strings.Contains(page, `id="team"`) || !strings.Contains(page, "Helena Prado") {
+		t.Fatalf("the page does not carry the demo")
+	}
+
+	none := wantFragment(t, a.do("PUT", "/examples/demo/bulk-update", a.form("status", "active")), 422)
+	if !strings.Contains(none, "Tick at least one person") {
+		t.Errorf("422 has no message: %s", none)
+	}
+
+	ok := wantFragment(t, a.do("PUT", "/examples/demo/bulk-update", a.form("ids", "3", "ids", "5", "status", "active")), 200)
+	if !strings.Contains(ok, "2 people activated.") || strings.Contains(ok, `>Inactive</span>`) {
+		t.Errorf("rows 3 and 5 were not activated: %s", ok)
+	}
+	if got := a.open("/docs/examples/bulk-update"); strings.Contains(got, `>Inactive</span>`) {
+		t.Errorf("the visitor's page does not keep the change")
+	}
+
+	b := newVisitor(t, app)
+	if got := b.open("/docs/examples/bulk-update"); !strings.Contains(got, `>Inactive</span>`) {
+		t.Errorf("one visitor's bulk update leaked to another")
+	}
+}

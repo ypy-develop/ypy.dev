@@ -41,6 +41,7 @@ func New(key []byte, secure bool) *Demos {
 // Register adds the demo routes: one group, /examples/demo/<example>/...
 func (d *Demos) Register(r *hcontrollers.Router) {
 	d.clickToEdit(r)
+	d.bulkUpdate(r)
 }
 
 // ---- the marker a page uses to say where a demo goes ----------------------
@@ -84,6 +85,8 @@ func (d *Demos) initial(name string, r *http.Request, token string) (string, boo
 	switch name {
 	case "click-to-edit":
 		return d.render("contact-show", d.contact(r)), true
+	case "bulk-update":
+		return d.render("bulk", d.bulk(r, token, "")), true
 	}
 	return "", false
 }
