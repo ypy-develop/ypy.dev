@@ -4,7 +4,7 @@
 
 The documentation of YPY, a hypermedia framework by HYZIS (MIT). Readers are developers who build server-rendered
 applications and want one script tag instead of a front-end build. The site is in English; Portuguese pages mirror it
-under `content/ypy/pt-BR/`.
+under `content/ypy/pt-BR/`, served without a link in the menu.
 
 ## Voice
 
@@ -29,3 +29,9 @@ mechanism when it helps. One idea per sentence, concrete examples, the real name
 ## Learned constraints
 
 - The author asked for the Arandu interface skills (content, copywriting, humanizer) on the docs text (2026-11-15).
+- The author asked for the interface to follow the older portal's structure, with the YPY identity (2026-11-15): header
+  of five sections (Docs, Reference, Examples, Extensions, Essays), `/docs` and `/reference` as long pages with their
+  own headings for a sidebar, Go SDK and community in the footer.
+- Direction (2026-11-15): a hybrid of arandu.io and yxy.dev in the house frame, drawn in black, white, red `#DC2C02`
+  and mint `#6ECFB5`; one red in both themes, no orange, no brown. See `DESIGN.md`.
+- Footer credit is "Developed by HYZIS in Arandu"; no licence, sitemap or llms.txt entries in it.

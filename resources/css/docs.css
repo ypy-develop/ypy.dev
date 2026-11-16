@@ -31,6 +31,16 @@
   grid-template-columns: minmax(0, 1fr);
 }
 
+/* A long page (the manual, the reference) has its own headings for a sidebar,
+ * so there is no contents column on the right: the article takes the room, and
+ * a table of names has the width it needs. */
+@media (min-width: 1024px) {
+  .docs-layout-outline,
+  .docs-layout.docs-layout-outline {
+    grid-template-columns: 15rem minmax(0, 1fr);
+  }
+}
+
 @media (min-width: 1024px) {
   .docs-layout-wide {
     grid-template-columns: minmax(0, 1fr);
