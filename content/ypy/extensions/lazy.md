@@ -21,9 +21,7 @@ about to come into view.
 When the section is within 200 px of the window, YPY sends `GET /reports/summary` and the response replaces the
 element. It is requested once.
 
-The extension is part of `ypy.max`. If you load it on its own and set `ypy.config.extensions`, list `ypy-lazy` in it,
-or it is refused. It is listed with the other official extensions in [Extensions](index.md), and the short
-version is in [Navigation](nav.md#ypy-lazy).
+The extension is part of `ypy.max`.
 
 It is an attribute, never a Custom Element, so it works on `<tr>`, `<tbody>`, `<li>` and `<dd>`, where a Custom
 Element is not allowed:
@@ -122,22 +120,7 @@ Content-Type: text/html
 <ypy-partial id="visits"><section id="visits" class="p-4">Visits: 8,310</section></ypy-partial>
 ```
 
-The Go handler, with [`github.com/ypy-develop/go`](https://github.com/ypy-develop/go):
-
-```go
-func reports(w http.ResponseWriter, r *http.Request) {
-	ids := r.URL.Query()["id"]
-	if r.Header.Get("YPY-Lazy-Group") == "" || len(ids) == 0 {
-		ypy.Fragment(w, renderOne(r)) // an individual region
-		return
-	}
-	for _, id := range ids {
-		ypy.Partial(w, ypy.PartialSpec{ID: id}, renderCard(r, id))
-	}
-}
-```
-
-A partial with only an `id` targets `#id`, which is the region. Write the `id` on the card you send back too, so a
+The server answers a group with one `<ypy-partial>` per `id` it received. A partial with only an `id` targets `#id`, which is the region. Write the `id` on the card you send back too, so a
 later group can find it.
 
 ## Events

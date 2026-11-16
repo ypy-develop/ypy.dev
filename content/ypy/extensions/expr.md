@@ -27,13 +27,13 @@ JavaScript, described below.
 ```
 
 The extension is not part of `ypy.max`: it changes how every piece of author code runs, so you add it on purpose.
-Load it after `ypy.js`. If you set `ypy.config.extensions`, list `ypy-expr` in it, or the extension is refused. It
+Load it after `ypy.js`. It
 registers `expr@1`; `ypy.supports('expr@1')` answers it when [`ypy-boot`](boot.md) is loaded before it.
 
 ## What it does not change
 
 It changes how the code runs, not whether it may run. `config.callbacks` still decides, and it is `"none"` until the
-page sets it (see [Security](../reference/security.md#author-code-callbacks)). With `"none"` nothing compiles even with this
+page sets it (see [Security](../index.md#security)). With `"none"` nothing compiles even with this
 extension, and `ypy:security:blocked` fires as usual.
 
 With the nonce gate of `ypy-csp` (`callbacks:"nonce"`), this extension stands aside: the gate compiles the code

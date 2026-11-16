@@ -20,8 +20,8 @@ not a `GET` or `HEAD` and goes to the page's own origin carries it, whatever the
 <button ypy-delete="/items/7">Delete</button>   <!-- sends X-CSRF-Token: <token>, nothing else to write -->
 ```
 
-If you set `ypy.config.extensions`, list `ypy-csrf` in it, or the extension is refused. It is part of `ypy.max`; with
-the plain core, load it with a `<script>` after the core. It is listed in [Extensions](index.md).
+It is part of `ypy.max`; with
+the plain core, load it with a `<script>` after the core.
 
 ## The meta tag
 
@@ -48,7 +48,7 @@ on a response from another origin is ignored. The extension does not repeat the 
 (or your code) sends it again, now with the new token.
 
 The server decides when to renew: after a sign-in (the session changed), or when it rotates its signing key. The
-[Go SDK](https://github.com/ypy-develop/go) does it with `csrf.Renew(w, r)`.
+Go package does it with `csrf.Renew(w, r)` ([server side](../index.md#server-side)).
 
 ## A request without a token
 
@@ -75,41 +75,20 @@ answers `403` when it is missing or wrong. Any server can follow this contract:
 | request header | `X-CSRF-Token` (or the name in `data-header`) |
 | response header | `YPY-CSRF`: the new token |
 
-The Go SDK ships it as `ypy.NewCSRF`. The token is an HMAC of the session identifier, so it needs no storage and a token
+The Go package ships it as `ypy.NewCSRF`. The token is an HMAC of the session identifier, so it needs no storage and a token
 of one session fails in another. `Middleware` lets `GET`, `HEAD`, `OPTIONS` and `TRACE` through and, for the other
 methods, refuses with `403` a request from another origin (the `Origin` header, or `Sec-Fetch-Site: cross-site`) or
 without a valid token. It also adds `Vary: Cookie`. When a token was made with a previous key (`CSRFPreviousKeys`), or is
 refused as invalid, the response carries `YPY-CSRF` with the current token.
 
-```go
-csrf, err := ypy.NewCSRF(key, // at least 32 random bytes
-	ypy.CSRFSession(func(r *http.Request) string { return sessionID(r) }),
-)
-if err != nil {
-	log.Fatal(err)
-}
-
-mux := http.NewServeMux()
-mux.HandleFunc("GET /{$}", func(w http.ResponseWriter, r *http.Request) {
-	// csrf.Meta(r) is <meta name="ypy-csrf" content="...">, written in the head by the template as {{ .CSRFMeta }}
-	_ = home.Execute(w, map[string]any{"CSRFMeta": csrf.Meta(r)})
-})
-mux.HandleFunc("POST /login", func(w http.ResponseWriter, r *http.Request) {
-	id := signIn(w, r)   // the session changes here
-	csrf.RenewFor(w, id) // YPY-CSRF: the token of the new session
-	_ = ypy.Fragment(w, "<p>Welcome</p>")
-})
-http.ListenAndServe(":8080", csrf.Middleware(ypy.Middleware(mux)))
-```
-
 A visitor with no session yet (the login form) gets a cookie of the middleware (`HttpOnly`, `SameSite=Lax`, with the
 `__Host-` prefix over TLS), and the token is bound to it. `csrf.Field(r)` writes a hidden `csrf_token` input for a form
-that must work without the client. See the Go SDK documentation and `spec/PROTOCOL.md`, section "CSRF token".
+that must work without the client. 
 
 ## Limits
 
 - The token protects against cross-site requests made by a browser. It does not replace authentication, and it does
-  not stop a script that already runs in your page (that is XSS; see [security](../reference/security.md)).
+  not stop a script that already runs in your page (that is XSS; see [security](../index.md#security)).
 - A request made with a `fetch` of your own, outside YPY, is not covered: send the header yourself, from the meta tag.
 - A redirect to another origin that the browser follows by itself is outside the extension's reach, as for any custom
   header. Do not redirect an unsafe request off-site.

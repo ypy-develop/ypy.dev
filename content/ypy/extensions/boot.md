@@ -20,8 +20,7 @@ The core stays small on purpose, so four pieces of start-up behavior live in `yp
 ```
 
 Load it first, right after `ypy.js` and before the other extensions. The order of the `<script>` tags is the order of
-the checks: only extensions registered after `ypy-boot` are known to it. It is not part of `ypy.max`. If you set
-`ypy.config.extensions`, list `ypy-boot` in it, or it is refused.
+the checks: only extensions registered after `ypy-boot` are known to it. It is not part of `ypy.max`.
 
 ## Dependencies between extensions
 
@@ -112,7 +111,7 @@ If the response has `<h2 id="install">`, the heading takes the focus.
 
 - An element that cannot take the focus gets `tabindex="-1"`, and loses it again when it loses the focus.
 - The focus never scrolls (`preventScroll`); the core has scrolled already.
-- Nothing moves when the request carries its own [`ypy-focus`](../reference/attributes/ypy-focus.md), when the response has no
+- Nothing moves when the request carries its own [`ypy-focus`](../reference.md#core-attributes), when the response has no
   element with that `id`, or when the request has no fragment.
 
 ## Pitfalls

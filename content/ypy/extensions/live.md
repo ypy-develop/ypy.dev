@@ -21,10 +21,9 @@ For state that the server also reads and writes, use [`ypy-signals`](signals.md)
 <script src="ext/ypy-live.min.js"></script>
 ```
 
-The extension is in `ypy.max`. If you set `ypy.config.extensions`, list `ypy-live` in it. It runs author code, so it
+The extension is in `ypy.max`. It runs author code, so it
 needs `config.callbacks` to allow code: `"all"`, or `"nonce"` together with [`ypy-csp`](csp.md). With the default
-(`none`) nothing runs and `ypy:security:blocked` fires. It is listed with the other official extensions in
-[Extensions](index.md).
+(`none`) nothing runs and `ypy:security:blocked` fires.
 
 ## Attributes
 
@@ -76,19 +75,6 @@ Inside the expression these names are available:
 <div id="result"></div>
 ```
 
-The total and the button follow the field while the visitor types. The server does the real pricing in the handler:
-
-```go
-func order(w http.ResponseWriter, r *http.Request) {
-	qty, err := strconv.Atoi(r.PostFormValue("qty"))
-	if err != nil || qty < 1 {
-		ypy.ValidationError(w, `<p class="error">Enter a quantity of 1 or more.</p>`)
-		return
-	}
-	ypy.Fragment(w, fmt.Sprintf("<p>Ordered %d for $%.2f.</p>", qty, float64(qty)*12))
-}
-```
-
 ## Settings
 
 | Key | Default | Meaning |
@@ -109,4 +95,4 @@ func order(w http.ResponseWriter, r *http.Request) {
 
 ## See also
 
-[`ypy-signals`](signals.md), [`ypy-expr`](expr.md), [Alpine.js](alpine-compat.md), [Security](../reference/security.md).
+[`ypy-signals`](signals.md), [`ypy-expr`](expr.md), [Alpine.js](alpine-compat.md), [Security](../index.md#security).

@@ -16,8 +16,7 @@ the request ends, so the second click does nothing. It also makes the target of 
 <script src="ext/ypy-disable.min.js"></script>
 ```
 
-The extension is in `ypy.max`. If you set `ypy.config.extensions`, list `ypy-disable` in it. It is listed with the other
-official extensions in [Extensions](index.md).
+The extension is in `ypy.max`.
 
 ## Attributes
 
@@ -26,7 +25,7 @@ official extensions in [Extensions](index.md).
 | `ypy-disable` | a selector | The elements that get the `disabled` property until the request ends. Accepts extended selectors such as `find button` or `closest form`. Inherited. |
 | `ypy-inert` | `true` or `false` | `true` makes the target of the request `inert` until the request ends. `false` turns it off for one element when `config.inert` is on. Inherited. |
 
-The page [`ypy-inert`](../reference/attributes/ypy-inert.md) has the full story of the second attribute.
+The page [`ypy-inert`](../reference.md#core-attributes) has the full story of the second attribute.
 
 ## Settings
 
@@ -44,17 +43,6 @@ The page [`ypy-inert`](../reference/attributes/ypy-inert.md) has the full story 
 <ul id="comments"></ul>
 ```
 
-```go
-func createComment(w http.ResponseWriter, r *http.Request) {
-	body := strings.TrimSpace(r.PostFormValue("body"))
-	if body == "" {
-		ypy.ValidationError(w, `<p class="error">Write something first.</p>`)
-		return
-	}
-	ypy.Fragment(w, "<li>"+html.EscapeString(body)+"</li>")
-}
-```
-
 While the request runs, the button and the text box are disabled. When the response arrives, or the request fails, they
 are enabled again.
 
@@ -69,5 +57,5 @@ are enabled again.
 
 ## See also
 
-[`ypy-inert`](../reference/attributes/ypy-inert.md), [Styling](../reference/styling.md) for the request classes,
+[`ypy-inert`](../reference.md#core-attributes), [Styling](../index.md#animations) for the request classes,
 [`ypy-pending`](pending.md).

@@ -63,11 +63,11 @@ answer of its listeners. To change what runs inside the transition, replace `det
 - A transition holds the page for a moment while it runs: use it for navigation and large changes, not for a
   live counter.
 - The swap modifier `ypy-swap="... transition:true"` is read by the core; the table of swap styles is in
-  [Swap styles and morph](../reference/swap-and-morph.md).
-- For a simple fade without this API, use the classes in [CSS classes](../reference/css-classes.md) and the
+  [Swap styles and morph](../index.md#swapping).
+- For a simple fade without this API, use the classes in [CSS classes](../reference.md#css-classes) and the
   [animations example](../examples/animations.md).
 
 ## See also
 
 - [Animations (example)](../examples/animations.md)
-- [Events](../reference/events/index.md)
+- [Events](../index.md#events-and-logging)

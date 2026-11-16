@@ -23,8 +23,7 @@ column, and it never compares the content of the items.
 Drag "Ship" above "Write" and the page sends one `POST /tasks/order` with the field `id` three times: `task-3`,
 `task-1`, `task-2`. If the server refuses or does not answer, the list goes back to the old order.
 
-If you set `ypy.config.extensions`, list `ypy-sort` in it, or the extension is refused. It is listed with the other
-official extensions in [Extensions](index.md) and it is part of `ypy.max`. It uses the browser's native drag and
+It uses the browser's native drag and
 drop, so it needs no style and no extra script.
 
 ## Attributes
@@ -130,25 +129,10 @@ document.addEventListener('ypy:sort:change', evt => {
 
 All are strings; none is set by default.
 
-## The Go handler
+## The server
 
 The server gets the ids in the new order. Check that they are the ones you expect, save, and answer `204`. Any status of
 400 or more puts the list back in the browser.
-
-```go
-func reorder(w http.ResponseWriter, r *http.Request) {
-	if err := r.ParseForm(); err != nil {
-		http.Error(w, "bad form", http.StatusBadRequest)
-		return
-	}
-	ids := r.PostForm["id"] // []string{"task-3", "task-1", "task-2"}
-	if err := tasks.Reorder(r.Context(), ids); err != nil {
-		http.Error(w, err.Error(), http.StatusUnprocessableEntity) // the list goes back
-		return
-	}
-	w.WriteHeader(http.StatusNoContent)
-}
-```
 
 The values are the `id` attributes of the elements, `task-3` in the example: strip the prefix in the handler, or choose
 ids you can read as they are. Never trust the list: check that every id belongs to the current user.

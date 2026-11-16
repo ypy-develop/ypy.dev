@@ -20,8 +20,7 @@ as before.
 <script src="ext/ypy-browser-indicator.min.js"></script>
 ```
 
-The extension is in `ypy.max`. If you set `ypy.config.extensions`, list `ypy-browser-indicator` in it. It is listed with
-the other official extensions in [Extensions](index.md).
+The extension is in `ypy.max`.
 
 ## Attributes
 
@@ -55,10 +54,10 @@ attribute. The last link is a plain link, so the browser shows its own.
 - Several requests at once share one indicator. It goes away when the last of them ends.
 - When the visitor presses the browser's stop button, the extension aborts the requests that are showing the indicator.
 - The indicator is cleared before YPY writes the address of a new page to the history, so the two do not fight.
-- The indicator is for the eyes of the visitor. For screen readers, use [`ypy-announce`](../reference/attributes/ypy-announce.md)
-  and [`ypy-busy`](../reference/attributes/ypy-busy.md).
+- The indicator is for the eyes of the visitor. For screen readers, use [`ypy-announce`](../reference.md#core-attributes)
+  and [`ypy-busy`](../reference.md#core-attributes).
 
 ## See also
 
-[Navigation](nav.md) for boosted links and the page progress bar, [Styling](../reference/styling.md) for in-page
+[Navigation](nav.md) for boosted links and the page progress bar, [Styling](../index.md#animations) for in-page
 indicators.
