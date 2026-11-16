@@ -26,6 +26,9 @@ type SiteLayout interface {
 	Head() geo.Metadata
 	Language() string
 	GitHub() string
+	Repository() string
+	LinkedIn() string
+	Stars() string
 	CommunityURL() string
 }
 
@@ -137,6 +140,16 @@ var _ SiteLayout = site.Chrome{}
 										<span>{{ item.Label }}</span>
 									</a>
 								@endforeach
+								{{-- Below 640px the header's GitHub button is not drawn, so the
+								     repository and its star count sit here, at the end of the list. --}}
+								<div class="mobile-nav-utilities border-ink/10 flex items-center border-t py-3 sm:hidden" data-mobile-navigation-utilities>
+									<a class="site-header-control text-ink/55 hover:text-ink inline-flex h-11 min-w-11 items-center justify-center gap-1.5 rounded-md px-2 text-[13px]" href="{{ .Repository() }}" ypy-boost="false" rel="noopener" data-mobile-github>
+										<span class="inline-flex size-[20px] items-center justify-center">{!! icons.GithubLogo(icons.Props{Label: "YPY on GitHub"}) !!}</span>
+										@if(.Stars() != "")
+											<span class="text-ink/70 font-medium tabular-nums">{{ .Stars() }}</span>
+										@endif
+									</a>
+								</div>
 							</nav>
 						</div>
 					</details>
@@ -177,8 +190,16 @@ var _ SiteLayout = site.Chrome{}
 						<div id="site-search-results" class="site-search-results" role="listbox" aria-label="Search results" hidden data-site-search-results></div>
 					</form>
 					{!! components.ThemeToggle(components.ThemeToggleProps{}) !!}
-					<a class="site-header-control text-ink/60 hover:text-ink hidden size-11 items-center justify-center rounded-md text-[20px] sm:inline-flex" href="{{ .GitHub() }}" ypy-boost="false" rel="noopener" aria-label="YPY on GitHub">
-						{!! icons.GithubLogo(icons.Props{}) !!}
+					{{-- Stars() is empty until a scheduled task has fetched it, and empty
+					     draws the mark alone. The value is read from memory: nothing here
+					     waits for the network, and a failed fetch leaves the last good
+					     number. An explicit zero is a fetched value; only an unavailable
+					     one is absent. --}}
+					<a class="site-header-control text-ink/60 hover:text-ink hidden h-11 min-w-11 shrink-0 items-center justify-center gap-1.5 rounded-md px-2 text-[13px] leading-none sm:inline-flex" href="{{ .Repository() }}" ypy-boost="false" rel="noopener">
+						<span class="inline-flex size-[20px] items-center justify-center">{!! icons.GithubLogo(icons.Props{Label: "YPY on GitHub"}) !!}</span>
+						@if(.Stars() != "")
+							<span class="text-ink/70 font-medium tabular-nums">{{ .Stars() }}</span>
+						@endif
 					</a>
 				</div>
 			</div>
@@ -216,6 +237,7 @@ var _ SiteLayout = site.Chrome{}
 							<li><a class="text-ink/60 hover:text-ink" href="/go">Go SDK</a></li>
 							<li><a class="text-ink/60 hover:text-ink" href="/docs/server">Server guides</a></li>
 							<li><a class="text-ink/60 hover:text-ink" href="/docs/server/recipes/arandu">Arandu</a></li>
+							<li><a class="text-ink/60 hover:text-ink" href="/docs/migration">Migration</a></li>
 						</ul>
 					</div>
 					<div>
@@ -223,11 +245,15 @@ var _ SiteLayout = site.Chrome{}
 						<ul class="reading-copy space-y-2 text-[13.5px]">
 							<li><a class="text-ink/60 hover:text-ink" href="{{ .CommunityURL() }}" ypy-boost="false" rel="noopener">Discussions</a></li>
 							<li><a class="text-ink/60 hover:text-ink" href="{{ .GitHub() }}" ypy-boost="false" rel="noopener">GitHub</a></li>
-							<li><a class="text-ink/60 hover:text-ink" href="/sitemap.xml" ypy-boost="false">Sitemap</a></li>
-							<li><a class="text-ink/60 hover:text-ink" href="/llms.txt" ypy-boost="false">llms.txt</a></li>
+							<li><a class="text-ink/60 hover:text-ink" href="{{ .LinkedIn() }}" ypy-boost="false" rel="noopener">LinkedIn</a></li>
 						</ul>
 					</div>
 				</div>
+				{{-- The closing bar: one centred line, and nothing beside it. Who made
+				     it and what it is made with, read as one sentence: "Developed by
+				     [HYZIS] in [Arandu]". Both marks are masks painted in the
+				     surrounding ink, and each link carries its name as an aria-label so
+				     a screen reader hears the sentence whole. --}}
 				<div class="site-footer-signature text-ink/45 border-ink/10 flex items-center justify-center border-t py-6 text-[12.5px]">
 					<p class="reading-copy flex flex-wrap items-center justify-center gap-3">
 						<span class="text-ink/45">Developed by</span>
@@ -238,7 +264,6 @@ var _ SiteLayout = site.Chrome{}
 						<a href="https://arandu.io" ypy-boost="false" class="text-ink/75 hover:text-ink inline-flex items-center" aria-label="Arandu" rel="noopener">
 							<span class="brandmark brandmark-arandu" aria-hidden="true"></span>
 						</a>
-						<span class="text-ink/45">MIT licence</span>
 					</p>
 				</div>
 			</div>

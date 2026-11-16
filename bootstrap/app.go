@@ -9,12 +9,15 @@ package bootstrap
 import (
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/arandu-io/framework/foundation"
 	fwview "github.com/arandu-io/framework/view"
+	"github.com/arandu-io/hesape/http/client"
 	"github.com/arandu-io/hesape/routing/controllers"
 	markdown "github.com/hyz-is/arandu-markdown"
 
+	clients "github.com/ypy-develop/ypy.dev/app/Clients"
 	providers "github.com/ypy-develop/ypy.dev/app/Providers"
 	site "github.com/ypy-develop/ypy.dev/app/Site"
 	appconfig "github.com/ypy-develop/ypy.dev/config"
@@ -51,7 +54,16 @@ func App(version, commit string) (*foundation.Application, error) {
 		return nil, err
 	}
 
-	app, err := NewProvider(cfg)
+	// GitHub, which the header's star count is read from. Anonymous, against
+	// the public REST API, and bounded at ten seconds: nothing waits for the
+	// answer, because a scheduled task fetches it and every page reads the last
+	// one from memory.
+	github := clients.NewGitHubClient(clients.GitHubConfig{
+		BaseURL: "https://api.github.com",
+		Timeout: 10 * time.Second,
+	}, client.NewFactory(nil))
+
+	app, err := NewProvider(cfg, github)
 	if err != nil {
 		_ = drivers.Close()
 		return nil, err
@@ -61,8 +73,8 @@ func App(version, commit string) (*foundation.Application, error) {
 }
 
 // NewProvider builds the site and the provider over it. A test calls it with a
-// configuration of its own.
-func NewProvider(cfg appconfig.Config) (*providers.AppServiceProvider, error) {
+// configuration of its own and a GitHub client that never leaves the process.
+func NewProvider(cfg appconfig.Config, github clients.GitHub) (*providers.AppServiceProvider, error) {
 	// The ids the layout and the page chrome already use, so no heading takes one.
 	md, err := markdown.New(markdown.Config{
 		Reserved: []string{"main-content", "site-search-input", "site-search-results", "search-page-input", "demo-out"},
@@ -88,7 +100,7 @@ func NewProvider(cfg appconfig.Config) (*providers.AppServiceProvider, error) {
 	if err != nil {
 		return nil, err
 	}
-	return providers.NewAppServiceProvider(s, md)
+	return providers.NewAppServiceProvider(s, md, github)
 }
 
 // Configure is the application: the providers in the order they boot, the
@@ -120,5 +132,5 @@ func Configure(drivers *foundation.Drivers, app *providers.AppServiceProvider) *
 			routes.Web(r, app.Web())
 		}).
 		WithCommands(routes.Commands()...).
-		WithSchedule(routes.Schedule()...)
+		WithSchedule(routes.Schedule(app.Console())...)
 }
