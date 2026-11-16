@@ -42,6 +42,9 @@ func New(key []byte, secure bool) *Demos {
 func (d *Demos) Register(r *hcontrollers.Router) {
 	d.clickToEdit(r)
 	d.bulkUpdate(r)
+	d.clickToLoad(r)
+	d.deleteRow(r)
+	d.editRow(r)
 }
 
 // ---- the marker a page uses to say where a demo goes ----------------------
@@ -87,6 +90,12 @@ func (d *Demos) initial(name string, r *http.Request, token string) (string, boo
 		return d.render("contact-show", d.contact(r)), true
 	case "bulk-update":
 		return d.render("bulk", d.bulk(r, token, "")), true
+	case "click-to-load":
+		return d.render("load-table", loadPage(1)), true
+	case "delete-row":
+		return d.render("delete-table", d.deleteView(r, token)), true
+	case "edit-row":
+		return d.render("edit-table", d.editView(r, token)), true
 	}
 	return "", false
 }

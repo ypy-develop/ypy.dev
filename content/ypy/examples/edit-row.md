@@ -1,127 +1,83 @@
 ---
 order: 50
 title: Edit row
-description: Swap a table row for a row of inputs, save it with ypy-include because a row cannot hold a form, or cancel without touching the server.
+description: A table row turns into inputs on Edit and back into text on Save or Cancel, and the server checks the values before it keeps them.
 ---
 
 # Edit row
 
-A click on **Edit** swaps one `<tr>` for a row of inputs. **Save** sends the inputs of that row and swaps the plain row
-back. **Cancel** swaps it back without sending anything.
+A click on **Edit** turns one row of a team table into inputs. **Save** sends the row and swaps it back into text;
+**Cancel** swaps it back untouched. The other rows never move.
 
-A table row cannot hold a `<form>`, so the **Save** button names the row with `ypy-include` and YPY collects the inputs
-inside it.
+## Try it
+
+<!-- demo:edit-row -->
+
+Empty the name and press **Save**: the server answers `422` and the row comes back with a message.
 
 ## The page
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/ypy-develop/ypy@v0.1.1/dist/ypy.min.js"></script>
-
 <table>
-  <thead><tr><th>Name</th><th>Email</th><th></th></tr></thead>
+  <thead><tr><th>Name</th><th>Role</th><th></th></tr></thead>
   <tbody>
-    <tr id="contact-1">
-      <td>Ada</td><td>ada@example.com</td>
-      <td><button ypy-get="/contacts/1/edit" ypy-target="closest tr" ypy-swap="outerHTML">Edit</button></td>
+    <tr id="member-1">
+      <td>Marina Duarte</td>
+      <td>Designer</td>
+      <td>
+        <button ypy-get="/team/1/edit" ypy-target="#member-1" ypy-swap="outerHTML">Edit</button>
+      </td>
     </tr>
   </tbody>
 </table>
 ```
 
-The answer to `GET /contacts/1/edit`:
+## What the server answers
+
+`GET /team/1/edit` answers `200` with the row as inputs, with the same `id`:
 
 ```html
-<tr id="contact-1">
-  <td><input name="name" value="Ada" aria-label="Name" required></td>
-  <td><input name="email" type="email" value="ada@example.com" aria-label="Email" required></td>
+<tr id="member-1">
   <td>
-    <button ypy-put="/contacts/1" ypy-include="closest tr" ypy-target="closest tr" ypy-swap="outerHTML">Save</button>
-    <button ypy-get="/contacts/1" ypy-target="closest tr" ypy-swap="outerHTML">Cancel</button>
+    <input type="hidden" name="_token" value="…">
+    <input name="name" value="Marina Duarte" aria-label="Name">
+  </td>
+  <td><input name="role" value="Designer" aria-label="Role"></td>
+  <td>
+    <button ypy-put="/team/1" ypy-include="closest tr" ypy-target="#member-1" ypy-swap="outerHTML">Save</button>
+    <button ypy-get="/team/1" ypy-target="#member-1" ypy-swap="outerHTML">Cancel</button>
   </td>
 </tr>
 ```
 
-## The server (Go)
+`PUT /team/1` answers:
 
-```go
-package main
+| Case | Status | Body |
+|---|---|---|
+| Valid | `200` | The row as text, with the saved values |
+| Name or role empty | `422` | The edit row again, with `<p>Name and role cannot be empty.</p>` under the role field |
 
-import (
-	"bytes"
-	"html/template"
-	"net/http"
-
-	ypy "github.com/ypy-develop/go"
-)
-
-var rowTmpl = template.Must(template.New("r").Parse(`
-{{define "show"}}<tr id="contact-{{.ID}}">
-  <td>{{.Name}}</td><td>{{.Email}}</td>
-  <td><button ypy-get="/contacts/{{.ID}}/edit" ypy-target="closest tr" ypy-swap="outerHTML">Edit</button></td>
-</tr>{{end}}
-{{define "edit"}}<tr id="contact-{{.ID}}">
-  <td><input name="name" value="{{.Name}}" aria-label="Name" required></td>
-  <td><input name="email" type="email" value="{{.Email}}" aria-label="Email" required></td>
-  <td>
-    <button ypy-put="/contacts/{{.ID}}" ypy-include="closest tr" ypy-target="closest tr" ypy-swap="outerHTML">Save</button>
-    <button ypy-get="/contacts/{{.ID}}" ypy-target="closest tr" ypy-swap="outerHTML">Cancel</button>
-  </td>
-</tr>{{end}}`))
-
-func row(w http.ResponseWriter, status int, name string, c Contact) {
-	var buf bytes.Buffer
-	if err := rowTmpl.ExecuteTemplate(&buf, name, c); err != nil {
-		http.Error(w, "template error", http.StatusInternalServerError)
-		return
-	}
-	ypy.FragmentStatus(w, status, buf.String())
-}
-
-func routes(mux *http.ServeMux, store *Store) {
-	handle := func(pattern string, fn func(http.ResponseWriter, *http.Request, Contact)) {
-		mux.Handle(pattern, ypy.Middleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			c, ok := store.Get(r.PathValue("id"))
-			if !ok {
-				http.NotFound(w, r)
-				return
-			}
-			fn(w, r, c)
-		})))
-	}
-	handle("GET /contacts/{id}", func(w http.ResponseWriter, _ *http.Request, c Contact) { row(w, http.StatusOK, "show", c) })
-	handle("GET /contacts/{id}/edit", func(w http.ResponseWriter, _ *http.Request, c Contact) { row(w, http.StatusOK, "edit", c) })
-	handle("PUT /contacts/{id}", func(w http.ResponseWriter, r *http.Request, c Contact) {
-		c.Name, c.Email = r.PostFormValue("name"), r.PostFormValue("email")
-		if c.Name == "" {
-			row(w, http.StatusUnprocessableEntity, "edit", c) // the edit row again
-			return
-		}
-		store.Save(c)
-		row(w, http.StatusOK, "show", c)
-	})
-}
-```
+`GET /team/1` answers `200` with the row as text, which is what **Cancel** swaps in. Every answer is a `<tr>` fragment
+with `Vary: YPY-Request`.
 
 ## How it works
 
-- `ypy-target="closest tr"` finds the row that holds the clicked button, and `outerHTML` replaces that row. The
-  answer is one `<tr>` with the same `id`.
-- On a button, a `PUT` carries only the button's own value. `ypy-include="closest tr"` adds every named input inside
-  the row, so `name` and `email` reach the server as a normal form body.
-- The server reads the fields with `r.PostFormValue`, saves them, and answers with the plain row.
-- **Cancel** is a `GET` of the plain row. It sends nothing and changes nothing on the server.
-- A row is not a form, so the browser does not check `required` or `type="email"` before the request. The server
-  checks the values and answers `422` with the edit row when one is not valid.
+- A table row cannot hold a `<form>` and still be a row, so the inputs sit directly in the cells and the **Save**
+  button names them with `ypy-include="closest tr"`. YPY sends their values, including the hidden token, with the
+  request.
+- Both buttons replace the whole row (`ypy-target="#member-1"`, `outerHTML`). The `id` is the same in all three
+  versions of the row, so the next click finds it again.
+- Because the request is not a form, a `422` is swapped where the author pointed, which is the row itself.
+- The response is parsed as markup that may start with a `<tr>`; YPY reads it inside a `<template>`, so the row keeps
+  its cells.
 
 ## Variations
 
-- Mark the invalid input in the `422` answer with `aria-invalid="true"` and a message. The `ypy-error-target`
-  attributes decide where the answer goes, see [`ypy-error-*`](../reference/attributes/ypy-error.md).
-- Ask before throwing the edit away: `ypy-confirm="Discard changes?"` on **Cancel**.
-- For a form outside a table, see [Click to edit](click-to-edit.md).
+- Edit a whole table at once by wrapping it in a `<form>` and sending one `PUT`, as in [Bulk update](bulk-update.md).
+- Let **Enter** save and **Escape** cancel with [Keyboard shortcuts](keyboard-shortcuts.md).
 
 ## See also
 
+- [Click to edit](click-to-edit.md)
 - [Delete row](delete-row.md)
-- [Bulk update](bulk-update.md)
-- [Attribute inheritance](../reference/inheritance.md), if you want to write `ypy-target` once on the `<tbody>`
+- [Inline validation](inline-validation.md)

@@ -20,6 +20,8 @@ type visitor struct {
 	app     tests.Booted
 	cookies map[string]string
 	token   string
+	// header, when set, is sent as X-CSRF-Token, as ypy-headers does for a DELETE.
+	header string
 }
 
 func newVisitor(t *testing.T, app tests.Booted) *visitor {
@@ -47,6 +49,9 @@ func (v *visitor) do(method, target string, form url.Values) *httptest.ResponseR
 		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	}
 	req.Header.Set("YPY-Request", "true")
+	if v.header != "" {
+		req.Header.Set("X-CSRF-Token", v.header)
+	}
 	req.Header.Set("Sec-Fetch-Site", "same-origin")
 	for k, val := range v.cookies {
 		req.AddCookie(&http.Cookie{Name: k, Value: val})
@@ -196,5 +201,94 @@ func TestBulkUpdate(t *testing.T) {
 	b := newVisitor(t, app)
 	if got := b.open("/docs/examples/bulk-update"); !strings.Contains(got, `>Inactive</span>`) {
 		t.Errorf("one visitor's bulk update leaked to another")
+	}
+}
+
+func TestClickToLoad(t *testing.T) {
+	app := tests.Boot(t, config.EnvDev, true)
+	v := newVisitor(t, app)
+	page := v.open("/docs/examples/click-to-load")
+	if !strings.Contains(page, `id="more-orders"`) || !strings.Contains(page, "Harbor Coffee Roasters") {
+		t.Fatalf("the page does not carry the demo")
+	}
+	p2 := wantFragment(t, v.do("GET", "/examples/demo/click-to-load?page=2", nil), 200)
+	if !strings.Contains(p2, "#2036") || !strings.Contains(p2, "page=3") || !strings.Contains(p2, "10 of 14") {
+		t.Errorf("page 2 is wrong: %s", p2)
+	}
+	p3 := wantFragment(t, v.do("GET", "/examples/demo/click-to-load?page=3", nil), 200)
+	if !strings.Contains(p3, "#2028") || strings.Contains(p3, "<button") || !strings.Contains(p3, "All 14 orders are shown.") {
+		t.Errorf("the last page must end the list: %s", p3)
+	}
+	beyond := wantFragment(t, v.do("GET", "/examples/demo/click-to-load?page=99", nil), 200)
+	if strings.Contains(beyond, "<button") {
+		t.Errorf("a page past the end offers another page: %s", beyond)
+	}
+}
+
+func TestDeleteRow(t *testing.T) {
+	app := tests.Boot(t, config.EnvDev, true)
+	a := newVisitor(t, app)
+	page := a.open("/docs/examples/delete-row")
+	if !strings.Contains(page, `ypy-delete="/examples/demo/delete-row/2"`) || !strings.Contains(page, `name="_token"`) {
+		t.Fatalf("the page does not carry the demo")
+	}
+	headers := regexp.MustCompile(`ypy-headers='\{"X-CSRF-Token": "([^"]+)"\}'`).FindStringSubmatch(page)
+	if headers == nil {
+		t.Fatalf("a delete form must carry the token in ypy-headers")
+	}
+
+	if rec := a.do("DELETE", "/examples/demo/delete-row/2", nil); rec.Code != 419 {
+		t.Errorf("a DELETE with no token answered %d, want 419", rec.Code)
+	}
+	a.header = headers[1]
+	if body := wantFragment(t, a.do("DELETE", "/examples/demo/delete-row/2", nil), 200); body != "" {
+		t.Errorf("a deleted row answers an empty body, got %q", body)
+	}
+	if rec := a.do("DELETE", "/examples/demo/delete-row/99", nil); rec.Code != 404 {
+		t.Errorf("an unknown row answered %d, want 404", rec.Code)
+	}
+	if got := a.open("/docs/examples/delete-row"); strings.Contains(got, `delete-row/2"`) || !strings.Contains(got, `delete-row/1"`) {
+		t.Errorf("the visitor's page does not keep the deletion")
+	}
+	b := newVisitor(t, app)
+	if got := b.open("/docs/examples/delete-row"); !strings.Contains(got, `delete-row/2"`) {
+		t.Errorf("one visitor's deletion leaked to another")
+	}
+	a.header = ""
+	a.token = headers[1]
+	back := wantFragment(t, a.do("POST", "/examples/demo/delete-row/restore", a.form()), 200)
+	if !strings.Contains(back, `delete-row/2"`) {
+		t.Errorf("restore did not bring the rows back: %s", back)
+	}
+}
+
+func TestEditRow(t *testing.T) {
+	app := tests.Boot(t, config.EnvDev, true)
+	a := newVisitor(t, app)
+	page := a.open("/docs/examples/edit-row")
+	if !strings.Contains(page, `id="member-3"`) {
+		t.Fatalf("the page does not carry the demo")
+	}
+	form := wantFragment(t, a.do("GET", "/examples/demo/edit-row/3/edit", nil), 200)
+	if !strings.HasPrefix(strings.TrimSpace(form), `<tr id="member-3">`) || !strings.Contains(form, `ypy-include="closest tr"`) {
+		t.Errorf("the edit row is not a row: %s", form)
+	}
+	bad := wantFragment(t, a.do("PUT", "/examples/demo/edit-row/3", a.form("name", "", "role", "Lead")), 422)
+	if !strings.Contains(bad, "cannot be empty") || !strings.HasPrefix(strings.TrimSpace(bad), "<tr") {
+		t.Errorf("422 does not redraw the row with the message: %s", bad)
+	}
+	ok := wantFragment(t, a.do("PUT", "/examples/demo/edit-row/3", a.form("name", "Helena Prado-Silva", "role", "Head of product")), 200)
+	if !strings.Contains(ok, "Head of product") {
+		t.Errorf("the saved row is wrong: %s", ok)
+	}
+	if rec := a.do("GET", "/examples/demo/edit-row/9", nil); rec.Code != 404 {
+		t.Errorf("an unknown row answered %d, want 404", rec.Code)
+	}
+	if got := a.open("/docs/examples/edit-row"); !strings.Contains(got, "Head of product") {
+		t.Errorf("the visitor's page does not keep the edit")
+	}
+	b := newVisitor(t, app)
+	if got := b.open("/docs/examples/edit-row"); strings.Contains(got, "Head of product") {
+		t.Errorf("one visitor's edit leaked to another")
 	}
 }
