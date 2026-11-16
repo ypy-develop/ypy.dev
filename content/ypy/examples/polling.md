@@ -6,11 +6,12 @@ description: Poll a background job every second, let the server change the inter
 
 # Polling
 
-A job runs in the background and the page shows its progress. The element asks for the status with `every 1s`. With the
-`ypy-poll` extension the server can slow the polling down, a hidden tab polls less, and a response with status `286`
-stops it.
+A job runs in the background and the page shows its progress: the element asks for the status with `every 1s`, and the server decides when to slow down and when to stop.
 
 ## The page
+
+The `ypy-poll` extension adds the rest: a hidden tab polls less, the server can change the interval, and a response
+with status `286` stops the polling.
 
 ```html
 <script src="https://cdn.jsdelivr.net/gh/ypy-develop/ypy@v0.1.1/dist/ypy.min.js"></script>
@@ -24,38 +25,49 @@ stops it.
 The default swap is a morph of the children, so the element itself stays in the page and keeps the interval the server
 chose. With `outerHTML` the element would be replaced and start again from the `1s` written here.
 
-## The server (Go)
+## What the server answers
 
-```go
-func (h *Handler) Job(w http.ResponseWriter, r *http.Request) {
-	job, ok := h.jobs.Get(r.PathValue("id"))
-	if !ok {
-		http.NotFound(w, r)
-		return
-	}
-	if job.Done() {
-		// 286 ends the polling; the body is swapped like any 2xx
-		ypy.FragmentStatus(w, 286, `<a href="/jobs/`+html.EscapeString(job.ID)+`/result">Download the result</a>`)
-		return
-	}
-	// The server sets the pace: slower for a long job, faster near the end.
-	if job.Percent() > 90 {
-		w.Header().Set("YPY-Poll-Interval", "500ms")
-	} else {
-		w.Header().Set("YPY-Poll-Interval", "2s")
-	}
-	ypy.Fragment(w, `<progress value="`+strconv.Itoa(job.Percent())+`" max="100"></progress> `+
-		strconv.Itoa(job.Percent())+`%`)
-}
+While the job runs, `GET /jobs/42` answers `200` with the new state and sets the pace:
+
+```text
+HTTP/1.1 200 OK
+Content-Type: text/html; charset=utf-8
+Vary: YPY-Request
+YPY-Poll-Interval: 2s
 ```
+
+```html
+<progress value="35" max="100"></progress> 35%
+```
+
+Near the end the server can ask for faster polls with `YPY-Poll-Interval: 500ms`. When the job is done it answers with
+status `286` and the final state:
+
+```text
+HTTP/1.1 286
+Content-Type: text/html; charset=utf-8
+Vary: YPY-Request
+```
+
+```html
+<a href="/jobs/42/result">Download the result</a>
+```
+
+| Job state | Status | `YPY-Poll-Interval` | Body |
+|---|---|---|---|
+| Running, under 90% | `200` | `2s` | the progress bar |
+| Running, over 90% | `200` | `500ms` | the progress bar |
+| Done | `286` | none | the link to the result |
+| Unknown job | `404` | none | an error message |
 
 ## How it works
 
 - `every 1s` is part of the core: the element sends its request every second. The extension adds the rest.
 - In a hidden tab the interval is 4 times longer. `ypy-poll="hidden:pause"` stops polling there, and
   `ypy-poll="hidden:10"` changes the factor. When the tab is shown again the element polls at once if a poll was due.
-- `YPY-Poll-Interval` accepts milliseconds (`2000`) or a time (`2s`, `500ms`, `1m`). It replaces the interval from the next
-  poll on and stays until another response changes it. The server cannot ask for less than `min` (`100ms` by default).
+- `YPY-Poll-Interval` accepts milliseconds (`2000`) or a time (`2s`, `500ms`, `1m`). It replaces the interval from the
+  next poll on and stays until another response changes it. The server cannot ask for less than `min` (`100ms` by
+  default).
 - `286` stops the polling of that element and fires `ypy:poll:stop`. The body is still swapped, so it carries the final
   state. Without the extension a `286` is an ordinary success and the polling goes on.
 - A failed request does not stop the polling. Only `286` does, so send it on purpose.
@@ -70,4 +82,4 @@ func (h *Handler) Job(w http.ResponseWriter, r *http.Request) {
 
 - [`ypy-poll`](../extensions/poll.md)
 - [Progress bar](progress-bar.md)
-- [Request headers and response headers](../reference/headers.md)
+- [Request headers and response headers](../reference.md#request-headers)

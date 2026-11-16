@@ -46,6 +46,7 @@
 /* The pieces of this site: the front page, and the documentation. */
 @import "./home.css";
 @import "./docs.css";
+@import "./examples.css";
 
 /* Design tokens. Everything below is a Tailwind utility away from any template,
  * so a page never carries a hex value inline. */

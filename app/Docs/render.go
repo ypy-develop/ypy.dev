@@ -14,14 +14,18 @@ import (
 	"github.com/alecthomas/chroma/v2/lexers"
 	"github.com/alecthomas/chroma/v2/styles"
 	markdown "github.com/hyz-is/arandu-markdown"
+
+	examples "github.com/ypy-develop/ypy.dev/app/Examples"
 )
 
 // render turns the body into HTML. It runs once per page, at start.
 func (p *Page) render(m *Manual, md *markdown.Module) {
-	doc := md.Render(markersToText(m.rewriteLinks(p, p.body)))
+	// A demo marker becomes a paragraph the renderer keeps; the controller swaps
+	// it for the demo at request time (app/Examples).
+	doc := md.Render(examples.Prepare(markersToText(m.rewriteLinks(p, p.body))))
 	p.HTML = decorateCode(string(doc.HTML()))
 	p.Headings = doc.Headings
-	p.Text = doc.Text
+	p.Text = examples.Unmark(doc.Text)
 	p.Words = doc.Words
 	p.Minutes = doc.Minutes
 }

@@ -1,104 +1,75 @@
 ---
 order: 20
 title: Bulk update
-description: Update many table rows with one form of checkboxes, then swap the table and fill a status message from the same server response.
+description: Tick rows in a table, press Activate or Deactivate, and one request updates every ticked row and shows a message, with no page reload.
 ---
 
 # Bulk update
 
-A table of users has a checkbox on each row. One button sends the whole form, the server updates every row, and the
-answer replaces the table and fills a message area above it.
+A table of people with a checkbox on each row. Tick some rows, press **Activate** or **Deactivate**, and one request
+updates the table and says what it did.
+
+## Try it
+
+<!-- demo:bulk-update -->
+
+Press a button with nothing ticked: the server answers `422` and the form comes back with a message instead of changing
+anything.
 
 ## The page
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/ypy-develop/ypy@v0.1.1/dist/ypy.min.js"></script>
-
-<div id="toast" role="status" aria-live="polite"></div>
-
-<form ypy-post="/users/active" ypy-target="#users" ypy-swap="outerHTML">
-  <table id="users">
-    <thead><tr><th>Name</th><th>Email</th><th>Active</th></tr></thead>
+<form id="team" ypy-put="/team/status" ypy-target="this" ypy-swap="outerHTML">
+  <table>
+    <thead>
+      <tr><th></th><th>Name</th><th>Email</th><th>Status</th></tr>
+    </thead>
     <tbody>
-      <tr><td>Ada</td><td>ada@example.com</td>
-          <td><input type="checkbox" name="active" value="1" checked></td></tr>
-      <tr><td>Grace</td><td>grace@example.com</td>
-          <td><input type="checkbox" name="active" value="2"></td></tr>
+      <tr>
+        <td><input type="checkbox" name="ids" value="1" aria-label="Select Marina Duarte"></td>
+        <td>Marina Duarte</td><td>marina.duarte@example.com</td><td>Active</td>
+      </tr>
+      <tr>
+        <td><input type="checkbox" name="ids" value="3" aria-label="Select Helena Prado"></td>
+        <td>Helena Prado</td><td>helena.prado@example.com</td><td>Inactive</td>
+      </tr>
     </tbody>
   </table>
-  <button>Save</button>
+  <button name="status" value="active">Activate</button>
+  <button name="status" value="inactive">Deactivate</button>
 </form>
 ```
 
-Each checkbox is named `active` and its value is the user's id. The browser sends only the checked ones.
+## What the server answers
 
-## The server (Go)
+The request is `PUT /team/status` with the body `ids=1&ids=3&status=active`. The pressed button sends its own `name` and
+`value`, so one form serves both actions.
 
-```go
-package main
+| Case | Status | Body |
+|---|---|---|
+| At least one row ticked | `200` | The whole form again, rows in their new state, and `<p role="status">2 people activated.</p>` |
+| Nothing ticked | `422` | The same form, with `<p role="alert">Tick at least one person first.</p>` |
 
-import (
-	"bytes"
-	"fmt"
-	"html/template"
-	"net/http"
-
-	ypy "github.com/ypy-develop/go"
-)
-
-var table = template.Must(template.New("t").Parse(`<table id="users">
-  <thead><tr><th>Name</th><th>Email</th><th>Active</th></tr></thead>
-  <tbody>{{range .}}
-    <tr><td>{{.Name}}</td><td>{{.Email}}</td>
-        <td><input type="checkbox" name="active" value="{{.ID}}"{{if .Active}} checked{{end}}></td></tr>
-  {{end}}</tbody>
-</table>`))
-
-func setActive(store *Store) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		if err := r.ParseForm(); err != nil {
-			http.Error(w, "bad form", http.StatusBadRequest)
-			return
-		}
-		ids := r.PostForm["active"] // only the checked boxes are in the form
-		changed := store.SetActive(ids)
-
-		var buf bytes.Buffer
-		if err := table.Execute(&buf, store.All()); err != nil {
-			http.Error(w, "template error", http.StatusInternalServerError)
-			return
-		}
-		ypy.Fragment(w, buf.String()) // goes to #users
-		ypy.Partial(w, ypy.PartialSpec{Target: "#toast", Swap: "innerHTML"},
-			fmt.Sprintf("<p>%d users updated.</p>", changed))
-	}
-}
-```
-
-Register it with `mux.HandleFunc("POST /users/active", setActive(store))`.
+Both are fragments with `Vary: YPY-Request`.
 
 ## How it works
 
-- The `ypy-post` is on the **form**, so the form is the element that makes the request and its fields are the
-  parameters. The default trigger of a form is `submit`.
-- `ypy-target="#users"` with `ypy-swap="outerHTML"` replaces the whole table, so the server answers with a complete
-  `<table id="users">`. Replacing a table, and not its `<tbody>`, keeps the markup valid in every browser.
-- The answer has two parts. The first (`ypy.Fragment`) is the main content and goes to the request target. The
-  second (`ypy.Partial`) is a `<ypy-partial>` that the client routes to `#toast` on its own. See
-  [`<ypy-partial>`](../reference/tags/ypy-partial.md) and [Multiple targets](../guides/multiple-targets.md).
-- The message area has `role="status"` and `aria-live="polite"`, so a screen reader announces the change.
+- The form is the request: `ypy-put` sends every checked box and the pressed button. A form triggers on `submit`, so no
+  `ypy-trigger` is needed.
+- The answer replaces the form (`ypy-target="this"`, `outerHTML`), so the checkboxes come back unticked and the message
+  sits where the buttons are.
+- The server decides the new state of every row, so the table can never disagree with it.
+- The message has `role="status"`, which screen readers announce without moving focus.
 
 ## Variations
 
-- To show the message and leave the table alone, answer with `ypy.Partial` only. A response that holds only partials
-  does not swap the main target with empty content.
-- Send a custom event to the page with `ypy.Trigger(w, "users:updated", map[string]any{"count": changed})` and listen
-  for it with `ypy-trigger="users:updated from:body"` on another element.
-- A form without JavaScript posts to its `action`. Add `action="/users/active"` and answer a plain browser with
-  `ypy.SeeOther(w, "/users")`, using `ypy.FromRequest(r).IsYPY` to tell the two apart.
+- Morph instead of replace: leave out `ypy-swap` and the default `innerMorph` keeps the ticks the visitor made while the
+  request ran.
+- Send the ids as JSON with an [extension](../extensions/index.md) if your API expects it.
+- Add `ypy-confirm="Deactivate the selected people?"` to the destructive button.
 
 ## See also
 
-- [Click to edit](click-to-edit.md)
+- [Delete row](delete-row.md)
 - [Updating other content](updating-other-content.md)
-- [Forms guide](../guides/forms.md)
+- [Forms](../index.md#validation)

@@ -1,103 +1,86 @@
 ---
 order: 150
 title: Reset the form after a save
-description: Empty a comment form after a successful save and keep the typed text after a rejection, with a partial that swaps in a fresh form or one line of script.
+description: Empty a comment form after a successful save and keep the typed text after a rejection, with a partial that swaps in a fresh form.
 ---
 
 # Reset the form after a save
 
-A comment form adds the comment to a list. After a successful save the fields must be empty again, and after a
-rejected one they must keep what the user typed. There are two ways: let the answer replace the form, or run a
-line of script.
+A comment form adds the comment to a list. After a successful save the fields must be empty again, and after a rejected
+one they must keep what the visitor typed. The simplest way is to let the answer carry a fresh form.
 
 ## The page
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/ypy-develop/ypy@v0.1.1/dist/ypy.min.js"></script>
-
 <ul id="comments"></ul>
 
 <form id="new-comment" ypy-post="/comments" ypy-target="#comments" ypy-swap="beforeend"
       ypy-error-target="this" ypy-error-swap="innerMorph">
   <label for="body">Comment</label>
-  <textarea id="body" name="body" required></textarea>
+  <textarea id="body" name="body"></textarea>
   <button>Post</button>
 </form>
 ```
 
-## The server (Go)
+## What the server answers
 
-```go
-package comments
+| Case | Status | Body |
+|---|---|---|
+| Saved | `200` | The new `<li>`, then a `<ypy-partial>` that holds an empty form |
+| Empty comment | `422` | The fields again, with the typed text and a message |
 
-import (
-	"html"
-	"net/http"
-	"strings"
+On success the answer has two parts. The `<li>` goes to the target of the request. The partial has the `id` of the form
+and the swap `outerHTML`, so an empty form replaces the old one:
 
-	ypy "github.com/ypy-develop/go"
-)
+```html
+<li>Delivery was quick and the packaging was good.</li>
 
-// fields is the inside of the form; the typed text and the problem are optional.
-func fields(body, problem string) string {
-	msg := ""
-	if problem != "" {
-		msg = `<p id="body-error" role="alert">` + html.EscapeString(problem) + `</p>`
-	}
-	return `<label for="body">Comment</label>` + msg +
-		`<textarea id="body" name="body" required>` + html.EscapeString(body) + `</textarea>` +
-		`<button>Post</button>`
-}
-
-func blankForm() string {
-	return `<form id="new-comment" ypy-post="/comments" ypy-target="#comments" ypy-swap="beforeend" ` +
-		`ypy-error-target="this" ypy-error-swap="innerMorph">` + fields("", "") + `</form>`
-}
-
-func Create(w http.ResponseWriter, r *http.Request) {
-	body := strings.TrimSpace(r.PostFormValue("body"))
-	if body == "" {
-		ypy.ValidationError(w, fields("", "Write something first."))
-		return
-	}
-	// ... store the comment ...
-	ypy.Fragment(w, `<li>`+html.EscapeString(body)+`</li>`) // goes to #comments
-	ypy.Partial(w, ypy.PartialSpec{ID: "new-comment", Swap: "outerHTML"}, blankForm())
-}
+<ypy-partial id="new-comment" ypy-swap="outerHTML">
+  <form id="new-comment" ypy-post="/comments" ypy-target="#comments" ypy-swap="beforeend"
+        ypy-error-target="this" ypy-error-swap="innerMorph">
+    <label for="body">Comment</label>
+    <textarea id="body" name="body"></textarea>
+    <button>Post</button>
+  </form>
+</ypy-partial>
 ```
 
-The answer has two parts. The `<li>` goes to the target of the request. The `<ypy-partial>` has the id of the form
-and the swap `outerHTML`, so a new, empty form replaces the old one.
+On an error the answer is the inside of the form, with what was typed written back, escaped:
+
+```html
+<label for="body">Comment</label>
+<p id="body-error" role="alert">Write something first.</p>
+<textarea id="body" name="body" aria-describedby="body-error" aria-invalid="true">Delivery</textarea>
+<button>Post</button>
+```
+
+Every answer is a fragment with `Vary: YPY-Request`.
 
 ## How it works
 
 - `ypy-swap="beforeend"` appends the comment to the list. The main target is `#comments`, not the form.
-- `ypy.Partial` with `ID: "new-comment"` writes `<ypy-partial id="new-comment" ypy-swap="outerHTML">`. With no
-  `ypy-target`, the element with that id is the target. The browser gets a fresh form with empty fields.
-- On an error the server answers `422` with the fields. `ypy-error-target="this"` and `ypy-error-swap="innerMorph"`
-  morph them into the form, so the message appears and the form itself is not replaced.
-- The page and the handler build the same form. Put it in one template that both use.
+- The partial has no `ypy-target`, so its `id` names the destination: the element with that id is replaced by the
+  fresh form. The browser gets empty fields.
+- On an error the server answers `422`. `ypy-error-target="this"` and `ypy-error-swap="innerMorph"` morph the fields
+  into the form, so the message appears and the form itself is not replaced.
+- The page and the answer draw the same form. Put it in one template that both use.
 
 ## Variations
 
-- A line of script instead of a second copy of the form: author code is off by default, so allow it first, then
-  reset the form when the request succeeded:
+- A listener in your own script file resets the form without a second copy of it. Add it to a file the page loads:
 
-  ```html
-  <meta name="ypy-config" content='{"callbacks": "all"}'>
-
-  <form ypy-post="/comments" ypy-target="#comments" ypy-swap="beforeend"
-        ypy-on::after:request="ctx.response.status < 400 && this.reset()">
+  ```js
+  document.addEventListener('ypy:after:request', (event) => {
+    const { ctx } = event.detail;
+    if (ctx.sourceElement.matches('#new-comment') && ctx.response.status < 400) ctx.sourceElement.reset();
+  });
   ```
 
-  `ypy-on::after:request` listens to `ypy:after:request` on the form. `ctx` is a name the handler receives, and `this`
-  is the form. Read [security](../reference/security.md) before you turn `callbacks` on.
-- A listener in your script file does the same without `callbacks`: add a `ypy:after:request` listener on `document`
-  and call `event.target.reset()` when `event.detail.ctx.response.status` is below 400.
-- Only the field: give the answer a `<ypy-partial id="body" ypy-swap="outerHTML">` with an empty `<textarea>` to
-  clear one field and keep the rest.
+- Only one field: answer with a `<ypy-partial id="body" ypy-swap="outerHTML">` that holds an empty `<textarea>`, and
+  the rest of the form stays.
 
 ## See also
 
-- [Updating other content](updating-other-content.md) and [`<ypy-partial>`](../reference/tags/ypy-partial.md)
-- [Forms](../guides/forms.md)
+- [Updating other content](updating-other-content.md) and [`<ypy-partial>`](../index.md#out-of-band-swaps)
+- [Validation](../index.md#validation)
+- [Inline validation](inline-validation.md)

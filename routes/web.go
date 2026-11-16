@@ -6,6 +6,7 @@ package routes
 import (
 	hcontrollers "github.com/arandu-io/hesape/routing/controllers"
 
+	examples "github.com/ypy-develop/ypy.dev/app/Examples"
 	controllers "github.com/ypy-develop/ypy.dev/app/Http/Controllers"
 	"github.com/ypy-develop/ypy.dev/assets"
 	"github.com/ypy-develop/ypy.dev/public"
@@ -15,6 +16,7 @@ import (
 // bootstrap/app.go tells what every route was given.
 type Deps struct {
 	Home      *controllers.HomeController
+	Demos     *examples.Demos
 	Docs      *controllers.DocsController
 	Reference *controllers.ReferenceController
 	Search    *controllers.SearchController
@@ -46,6 +48,8 @@ func Web(r *hcontrollers.Router, d Deps) {
 
 	r.Action("GET", "/reference", d.Reference.Index).Name("reference")
 	r.Action("GET", "/reference/{kind}", d.Reference.Table).Name("reference.table")
+
+	d.Demos.Register(r) // /examples/demo/..., the live demos of the Examples section
 
 	r.Action("GET", "/search", d.Search.Page).Name("search")
 	r.Action("GET", "/search-index.json", d.Search.Index).Name("search.index")

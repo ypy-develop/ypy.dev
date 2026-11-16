@@ -1,133 +1,82 @@
 ---
 order: 100
 title: Progress bar
-description: Start a job with a button, poll its progress every second into a progress element, and let the server stop the polling with status 286.
+description: Start a job with a button, then let each answer ask for the next progress value after a short delay, until the server answers that the job is done.
 ---
 
 # Progress bar
 
-A button starts a job on the server. The page then asks for the job's progress every second and shows a bar. When
-the job is done the server answers with the status `286`, the page swaps in the final markup and the polling stops.
+A button starts a job on the server. The page then asks for the job's progress every 600 milliseconds and shows a bar.
+Each answer carries the next request itself, so the job ends the moment the server stops sending one.
+
+## Try it
+
+<!-- demo:progress-bar -->
+
+The job takes about six seconds. **Start again** runs it from the beginning.
 
 ## The page
 
-The `ypy-poll` extension is what gives the status `286` its meaning.
-
 ```html
-<script src="https://cdn.jsdelivr.net/gh/ypy-develop/ypy@v0.1.1/dist/ypy.min.js"></script>
-<script src="https://cdn.jsdelivr.net/gh/ypy-develop/ypy@v0.1.1/dist/ext/ypy-poll.min.js"></script>
-
-<div id="job-area">
-  <button ypy-post="/jobs" ypy-target="#job-area" ypy-swap="innerHTML">Start the job</button>
+<div id="job">
+  <button ypy-post="/export/start" ypy-headers='{"X-CSRF-Token": "…"}'
+          ypy-target="#job" ypy-swap="outerHTML">Start the export</button>
 </div>
 ```
 
-`POST /jobs` answers with the element that does the polling:
+## What the server answers
+
+`POST /export/start` answers `200` with the block that does the polling. It asks for `/export/progress` once, after
+600 ms, and replaces itself with the answer:
 
 ```html
-<div id="job-7" ypy-get="/jobs/7" ypy-trigger="every 1s" role="status" aria-live="polite">
-  <progress value="0" max="100">0%</progress> 0%
+<div id="job" ypy-get="/export/progress" ypy-trigger="load delay:600ms" ypy-swap="outerHTML" role="status">
+  <progress value="0" max="100" aria-label="Export progress"></progress>
+  <span>0%</span>
 </div>
 ```
 
-## The server (Go)
+`GET /export/progress` answers `200` with the same block and a new value, so the chain goes on:
 
-```go
-package jobs
-
-import (
-	"fmt"
-	"net/http"
-	"sync"
-	"time"
-
-	ypy "github.com/ypy-develop/go"
-)
-
-type Jobs struct {
-	mu      sync.Mutex
-	next    int
-	started map[int]time.Time
-}
-
-func New() *Jobs { return &Jobs{started: map[int]time.Time{}} }
-
-// percent is a stand-in for real work: one point every 100 ms.
-func (j *Jobs) percent(id int) (int, bool) {
-	j.mu.Lock()
-	defer j.mu.Unlock()
-	t, ok := j.started[id]
-	if !ok {
-		return 0, false
-	}
-	return min(100, int(time.Since(t)/(100*time.Millisecond))), true
-}
-
-func view(id, pct int) string {
-	return fmt.Sprintf(`<div id="job-%d" ypy-get="/jobs/%d" ypy-trigger="every 1s" role="status" aria-live="polite">`+
-		`<progress value="%d" max="100">%d%%</progress> %d%%</div>`, id, id, pct, pct, pct)
-}
-
-func (j *Jobs) Start(w http.ResponseWriter, r *http.Request) {
-	j.mu.Lock()
-	j.next++
-	id := j.next
-	j.started[id] = time.Now()
-	j.mu.Unlock()
-	ypy.Fragment(w, view(id, 0))
-}
-
-func (j *Jobs) Status(w http.ResponseWriter, r *http.Request) {
-	var id int
-	if _, err := fmt.Sscan(r.PathValue("id"), &id); err != nil {
-		http.NotFound(w, r)
-		return
-	}
-	pct, ok := j.percent(id)
-	if !ok {
-		http.NotFound(w, r)
-		return
-	}
-	if pct < 100 {
-		ypy.Fragment(w, `<progress value="`+fmt.Sprint(pct)+`" max="100">`+fmt.Sprint(pct)+`%</progress> `+fmt.Sprint(pct)+`%`)
-		return
-	}
-	// 286 ends the polling of the element that asked; the body is swapped like any 2xx.
-	ypy.FragmentStatus(w, 286, fmt.Sprintf(`Done. <a href="/jobs/%d/result">Download the result</a>`, id))
-}
-
-func Routes(j *Jobs) http.Handler {
-	mux := http.NewServeMux()
-	mux.HandleFunc("POST /jobs", j.Start)
-	mux.HandleFunc("GET /jobs/{id}", j.Status)
-	return ypy.Middleware(mux)
-}
+```html
+<div id="job" ypy-get="/export/progress" ypy-trigger="load delay:600ms" ypy-swap="outerHTML" role="status">
+  <progress value="40" max="100" aria-label="Export progress"></progress>
+  <span>40%</span>
+</div>
 ```
 
-The id is a number the server parsed, so it can go into the markup as it is. Anything that comes from a user goes
-through `html.EscapeString` or `html/template`.
+When the job is done the block has no `ypy-get`, so nothing follows:
+
+```html
+<div id="job" role="status">
+  <p>The export is ready: 1,284 rows.</p>
+  <button ypy-post="/export/start" ypy-headers='{"X-CSRF-Token": "…"}'
+          ypy-target="#job" ypy-swap="outerHTML">Start again</button>
+</div>
+```
+
+All three are fragments with `Vary: YPY-Request`.
 
 ## How it works
 
-- `ypy-post` on the button asks the server to start the job. `ypy-target="#job-area"` with `innerHTML` replaces the
-  button with the element that polls.
-- `ypy-trigger="every 1s"` makes the `div` ask `GET /jobs/7` once a second. It has no `ypy-target`, so the answer
-  goes into the `div` itself, and the default `innerMorph` keeps the `<progress>` element and only changes its
-  `value`.
-- With `ypy-poll` loaded, a hidden tab polls four times slower. The server may also set the pace with a
-  `YPY-Poll-Interval` header.
-- The status `286` swaps its body like a `200` and then stops the polling, so the page needs no timer of its own.
-  `ypy:poll:stop` fires on the element.
+- `ypy-trigger="load delay:600ms"` fires when the element is processed and waits 600 ms before the request. The block
+  that comes back is processed in turn, so it asks again. No timer lives in the page.
+- Each answer replaces the whole block (`outerHTML`). The last one has no `ypy-get`, which is how the polling stops.
+- The server keeps the position. A page that is closed and opened again starts from the button; a job that keeps its
+  progress under an id can resume it.
+- `role="status"` makes the percentage audible without moving the focus.
+- The `POST` changes state, so the button carries the CSRF token in a header with `ypy-headers`. The polling `GET`s
+  need none.
 
 ## Variations
 
-- Without the extension: give the poller `ypy-swap="outerHTML"` and answer every poll with the whole element.
-  The last answer leaves out `ypy-trigger`, so the element that replaces the poller has nothing to repeat. The
-  status stays `200`.
-- Slow down when it is busy. Call `w.Header().Set("YPY-Poll-Interval", "5s")` before `ypy.Fragment` in `Status`.
+- Poll with a fixed rhythm instead: `ypy-trigger="every 1s"` on a block that is morphed, not replaced. The
+  [`ypy-poll`](../extensions/poll.md) extension stops it when the server answers with the status `286`, slows it in a
+  background tab and lets the server set the pace with `YPY-Poll-Interval`.
 - A progress bar for a file upload needs no polling: see [file upload](file-upload.md).
 
 ## See also
 
 - [`ypy-poll`](../extensions/poll.md) and [polling](polling.md)
-- [Updating other content](updating-other-content.md) for a job that changes several parts of the page
+- [Updating other content](updating-other-content.md), for a job that changes several parts of the page
+- [Triggers](../index.md#triggers)

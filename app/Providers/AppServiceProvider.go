@@ -15,6 +15,7 @@ import (
 	markdown "github.com/hyz-is/arandu-markdown"
 
 	clients "github.com/ypy-develop/ypy.dev/app/Clients"
+	examples "github.com/ypy-develop/ypy.dev/app/Examples"
 	controllers "github.com/ypy-develop/ypy.dev/app/Http/Controllers"
 	site "github.com/ypy-develop/ypy.dev/app/Site"
 	stars "github.com/ypy-develop/ypy.dev/app/Stars"
@@ -52,9 +53,9 @@ var (
 
 // NewAppServiceProvider builds the controllers over the site. github is the
 // client the star count is read through: bootstrap configures it, a test hands
-// over a fake.
-func NewAppServiceProvider(s *site.Site, md *markdown.Module, github clients.GitHub) (*AppServiceProvider, error) {
-	docs := controllers.NewDocsController(s)
+// over a fake. demos are the live demos of the Examples section.
+func NewAppServiceProvider(s *site.Site, md *markdown.Module, github clients.GitHub, demos *examples.Demos) (*AppServiceProvider, error) {
+	docs := controllers.NewDocsController(s, demos)
 	return &AppServiceProvider{
 		Site:     s,
 		Markdown: md,
@@ -62,6 +63,7 @@ func NewAppServiceProvider(s *site.Site, md *markdown.Module, github clients.Git
 		Geo:      geo.NewModule(s.GeoConfig(), s.Catalog()),
 		web: routes.Deps{
 			Home:      controllers.NewHomeController(s),
+			Demos:     demos,
 			Docs:      docs,
 			Reference: controllers.NewReferenceController(s, docs),
 			Search:    controllers.NewSearchController(s),

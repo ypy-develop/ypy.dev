@@ -6,6 +6,7 @@ import (
 	hhttp "github.com/arandu-io/hesape/http"
 
 	docs "github.com/ypy-develop/ypy.dev/app/Docs"
+	examples "github.com/ypy-develop/ypy.dev/app/Examples"
 	site "github.com/ypy-develop/ypy.dev/app/Site"
 	"github.com/ypy-develop/ypy.dev/storage/framework/views"
 )
@@ -15,11 +16,12 @@ import (
 // route without anything being registered.
 type DocsController struct {
 	Controller
+	demos *examples.Demos
 }
 
 // NewDocsController builds it.
-func NewDocsController(s *site.Site) *DocsController {
-	return &DocsController{Controller{site: s}}
+func NewDocsController(s *site.Site, demos *examples.Demos) *DocsController {
+	return &DocsController{Controller: Controller{site: s}, demos: demos}
 }
 
 // Show answers /docs, /docs/..., /go and /go/....
@@ -70,9 +72,12 @@ func (c *DocsController) page(ctx *hhttp.Context, page *docs.Page) error {
 	chrome := c.site.ChromeFor(ctx, info)
 
 	return ctx.View("doc", views.DocData{
-		Chrome:       chrome,
-		Page:         page,
-		Body:         page.HTML,
+		Chrome: chrome,
+		Page:   page,
+		Body: c.demos.Embed(page.HTML, ctx.Request, func() string {
+			t, _ := hhttp.CSRFTokenFrom(ctx.Ctx())
+			return t
+		}),
 		Tree:         m.SectionOf(page),
 		SectionTitle: page.Section.Title,
 		SectionHref:  page.Section.Prefix,

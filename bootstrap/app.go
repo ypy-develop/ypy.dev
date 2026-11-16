@@ -9,6 +9,7 @@ package bootstrap
 import (
 	"fmt"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/arandu-io/framework/foundation"
@@ -18,6 +19,7 @@ import (
 	markdown "github.com/hyz-is/arandu-markdown"
 
 	clients "github.com/ypy-develop/ypy.dev/app/Clients"
+	examples "github.com/ypy-develop/ypy.dev/app/Examples"
 	providers "github.com/ypy-develop/ypy.dev/app/Providers"
 	site "github.com/ypy-develop/ypy.dev/app/Site"
 	appconfig "github.com/ypy-develop/ypy.dev/config"
@@ -100,7 +102,10 @@ func NewProvider(cfg appconfig.Config, github clients.GitHub) (*providers.AppSer
 	if err != nil {
 		return nil, err
 	}
-	return providers.NewAppServiceProvider(s, md, github)
+	// The demos of the Examples section sign their visitor-state cookies with a
+	// key derived from APP_KEY, and mark them Secure when the site is https.
+	demos := examples.New(cfg.Framework.App.Key, strings.HasPrefix(cfg.App.URL, "https://"))
+	return providers.NewAppServiceProvider(s, md, github, demos)
 }
 
 // Configure is the application: the providers in the order they boot, the
