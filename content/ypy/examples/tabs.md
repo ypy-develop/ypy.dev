@@ -1,97 +1,73 @@
 ---
 order: 180
 title: Tabs
-description: Tabs as plain links: the server returns the strip and the panel, YPY morphs them in and pushes the URL, so reload, sharing and Back all work.
+description: Tabs that ask the server for one panel at a time, with the strip and the panel updated by a single answer so the selected tab is never stored twice.
 ---
 
 # Tabs
 
-Each tab is a link. A click asks the server for the tab strip and the panel together, and YPY morphs the answer into
-the page. The server marks the selected tab, so the selection is never kept in two places. The address changes with each
-tab, and the same URL opens the same tab on a full page load.
+Each tab is a button. A click asks the server for its panel, and the answer also redraws the tab strip with the right tab
+selected. The server is the only place that knows which tab is current.
+
+## Try it
+
+<!-- demo:tabs -->
+
+Click a tab. The strip is redrawn with the answer, and the tab you clicked keeps the focus.
 
 ## The page
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/ypy-develop/ypy@v0.1.1/dist/ypy.min.js"></script>
-
-<div id="tabs">
-  <div role="tablist" ypy-target:inherited="#tabs" ypy-swap:inherited="outerMorph" ypy-push-url:inherited="true">
-    <a role="tab" aria-selected="true"  href="/account?tab=profile" ypy-get="/account?tab=profile">Profile</a>
-    <a role="tab" aria-selected="false" href="/account?tab=billing" ypy-get="/account?tab=billing">Billing</a>
-    <a role="tab" aria-selected="false" href="/account?tab=team"    ypy-get="/account?tab=team">Team</a>
-  </div>
-  <div role="tabpanel">Profile settings...</div>
+<div role="tablist" id="tab-strip" data-variant="line" ypy-target:inherited="#tab-panel" ypy-swap:inherited="outerHTML">
+  <button role="tab" id="tab-1" aria-selected="true"  aria-controls="tab-panel" ypy-get="/tabs/1">Profile</button>
+  <button role="tab" id="tab-2" aria-selected="false" aria-controls="tab-panel" ypy-get="/tabs/2">Billing</button>
+  <button role="tab" id="tab-3" aria-selected="false" aria-controls="tab-panel" ypy-get="/tabs/3">Team</button>
+</div>
+<div role="tabpanel" id="tab-panel" aria-labelledby="tab-1">
+  <p>Marina Duarte, marina.duarte@example.com. Member since March 2024.</p>
 </div>
 ```
 
-The three attributes on the tab strip use `:inherited`, so every link below them gets the target, the swap style and the
-history push. Without JavaScript each link is a normal link to the full page.
+The two attributes on the strip end in `:inherited`, so every tab below gets the same target and swap style.
 
-## The server (Go)
+## What the server answers
 
-```go
-package account
+`GET /tabs/2` answers `200` with the new panel and, out of band, the strip with `aria-selected` moved:
 
-import (
-	"html"
-	"net/http"
+```html
+<div role="tabpanel" id="tab-panel" aria-labelledby="tab-2">
+  <p>Plan: Team, 12 seats. Next invoice on 1 December, $240.00.</p>
+</div>
 
-	ypy "github.com/ypy-develop/go"
-)
-
-var tabs = []struct{ Key, Label string }{
-	{"profile", "Profile"}, {"billing", "Billing"}, {"team", "Team"},
-}
-
-func tabsHTML(current string, body string) string {
-	s := `<div id="tabs"><div role="tablist" ypy-target:inherited="#tabs" ` +
-		`ypy-swap:inherited="outerMorph" ypy-push-url:inherited="true">`
-	for _, t := range tabs {
-		sel := "false"
-		if t.Key == current {
-			sel = "true"
-		}
-		url := "/account?tab=" + t.Key
-		s += `<a role="tab" aria-selected="` + sel + `" href="` + url + `" ypy-get="` + url + `">` +
-			html.EscapeString(t.Label) + `</a>`
-	}
-	return s + `</div><div role="tabpanel">` + body + `</div></div>`
-}
-
-func (h *Handler) Account(w http.ResponseWriter, r *http.Request) {
-	current := r.URL.Query().Get("tab")
-	body, ok := h.panels[current] // trusted HTML, built from your templates
-	if !ok {
-		current, body = "profile", h.panels["profile"]
-	}
-	markup := tabsHTML(current, body)
-	if ypy.FromRequest(r).IsYPY {
-		ypy.Fragment(w, markup) // only the tab block
-		return
-	}
-	h.renderPage(w, markup) // the whole page, same URL
-}
+<div role="tablist" id="tab-strip" data-variant="line" ypy-swap-oob="true" ypy-target:inherited="#tab-panel" ypy-swap:inherited="outerHTML">
+  <button role="tab" id="tab-1" aria-selected="false" aria-controls="tab-panel" ypy-get="/tabs/1">Profile</button>
+  <button role="tab" id="tab-2" aria-selected="true"  aria-controls="tab-panel" ypy-get="/tabs/2">Billing</button>
+  <button role="tab" id="tab-3" aria-selected="false" aria-controls="tab-panel" ypy-get="/tabs/3">Team</button>
+</div>
 ```
+
+An unknown tab answers `404`. Every answer is a fragment with `Vary: YPY-Request`.
 
 ## How it works
 
-- `ypy-get` on an `<a>` makes YPY take the click. A click with Ctrl, Cmd or Shift still opens the link the browser's way.
-- `outerMorph` morphs the `#tabs` element into the new one. The tab you clicked keeps its focus, and only the attributes
-  and content that changed are touched.
-- `ypy-push-url="true"` pushes the URL of the request, `/account?tab=billing`. That URL is also a real page, so reload
-  and sharing work. For a URL that differs from the request, send `ypy.PushURL(w, url)` from the handler.
-- The Back button restores the earlier tab from the history. See [History](../index.md#history).
+- The request's own target is the panel (`ypy-target:inherited` on the strip). The first element of the answer replaces
+  it.
+- `ypy-swap-oob="true"` on the strip swaps it, as a morph, into the element with the same `id`, so the tab that was
+  clicked keeps its focus and only `aria-selected` changes.
+- The answer repeats the strip, which keeps the selection in one place. The page never edits `aria-selected` by itself.
+- `aria-selected` and `aria-controls` give screen readers the state; the CSS styles `[aria-selected="true"]`.
 
 ## Variations
 
-- Load a panel only when its tab is first used: keep the strip static and make each link target `#panel` with `innerHTML`.
-  Then the server cannot update `aria-selected`; use a [`ypy-partial`](../index.md#out-of-band-swaps) for the strip, or the morph above.
-- Keep tab state out of the address bar by leaving out `ypy-push-url`.
-- Add `ypy-indicator="#tabs"` to dim the block while a panel loads.
+- Make each tab a real link to a full page, `<a href="/account?tab=billing" ypy-get="/account?tab=billing">`, and add
+  `ypy-push-url:inherited="true"` on the strip. The address changes with the tab, reload and sharing work, and without
+  JavaScript each link still opens its page. The Back button then restores the earlier tab; see
+  [history](../index.md#history).
+- Load a panel only the first time it is used and keep the others in the page, hidden.
+- Add `ypy-indicator="#tab-panel"` to dim the panel while it loads.
 
 ## See also
 
 - [Updating other content](updating-other-content.md)
-- [History](../index.md#history)
 - [Attribute inheritance](../index.md#attribute-inheritance)
+- [History](../index.md#history)

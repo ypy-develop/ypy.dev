@@ -7,18 +7,16 @@ description: Return a 422 with validation errors without clearing the file the u
 # Keep file inputs after a form error
 
 A form has a title and a file. The title is missing, so the server answers with an error. A script cannot put a file back
-into a file field, so the user would have to choose it again unless the field stays the same element. `ypy-preserve`
-keeps it, and the text the user typed stays too.
+into a file field, so the visitor would have to choose it again unless the field stays the same element. `ypy-preserve`
+keeps it, and the text the visitor typed stays too.
 
 ## The page
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/ypy-develop/ypy@v0.1.1/dist/ypy.min.js"></script>
-
 <form ypy-post="/documents" ypy-encoding="multipart/form-data"
       ypy-target="this" ypy-swap="innerHTML" ypy-error-swap="innerHTML">
   <label for="title">Title</label>
-  <input id="title" name="title" required>
+  <input id="title" name="title">
 
   <label for="doc">File</label>
   <input id="doc" name="doc" type="file" ypy-preserve>
@@ -27,75 +25,54 @@ keeps it, and the text the user typed stays too.
 </form>
 ```
 
-## The server (Go)
+## What the server answers
 
-The server answers with the fields of the form, not the `<form>` element, because `innerHTML` replaces what is
-inside it.
+The answer holds the fields of the form, not the `<form>` element, because `innerHTML` replaces what is inside it.
 
-```go
-package documents
+| Case | Status | Body |
+|---|---|---|
+| Title missing | `422` | The fields again, with the message next to the title |
+| File too large | `422` | The fields again, with the message under the file input |
+| Saved | `200` | `<p>Saved Quarterly report.</p>` |
 
-import (
-	"html"
-	"net/http"
-	"strings"
+A `422` carries the fields like this. The title is written back from what was sent, escaped, and the file input has the
+same `id` and the same `ypy-preserve`:
 
-	ypy "github.com/ypy-develop/go"
-)
+```html
+<label for="title">Title</label>
+<input id="title" name="title" value="" aria-invalid="true" aria-describedby="title-error">
+<p id="title-error" role="alert">Enter a title.</p>
 
-func fields(title, problem string) string {
-	var b strings.Builder
-	b.WriteString(`<label for="title">Title</label><input id="title" name="title" value="` + html.EscapeString(title) + `"`)
-	if problem != "" {
-		b.WriteString(` aria-invalid="true" aria-describedby="title-error"><p id="title-error" role="alert">` +
-			html.EscapeString(problem) + `</p>`)
-	} else {
-		b.WriteString(`>`)
-	}
-	b.WriteString(`<label for="doc">File</label><input id="doc" name="doc" type="file" ypy-preserve>`)
-	b.WriteString(`<button>Save</button>`)
-	return b.String()
-}
+<label for="doc">File</label>
+<input id="doc" name="doc" type="file" ypy-preserve>
 
-func Create(w http.ResponseWriter, r *http.Request) {
-	if err := r.ParseMultipartForm(10 << 20); err != nil {
-		ypy.ValidationError(w, fields("", "The upload is too large."))
-		return
-	}
-	title := strings.TrimSpace(r.PostFormValue("title"))
-	if title == "" {
-		ypy.ValidationError(w, fields("", "Enter a title."))
-		return
-	}
-	// ... store the file and the title ...
-	ypy.Fragment(w, `<p>Saved `+html.EscapeString(title)+`.</p>`)
-}
+<button>Save</button>
 ```
+
+Every answer is a fragment with `Vary: YPY-Request`.
 
 ## How it works
 
-- `ypy-preserve` with no value tells YPY to keep this DOM node, matched by its `id`, when a swap brings an element
-  with the same id. The response holds a new `<input id="doc" type="file">`, and YPY leaves the old one in place, with
-  the file the user chose. The id is required.
+- `ypy-preserve` with no value tells YPY to keep this DOM node, matched by its `id`, when a swap brings an element with
+  the same id. The answer holds a new `<input id="doc" type="file">`, and YPY leaves the old one in place, with the file
+  the visitor chose. The `id` is required.
 - `ypy-target="this"` and `ypy-swap="innerHTML"` replace what is inside the form after a success. `ypy-error-swap`
-  does the same for an error. The `422` from `ypy.ValidationError` goes into the form of the element that sent
-  the request, so the errors and the fields arrive in the same place. Without `ypy-preserve` the new file field would
-  replace the old one and the choice would be lost.
-- The default swap, `innerMorph`, keeps a file input without help, because a morph does not set `value` on
-  `type="file"`. Use `ypy-preserve` when the swap is `innerHTML` or `outerHTML`, or when you want the guarantee
-  written in the markup.
-- The server writes the title back from what it received, escaped. The user sees what they typed and the message
-  next to the field.
+  does the same for an error: a `422` goes into the form of the element that sent the request, so the messages and the
+  fields arrive in the same place. Without `ypy-preserve` the new file field would replace the old one and the choice
+  would be lost.
+- The default swap, `innerMorph`, keeps the existing nodes and updates them, so a file input survives it as well. Use
+  `ypy-preserve` when the swap is `innerHTML` or `outerHTML`, or when you want the guarantee written in the markup.
+- `ypy-encoding="multipart/form-data"` sends the file with the form.
 
 ## Variations
 
-- Keep what was typed without the server. The `ypy-preserve` extension has the modes `value`, `selection`,
-  `focus` and `scroll`: `ypy-preserve="value"` on the form keeps typed text in fields that have an `id`. It skips
-  file inputs, which need the plain `ypy-preserve` above.
-- Let the form convention do it. Without `ypy-target` on the form, a `422` is morphed into the form and the fields
-  stay as they are. See [forms](../index.md#validation).
+- Keep what was typed without the server writing it back: the [`ypy-preserve`](../extensions/preserve.md) extension has
+  the modes `value`, `selection`, `focus` and `scroll`. `ypy-preserve="value"` on the form keeps the text of fields that
+  have an `id`. It skips file inputs, which need the plain `ypy-preserve` above.
+- Let the form convention do it: without `ypy-target` on the form, a `422` is morphed into the form and the fields stay
+  as they are. See [validation](../index.md#validation).
 
 ## See also
 
-- [`ypy-preserve`](../index.md#preserving-content)
+- [Preserving content](../index.md#preserving-content)
 - [File upload](file-upload.md) and [inline validation](inline-validation.md)

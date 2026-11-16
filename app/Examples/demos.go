@@ -48,6 +48,10 @@ func (d *Demos) Register(r *hcontrollers.Router) {
 	d.lazyLoading(r)
 	d.inlineValidation(r)
 	d.activeSearch(r)
+	d.infiniteScroll(r)
+	d.progressBar(r)
+	d.valueSelect(r)
+	d.tabs(r)
 }
 
 // ---- the marker a page uses to say where a demo goes ----------------------
@@ -105,6 +109,14 @@ func (d *Demos) initial(name string, r *http.Request, token string) (string, boo
 		return d.render("signup", signup{Token: token}), true
 	case "active-search":
 		return d.render("search", searchView{Results: searchPeople("")}), true
+	case "infinite-scroll":
+		return d.render("scroll-table", scrollPage(1)), true
+	case "progress-bar":
+		return d.render("job-idle", jobView{Token: token}), true
+	case "value-select":
+		return d.render("value-select", modelsView{}), true
+	case "tabs":
+		return d.render("tabs", tabsFor(1, false)), true
 	}
 	return "", false
 }

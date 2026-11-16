@@ -6,98 +6,71 @@ description: Fill a model select from the make chosen in the first one: the serv
 
 # Dependent selects
 
-Choose a make and the list of models fills in. The page asks the server for the options, and the server owns the
-rule that says which model belongs to which make.
+Choose a make and the list of models fills in. The page asks the server for the options, and the server owns the rule
+that says which model belongs to which make.
+
+## Try it
+
+<!-- demo:value-select -->
 
 ## The page
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/ypy-develop/ypy@v0.1.1/dist/ypy.min.js"></script>
+<label for="make">Make</label>
+<select id="make" name="make" ypy-get="/models" ypy-target="#model" ypy-swap="outerHTML">
+  <option value="">Choose a make</option>
+  <option value="audi">Audi</option>
+  <option value="toyota">Toyota</option>
+  <option value="volkswagen">Volkswagen</option>
+</select>
 
-<form ypy-post="/cars" ypy-target="#result">
-  <label>Make
-    <select name="make"
-            ypy-get="/models"
-            ypy-target="#model"
-            ypy-swap="innerHTML">
-      <option value="">Choose a make</option>
-      <option value="audi">Audi</option>
-      <option value="toyota">Toyota</option>
-    </select>
-  </label>
-
-  <label>Model
-    <select id="model" name="model" required>
-      <option value="">Choose a make first</option>
-    </select>
-  </label>
-
-  <button>Save</button>
-</form>
-<div id="result"></div>
+<label for="model">Model</label>
+<select id="model" name="model" disabled>
+  <option value="">Choose a make first</option>
+</select>
 ```
 
-## The server (Go)
+## What the server answers
 
-```go
-package cars
+`GET /models?make=toyota` answers `200` with the second select, whole, so the `disabled` attribute goes away with it:
 
-import (
-	"html"
-	"net/http"
-	"strings"
-
-	ypy "github.com/ypy-develop/go"
-)
-
-var models = map[string][]string{
-	"audi":   {"A3", "A4", "Q5"},
-	"toyota": {"Corolla", "Yaris", "Hilux"},
-}
-
-func Models(w http.ResponseWriter, r *http.Request) {
-	list, ok := models[r.URL.Query().Get("make")]
-	if !ok {
-		ypy.Fragment(w, `<option value="">Choose a make first</option>`)
-		return
-	}
-	var b strings.Builder
-	b.WriteString(`<option value="">Choose a model</option>`)
-	for _, m := range list {
-		b.WriteString(`<option>` + html.EscapeString(m) + `</option>`)
-	}
-	ypy.Fragment(w, b.String())
-}
-
-func Routes() http.Handler {
-	mux := http.NewServeMux()
-	mux.HandleFunc("GET /models", Models)
-	return ypy.Middleware(mux)
-}
+```html
+<select id="model" name="model">
+  <option value="">Choose a model</option>
+  <option>Corolla</option>
+  <option>Yaris</option>
+  <option>Hilux</option>
+</select>
 ```
 
-The server also checks the pair when the form is saved: a client can send any `model` it likes.
+| Request | Status | Body |
+|---|---|---|
+| `?make=audi` | `200` | The select with A3, A4 and Q5 |
+| `?make=` or an unknown make | `200` | The disabled select with `Choose a make first` |
+
+Both are fragments with `Vary: YPY-Request`.
 
 ## How it works
 
-- A `<select>` triggers on `change` by default, so `ypy-get` needs no `ypy-trigger`. It sends its own value as
-  `make`.
-- `ypy-target="#model"` with `ypy-swap="innerHTML"` replaces the options of the second select. The answer is only
-  `<option>` elements.
-- The select is inside a form that has its own `ypy-post`. A change of the select makes the `ypy-get` request of the
-  select and does not submit the form. The form posts when the user presses Save.
-- A change of make clears the model, because the answer brings a new list with the empty first option selected.
+- A `<select>` triggers on `change`, so `ypy-get` needs no `ypy-trigger`. It sends its own value as `make`, in the
+  query string.
+- `ypy-target="#model"` with `ypy-swap="outerHTML"` replaces the second select. A change of make always brings back
+  a select with the empty option chosen, so a model that belongs to the old make cannot stay selected.
+- The server owns the map from makes to models. When the form is saved, check the pair again: a client can send any
+  `model` it likes.
+- The label stays on the page and points at the new select by `id`.
 
 ## Variations
 
-- Send both values. Add `ypy-include="closest form"` to the first select if the server needs other fields of
-  the form to build the list.
-- Update a third place. Answer with a `<ypy-partial id="price">` next to the options (see
-  [updating other content](updating-other-content.md)).
-- First list from the server: load the first select with `ypy-trigger="load"` on a `<select>` of its own, or
-  render it in the page.
+- Send more than the select's own value: `ypy-include="closest form"` adds the other fields of the form to the
+  request.
+- Update a third place with the same answer, such as a price, with a `<ypy-partial>` next to the select. See
+  [updating other content](updating-other-content.md).
+- Fill the first select from the server too: give it `ypy-trigger="load"` on a wrapper of its own, or render it in the
+  page.
 
 ## See also
 
-- [`ypy-include`](../reference.md#core-attributes) and [`ypy-vals`](../reference.md#core-attributes)
+- [`ypy-include` and `ypy-vals`](../reference.md#core-attributes)
 - [Inline validation](inline-validation.md)
+- [Parameters](../index.md#parameters)

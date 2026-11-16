@@ -133,3 +133,28 @@
   clip-path: inset(50%);
   white-space: nowrap;
 }
+
+.ex-scroll {
+  max-height: 17rem;
+  overflow: auto;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+}
+
+.ex-scroll table {
+  min-width: 0;
+}
+
+.ex-progress {
+  width: 100%;
+  height: 0.6rem;
+  accent-color: var(--primary);
+}
+
+.ex-demo .tabs {
+  max-width: 34rem;
+}
+
+.ex-demo [role="tabpanel"] {
+  padding: 1rem 0.25rem;
+}

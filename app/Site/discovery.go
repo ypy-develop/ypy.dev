@@ -56,7 +56,7 @@ func (s *Site) GeoConfig() geo.Config {
 			Allow: []string{"/"},
 			// The search results are a query, the demo answers a fragment and the
 			// index is a file for the page's own script: none is a page to rank.
-			Disallow: []string{"/search", "/search-index.json", "/demo"},
+			Disallow: []string{"/search", "/search-index.json", "/demo", "/examples/demo"},
 		},
 	}
 }

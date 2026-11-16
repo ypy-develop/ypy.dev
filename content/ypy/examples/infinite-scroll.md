@@ -6,95 +6,73 @@ description: Fetch the next page of rows when the last row scrolls into view. Ea
 
 # Infinite scroll
 
-The last row of a table asks for the next page as soon as it comes into view. The answer replaces that row with more
-rows, and a new last row that asks for the page after it. When no pages are left, the answer ends without one.
+The last row of a table asks for the next page as soon as it comes into view. The answer adds more rows after it, and
+the new last row asks for the page after that. When no pages are left, the answer ends without a trigger.
+
+## Try it
+
+<!-- demo:infinite-scroll -->
+
+Scroll inside the box. Each page holds ten rows, and the last page has no trigger, so the requests stop.
 
 ## The page
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/ypy-develop/ypy@v0.1.1/dist/ypy.min.js"></script>
-
 <table>
   <thead><tr><th>Name</th><th>Email</th></tr></thead>
   <tbody>
-    <tr><td>Ada</td><td>ada@example.com</td></tr>
-    <tr><td>Grace</td><td>grace@example.com</td></tr>
-    <tr ypy-get="/contacts?page=2" ypy-trigger="revealed" ypy-swap="outerHTML">
-      <td colspan="2">Loading more...</td>
+    <tr><td>Marina Duarte</td><td>marina.duarte@example.com</td></tr>
+    <!-- … eight more rows … -->
+    <tr ypy-get="/contacts?page=2" ypy-trigger="revealed" ypy-swap="afterend">
+      <td>Caio Nogueira</td><td>caio.nogueira@example.com</td>
     </tr>
   </tbody>
 </table>
 ```
 
-## The server (Go)
+## What the server answers
 
-```go
-package main
+`GET /contacts?page=2` answers `200` with the rows of that page. The last of them carries the next trigger:
 
-import (
-	"bytes"
-	"html/template"
-	"net/http"
-	"strconv"
-
-	ypy "github.com/ypy-develop/go"
-)
-
-var rows = template.Must(template.New("rows").Parse(`{{range .Items}}
-<tr><td>{{.Name}}</td><td>{{.Email}}</td></tr>{{end}}
-{{if .Next}}<tr ypy-get="/contacts?page={{.Next}}" ypy-trigger="revealed" ypy-swap="outerHTML">
-  <td colspan="2">Loading more...</td>
-</tr>{{end}}`))
-
-func contacts(store *Store) http.HandlerFunc {
-	const size = 20
-	return func(w http.ResponseWriter, r *http.Request) {
-		page, _ := strconv.Atoi(r.URL.Query().Get("page"))
-		if page < 1 {
-			page = 1
-		}
-		items, more := store.Page(page, size)
-		data := struct {
-			Items []Contact
-			Next  int
-		}{Items: items}
-		if more {
-			data.Next = page + 1
-		}
-		var buf bytes.Buffer
-		if err := rows.Execute(&buf, data); err != nil {
-			http.Error(w, "template error", http.StatusInternalServerError)
-			return
-		}
-		ypy.Fragment(w, buf.String())
-	}
-}
+```html
+<tr><td>Beatriz Lemos</td><td>beatriz.lemos@example.com</td></tr>
+<!-- … eight more rows … -->
+<tr ypy-get="/contacts?page=3" ypy-trigger="revealed" ypy-swap="afterend">
+  <td>Rafael Quintana</td><td>rafael.quintana@example.com</td>
+</tr>
 ```
 
-Register it with `mux.Handle("GET /contacts", ypy.Middleware(contacts(store)))`.
+| Case | Status | Body |
+|---|---|---|
+| A page with more after it | `200` | The rows; the last row has `ypy-get` for the next page |
+| The last page | `200` | The rows, none of them with `ypy-get` |
+| A page past the end | `200` | Empty |
+
+Every answer is a fragment of `<tr>` elements with `Vary: YPY-Request`.
 
 ## How it works
 
-- `ypy-trigger="revealed"` fires once, when the row scrolls into the viewport, and the observer then disconnects.
-- `ypy-swap="outerHTML"` replaces the row with the answer. The answer holds the next rows and, if more pages exist, a
-  new sentinel row with the same attributes pointing at the next page.
-- Because the sentinel is replaced, it can fire only once. A fast scroll cannot ask for the same page twice.
-- The server decides when to stop: the last page has no sentinel row, so no request follows.
+- `ypy-trigger="revealed"` fires once, when the row scrolls into the viewport. The observer then disconnects, so a fast
+  scroll cannot ask for the same page twice.
+- `ypy-swap="afterend"` puts the answer after the row that asked. The old last row stays where it is and keeps its
+  attributes, but nothing watches it any more.
+- The new last row is the one that carries `ypy-get`, so the chain continues for as long as the server keeps handing
+  out a next address.
+- The server decides when to stop: a last page whose rows have no `ypy-get` ends the chain.
+- Rows are parsed inside a `<template>`, so `<tr>` elements arrive intact.
 
 ## Variations
 
-- Start loading before the user reaches the end: use `ypy-trigger="intersect once"` on a row some lines before the
-  last one, or `intersect root:#scroller threshold:0` when the rows scroll inside a box with that `id`.
-  See [`ypy-trigger`](../reference.md#core-attributes).
-- Keep a list in place and add to its end: target the list with `ypy-swap="beforeend"` and let the sentinel live outside
-  of it. The sentinel then needs a `<ypy-partial>` in the answer to replace itself.
-- Visitors without JavaScript see only the first page. Add a normal link to the next page inside the sentinel row,
-  so the content is reachable: `<a href="/contacts?page=2">Next page</a>`.
-- The [`ypy-list`](../extensions/list.md) extension keeps a growing list bounded, with `limit:<n>` on the swap, so a long
-  session does not hold thousands of rows.
+- Start loading before the visitor reaches the end: put the trigger on a row some lines above the last one and use
+  `ypy-trigger="intersect once"`, or `intersect root:#scroller threshold:0` when the rows scroll inside a box with that
+  `id`.
+- Visitors without JavaScript see only the first page. Close the table with a normal link to the next page, so the
+  content stays reachable.
+- The [`ypy-list`](../extensions/list.md) extension keeps a growing list bounded with `limit`, so a long session does
+  not hold thousands of rows.
 
 ## See also
 
 - [Click to load](click-to-load.md), the same pattern with a button
 - [Lazy loading](lazy-loading.md)
-- [`ypy-list`](../extensions/list.md)
+- [Triggers](../index.md#triggers)

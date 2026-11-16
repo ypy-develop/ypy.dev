@@ -365,3 +365,122 @@ func TestActiveSearch(t *testing.T) {
 		t.Errorf("the query is echoed unescaped: %s", xss)
 	}
 }
+
+func TestInfiniteScroll(t *testing.T) {
+	app := tests.Boot(t, config.EnvDev, true)
+	v := newVisitor(t, app)
+	page := v.open("/examples/infinite-scroll")
+	if !strings.Contains(page, `ypy-trigger="revealed"`) || !strings.Contains(page, `page=2`) {
+		t.Fatalf("the page does not carry the demo")
+	}
+	p2 := wantFragment(t, v.do("GET", "/examples/demo/infinite-scroll?page=2", nil), 200)
+	if strings.Count(p2, "<tr") != 9 || !strings.Contains(p2, "page=3") {
+		t.Errorf("page 2 must have nine rows and ask for page 3: %s", p2)
+	}
+	p3 := wantFragment(t, v.do("GET", "/examples/demo/infinite-scroll?page=3", nil), 200)
+	if strings.Contains(p3, "ypy-get") || strings.Count(p3, "<tr") != 9 {
+		t.Errorf("the last page must stop asking: %s", p3)
+	}
+	if end := wantFragment(t, v.do("GET", "/examples/demo/infinite-scroll?page=4", nil), 200); strings.TrimSpace(end) != "" {
+		t.Errorf("a page past the end is empty: %q", end)
+	}
+}
+
+func TestValueSelect(t *testing.T) {
+	app := tests.Boot(t, config.EnvDev, true)
+	v := newVisitor(t, app)
+	v.open("/examples/value-select")
+	toyota := wantFragment(t, v.do("GET", "/examples/demo/value-select?make=toyota", nil), 200)
+	if !strings.Contains(toyota, `id="model"`) || !strings.Contains(toyota, "Hilux") || strings.Contains(toyota, "disabled") {
+		t.Errorf("toyota: %s", toyota)
+	}
+	for _, q := range []string{"?make=", "?make=unknown", ""} {
+		none := wantFragment(t, v.do("GET", "/examples/demo/value-select"+q, nil), 200)
+		if !strings.Contains(none, "disabled") || !strings.Contains(none, "Choose a make first") {
+			t.Errorf("%q: %s", q, none)
+		}
+	}
+}
+
+func TestTabs(t *testing.T) {
+	app := tests.Boot(t, config.EnvDev, true)
+	v := newVisitor(t, app)
+	v.open("/examples/tabs")
+	two := wantFragment(t, v.do("GET", "/examples/demo/tabs/2", nil), 200)
+	if !strings.Contains(two, `id="tab-panel"`) || !strings.Contains(two, "Next invoice") ||
+		!strings.Contains(two, `ypy-swap-oob="true"`) || !strings.Contains(two, `id="tab-2" aria-selected="true"`) ||
+		!strings.Contains(two, `id="tab-1" aria-selected="false"`) {
+		t.Errorf("tab 2 is wrong: %s", two)
+	}
+	if rec := v.do("GET", "/examples/demo/tabs/9", nil); rec.Code != 404 {
+		t.Errorf("an unknown tab answered %d, want 404", rec.Code)
+	}
+}
+
+func TestProgressBar(t *testing.T) {
+	app := tests.Boot(t, config.EnvDev, true)
+	a := newVisitor(t, app)
+	page := a.open("/examples/progress-bar")
+	headers := regexp.MustCompile(`ypy-headers='\{"X-CSRF-Token": "([^"]+)"\}'`).FindStringSubmatch(page)
+	if headers == nil {
+		t.Fatalf("the start button must carry the token in ypy-headers")
+	}
+	// Before a start there is nothing to follow: the button comes back.
+	if idle := wantFragment(t, a.do("GET", "/examples/demo/progress-bar/progress", nil), 200); !strings.Contains(idle, "Start the export") {
+		t.Errorf("a poll with no job must answer the start button: %s", idle)
+	}
+	if rec := a.do("POST", "/examples/demo/progress-bar/start", nil); rec.Code != 419 {
+		t.Errorf("a start with no token answered %d, want 419", rec.Code)
+	}
+	a.header = headers[1]
+	started := wantFragment(t, a.do("POST", "/examples/demo/progress-bar/start", nil), 200)
+	if !strings.Contains(started, `ypy-trigger="load delay:600ms"`) || !strings.Contains(started, `value="0"`) {
+		t.Errorf("the started job does not poll from zero: %s", started)
+	}
+	if poll := wantFragment(t, a.do("GET", "/examples/demo/progress-bar/progress", nil), 200); !strings.Contains(poll, "ypy-get") {
+		t.Errorf("a running job must keep polling: %s", poll)
+	}
+	// Another visitor never sees this job.
+	b := newVisitor(t, app)
+	if idle := wantFragment(t, b.do("GET", "/examples/demo/progress-bar/progress", nil), 200); !strings.Contains(idle, "Start the export") {
+		t.Errorf("one visitor's job leaked to another: %s", idle)
+	}
+}
+
+// Every demo page draws its demo and draws no inline script, style or handler,
+// and the demos stay out of the sitemap and the crawlers' way.
+func TestDemosKeepTheStrictPolicy(t *testing.T) {
+	app := tests.Boot(t, config.EnvDev, true)
+	names := []string{"click-to-edit", "bulk-update", "click-to-load", "delete-row", "edit-row", "lazy-loading",
+		"inline-validation", "active-search", "infinite-scroll", "progress-bar", "value-select", "tabs"}
+	ldJSON := regexp.MustCompile(`(?s)<script type="application/ld\+json"[^>]*>.*?</script>`)
+	inline := regexp.MustCompile(`(?i)<script[^>]*>[^<]|<style|\sstyle=|\son[a-z]+=`)
+	for _, name := range names {
+		rec := app.Get("/examples/" + name)
+		if rec.Code != 200 {
+			t.Errorf("/examples/%s answered %d", name, rec.Code)
+			continue
+		}
+		// The JSON-LD block is data the browser never runs; everything else is checked.
+		body := ldJSON.ReplaceAllString(rec.Body.String(), "")
+		if !strings.Contains(body, `class="ex-demo"`) {
+			t.Errorf("/examples/%s has no demo", name)
+		}
+		if strings.Contains(body, "YPYDEMOMARKER") {
+			t.Errorf("/examples/%s leaks the demo marker", name)
+		}
+		if m := inline.FindString(body); m != "" {
+			t.Errorf("/examples/%s carries inline code: %q", name, m)
+		}
+		if csp := rec.Header().Get("Content-Security-Policy"); !strings.Contains(csp, "script-src 'self'") || strings.Contains(csp, "unsafe-inline") {
+			t.Errorf("/examples/%s has a loose policy: %q", name, csp)
+		}
+	}
+	if robots := app.Get("/robots.txt").Body.String(); !strings.Contains(robots, "/examples/demo") {
+		t.Errorf("robots.txt does not close /examples/demo:\n%s", robots)
+	}
+	sitemap := app.Get("/sitemap.xml").Body.String()
+	if strings.Contains(sitemap, "/examples/demo") || !strings.Contains(sitemap, "/examples/click-to-edit") {
+		t.Errorf("the sitemap must list the example pages and not the demos")
+	}
+}
