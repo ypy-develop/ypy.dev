@@ -156,7 +156,7 @@ var _ SiteLayout = site.Chrome{}
 					</details>
 
 					<a class="site-header-control flex min-w-0 items-center gap-2.5" href="/" aria-label="YPY, home">
-						<img class="size-8 shrink-0" src="{{ view.Asset("ypy-icon.svg") }}" width="32" height="32" alt="">
+						<img class="site-logo h-8 w-auto shrink-0" src="{{ view.Asset("ypy-logo.svg") }}" width="79" height="32" alt="">
 						<span class="font-display whitespace-nowrap text-[17px] leading-none font-bold tracking-tight">{{ .BrandName() }}</span>
 						<span class="site-version lbl hidden sm:inline">v{{ .YPYVersion() }}</span>
 					</a>

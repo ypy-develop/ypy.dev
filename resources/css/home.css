@@ -265,22 +265,15 @@
   }
 }
 
-/* The full logo is used exactly as it was drawn, in both themes: its black
- * strokes need a light ground, so the logo always sits on one. Never recoloured. */
-.logo-plaque {
+/* The logos are used exactly as drawn, with no ground behind them: no plaque,
+ * no padding box, no background colour. Never recoloured. */
+.hero-logo {
   width: min(100%, 360px);
-  padding: 1.5rem 1.75rem;
-  border: var(--frame-rule-width) solid var(--grid);
-  border-radius: 0.7rem;
-  background: var(--color-paper);
 }
 
 .footer-logo {
   height: auto;
   width: 150px;
-  padding: 0.6rem 0.8rem;
-  border-radius: 0.45rem;
-  background: var(--color-paper);
 }
 
 .site-version {

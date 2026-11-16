@@ -67,7 +67,7 @@ type Card struct {
 			</div>
 
 			<figure class="hero-stage">
-				<div class="hero-emblem logo-plaque">
+				<div class="hero-emblem hero-logo">
 					<img src="{{ view.Asset("ypy.svg") }}" width="371" height="151" fetchpriority="high" alt="YPY">
 				</div>
 				<div class="command-bar mt-5 w-full">

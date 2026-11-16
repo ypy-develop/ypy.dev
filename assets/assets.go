@@ -27,11 +27,15 @@ var ypyHead []byte
 //go:embed vendor/ypy-preload.min.js
 var ypyPreload []byte
 
-// The logos, exactly as they were drawn. They are never recoloured or redrawn:
-// the page puts the full logo on a light plaque in both themes.
+// The logos, exactly as they were drawn, with no ground behind them: never
+// recoloured, redrawn or put on a plaque. ypy.svg is the full logo (front page,
+// footer); ypy-logo.svg is the one the header uses.
 //
 //go:embed ypy.svg
 var logo []byte
+
+//go:embed ypy-logo.svg
+var headerLogo []byte
 
 //go:embed ypy-icon.svg
 var icon []byte
@@ -41,6 +45,7 @@ func Icon() []byte { return icon }
 
 func init() {
 	view.RegisterAsset("ypy.svg", "image/svg+xml", logo)
+	view.RegisterAsset("ypy-logo.svg", "image/svg+xml", headerLogo)
 	view.RegisterAsset("ypy-icon.svg", "image/svg+xml", icon)
 	view.RegisterStylesheet(stylesheet)
 	view.RegisterAsset("ypy-head.min.js", "text/javascript; charset=utf-8", ypyHead)
